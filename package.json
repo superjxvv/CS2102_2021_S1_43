@@ -4,6 +4,7 @@
   "description": "e0406833: SWA YONG SHEN <br />\r e0201344: JEREMY CHUA YONG SIANG <br />\r e0200704: KHOO KAI XIN CASSIE <br />\r e0425730: LEE XUAN WEI, JEREMY <br />\r e0426227: KOH HUAI ZE <br />",
   "main": "app.js",
   "scripts": {
+    "start": "node app",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

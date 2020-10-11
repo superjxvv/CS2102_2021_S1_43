@@ -1,0 +1,25 @@
+{
+  "name": "cs2102_2021_s1_43",
+  "version": "1.0.0",
+  "description": "e0406833: SWA YONG SHEN <br />\r e0201344: JEREMY CHUA YONG SIANG <br />\r e0200704: KHOO KAI XIN CASSIE <br />\r e0425730: LEE XUAN WEI, JEREMY <br />\r e0426227: KOH HUAI ZE <br />",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/superjxvv/CS2102_2021_S1_43.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/superjxvv/CS2102_2021_S1_43/issues"
+  },
+  "homepage": "https://github.com/superjxvv/CS2102_2021_S1_43#readme",
+  "dependencies": {
+    "ejs": "^3.1.5",
+    "express": "^4.17.1",
+    "lodash": "^4.17.20",
+    "pg": "^8.4.1"
+  }
+}

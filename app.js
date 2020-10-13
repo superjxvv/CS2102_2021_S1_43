@@ -52,7 +52,6 @@ app.get("/ongoing_transactions", async (req, res) => {
 
 app.listen(process.env.PORT || 3000, () => {
   console.log("server has started on port 3000");
-<<<<<<< Updated upstream
 });
 
 app.get("/transactions", (req, res) => {
@@ -68,6 +67,4 @@ app.get("/transactions", (req, res) => {
       })
       .catch(err => console.error(err.stack))
 
-=======
->>>>>>> Stashed changes
 });

@@ -37,6 +37,10 @@
     padding-bottom: 30px;
 }
 
+.vert-gap-card {
+    padding-top: 30px;
+}
+
 address {
     font-size: 80%;
     margin: 0px;
@@ -56,4 +60,8 @@ body {
     width:200px;
     height:200px;
     background:#e0e0e0;
+}
+
+.btn {
+    margin-left: 30px;
 }

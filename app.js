@@ -34,8 +34,25 @@ app.get("/caretaker", async (req, res) => {
   }
 });
 
+app.get("/profile", async (req, res) => {
+  try {
+    res.render("./profiles/test_profile", {title: "Profile"});
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
+app.get("/ongoing_transactions", async (req, res) => {
+  try {
+    res.render("./profiles/test_ongoing_transactions", {title: "Ongoing Transactions"});
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
 app.listen(process.env.PORT || 3000, () => {
   console.log("server has started on port 3000");
+<<<<<<< Updated upstream
 });
 
 app.get("/transactions", (req, res) => {
@@ -51,4 +68,6 @@ app.get("/transactions", (req, res) => {
       })
       .catch(err => console.error(err.stack))
 
+=======
+>>>>>>> Stashed changes
 });

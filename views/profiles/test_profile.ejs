@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<%- include('../partials/head.ejs') %>
+
+<body>
+    <%- include('../partials/profiles/nav_bar.ejs') %>
+
+    <%- include('../partials/profiles/header.ejs') %>
+
+    <div class="container vert-gap-container">
+        <div class="row">
+            <h2 class="vert-gap-contents">Top Caretakers Nearby</h2>
+            <a href="#" style="padding: 13px">See more</a> <!-- link this to search for nearby caretakers-->
+        </div>
+        
+        <%- include('../partials/profiles/carousel.ejs') %>
+        
+    </div>
+    
+    <div class="container vert-gap-container">
+        <div class="row">
+            <h2 class="vert-gap-contents">Ongoing Transactions</h2>
+            <a href="/ongoing_transactions" style="padding: 13px">See more</a>
+        </div>
+        
+        <%- include('../partials/profiles/carousel.ejs') %>
+        
+    </div>
+
+    <%- include('../partials/profiles/row_of_squares.ejs') %>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>
+
+</html>

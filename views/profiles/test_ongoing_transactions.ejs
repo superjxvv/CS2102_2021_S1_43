@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<%- include('../partials/head.ejs') %>
+
+<body>
+    <%- include('../partials/profiles/nav_bar.ejs') %>
+
+    <%- include('../partials/profiles/header.ejs') %>    
+
+    <div class="container vert-gap-card">
+        <div class="row card">
+            <div class="card-body col-12">
+                <div class="row col-12">
+                    <h2>Transaction 1</h2>
+                    <button class="btn btn-primary" type="button" data-toggle="collapse" data-target=".multi-collapse" aria-expanded="false" aria-controls="trans1 trans2">Toggle both elements</button>
+                </div>
+                <div class="row">
+                    <div class="col col-4 collapse multi-collapse" id="trans1">
+                        <p>Date:</p>
+                        <p>Time:</p>
+                        <p>Care Taker:</p>
+                    </div>
+                    <div class="col col-4 collapse multi-collapse" id="trans2">
+                        <p>Status:</p>
+                        <p>Pet:</p>
+                        <p>Total Cost:</p>
+                    </div>
+                </div>
+                
+                
+                <!-- button for payment? -->
+            </div>
+
+        </div>
+        
+    </div>
+
+    <div class="container vert-gap-card">
+        <div class="row card">
+            <div class="card-body col-12">
+                <div class="row col-12">
+                    <h2>Transaction 1</h2>
+                    <button class="btn btn-primary" type="button" data-toggle="collapse" data-target=".multi-collapse" aria-expanded="false" aria-controls="trans3 trans4">Toggle both elements</button>
+                </div>
+                <div class="row">
+                    <div class="col col-4 collapse multi-collapse" id="trans3">
+                        <p>Date:</p>
+                        <p>Time:</p>
+                        <p>Care Taker:</p>
+                    </div>
+                    <div class="col col-4 collapse multi-collapse" id="trans4">
+                        <p>Status:</p>
+                        <p>Pet:</p>
+                        <p>Total Cost:</p>
+                    </div>
+                </div>
+                
+                
+                <!-- button for payment? -->
+            </div>
+
+        </div>
+        
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>
+
+</html>

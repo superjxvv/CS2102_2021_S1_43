@@ -37,3 +37,18 @@ app.get("/caretaker", async (req, res) => {
 app.listen(process.env.PORT || 3000, () => {
   console.log("server has started on port 3000");
 });
+
+app.get("/transactions", (req, res) => {
+  //Place holder account email "1"
+  queryText = 'SELECT ct_email, num_pet_days, start_date, end_date,'
+              + 'total_cost, status FROM pet_care.hire ' 
+              + 'WHERE owner_email = $1';
+  queryValue = ["1"];
+  pool.query(queryText, queryValue)
+      .then(queryRes => {
+        console.log(queryRes.rows);
+        res.render('transactions', {transactions : queryRes.rows});
+      })
+      .catch(err => console.error(err.stack))
+
+});

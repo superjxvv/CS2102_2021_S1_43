@@ -19,8 +19,8 @@ CREATE TABLE care_taker(
   password VARCHAR NOT NULL,
   location VARCHAR NOT NULL,
   monthly_pet_days INTEGER DEFAULT 0,
-  monthly_salary INTEGER,
-  rating INTEGER,
+  monthly_salary NUMERIC,
+  rating NUMERIC,
   bank_account VARCHAR, 
   max_concurrent_pet_limit INTEGER,
   job job_type NOT NULL
@@ -41,24 +41,24 @@ CREATE TABLE own_pet (
   PRIMARY KEY(name, email)
 );
 
-CREATE TABLE type (
+CREATE TABLE pet_type (
   name VARCHAR PRIMARY KEY,
-  base_daily_price INTEGER NOT NULL
+  base_daily_price NUMERIC NOT NULL
 );
 
 CREATE TABLE can_take_care_of(
   email VARCHAR REFERENCES care_taker(email),
-  daily_price INTEGER NOT NULL,
-  type VARCHAR REFERENCES type(name),
-  PRIMARY KEY(email, type)
+  daily_price NUMERIC NOT NULL,
+  pet_type VARCHAR REFERENCES pet_type(name),
+  PRIMARY KEY(email, pet_type)
 );
 
 CREATE TABLE is_of (
-  type VARCHAR REFERENCES type(name),
+  pet_type VARCHAR REFERENCES pet_type(name),
   petName VARCHAR NOT NULL,
   owner_email VARCHAR NOT NULL,
   FOREIGN KEY (petName, owner_email) REFERENCES own_pet(name, email),
-  PRIMARY KEY (type, petName, owner_email)
+  PRIMARY KEY (pet_type, petName, owner_email)
 );
 
 CREATE TABLE date_range (
@@ -303,3 +303,13 @@ insert into care_taker (email, name, password, location, monthly_pet_days, month
 insert into care_taker (email, name, password, location, monthly_pet_days, monthly_salary, rating, bank_account, max_concurrent_pet_limit, job) values ('rrubinowitz5h@tumblr.com', 'Rosene Rubinowitz', 'hCa9Jyw7ms9A', 'Zevgolateió', null, null, null, null, null, 'full_timer');
 insert into care_taker (email, name, password, location, monthly_pet_days, monthly_salary, rating, bank_account, max_concurrent_pet_limit, job) values ('cloveridge5i@homestead.com', 'Cleavland Loveridge', 'XoiPSQO', 'Choloma', null, null, null, null, null, 'full_timer');
 insert into care_taker (email, name, password, location, monthly_pet_days, monthly_salary, rating, bank_account, max_concurrent_pet_limit, job) values ('vdeville5j@blinklist.com', 'Veronica Deville', 'EmLuojk', 'Medveditskiy', null, null, null, null, null, 'part_timer');
+
+insert into pet_type (name, base_daily_price) values ('Rabbits', '48.72');
+insert into pet_type (name, base_daily_price) values ('Hamster', '43.68');
+insert into pet_type (name, base_daily_price) values ('Cat', '72.72');
+insert into pet_type (name, base_daily_price) values ('Dog', '82.97');
+insert into pet_type (name, base_daily_price) values ('Guinea pigs', '36.33');
+insert into pet_type (name, base_daily_price) values ('Turtles', '60.34');
+insert into pet_type (name, base_daily_price) values ('Bird', '93.24');
+insert into pet_type (name, base_daily_price) values ('Reptile', '81.10');
+insert into pet_type (name, base_daily_price) values ('Ferret', '37.94');

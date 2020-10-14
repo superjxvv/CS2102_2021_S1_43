@@ -25,10 +25,19 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL
 });
 
-app.get("/caretaker", async (req, res) => {
+app.get("/search", async (req, res) => {
   try {
     const allCareTaker = await pool.query(sql_query.query.all_caretaker);
     res.render("search", { careTakers: allCareTaker.rows });
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
+app.get("/caretaker-summary-info", async (req, res) => {
+  try {
+    const allCareTaker = await pool.query(sql_query.query.all_caretaker);
+    res.render("caretaker-summary-info", { careTakers: allCareTaker.rows });
   } catch (err) {
     console.error(err.message);
   }

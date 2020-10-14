@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Template Credits: https://bootsnipp.com/snippets/z8699 -->
+
+<head>
+<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<!------ Include the above in your HEAD tag ---------->
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.8/css/all.css">
+
+<script>
+	// Function to check Whether both passwords 
+	// is same or not. 
+	function checkPassword(form) { 
+		password1 = form.password1.value; 
+		password2 = form.password2.value; 
+
+		// If password not entered 
+		if (password1 == '') {
+			alert ("Please enter Password"); 
+			return false;
+		}
+		// If confirm password not entered 
+		else if (password2 == '') {
+			alert ("Please enter confirm password"); 
+			return false;
+		}
+		// If Not same return False.     
+		else if (password1 != password2) { 
+			alert ("\nPassword did not match: Please try again...") 
+			return false; 
+		} 
+
+		// If same return True. 
+		else{ 
+			return true; 
+		} 
+	}
+
+</script>
+
+<style>
+	.invisible {
+		display: none;
+		visibility: hidden;
+   }
+</style>
+<title>
+	Register New User
+</title>
+</head>
+
+<body>
+<br>
+<br>
+<br>
+<div class="container">
+<!--Used to display error message if any-->
+<div id='status' class='invisible'><%= msg %></div>
+
+<div class="card bg-light">
+<article class="card-body mx-auto" style="max-width: 400px;">
+	<h4 class="card-title mt-3 text-center">Create Account</h4>
+	<p class="text-center">Get started with your free account</p>
+	<p>
+	</p>
+	<form action="/register" method="POST" onsubmit="return checkPassword(this)">
+	<div class="form-group input-group">
+		<div class="input-group-prepend">
+		    <span class="input-group-text"> <i class="fa fa-user"></i> </span>
+		 </div>
+        <input name="name" class="form-control" placeholder="Full name" type="text" id="name">
+    </div> <!-- form-group// -->
+    <div class="form-group input-group">
+    	<div class="input-group-prepend">
+		    <span class="input-group-text"> <i class="fa fa-envelope"></i> </span>
+		 </div>
+        <input name="email" class="form-control" placeholder="Email address" type="email" id="email">
+    </div> <!-- form-group// -->
+    <div class="form-group input-group">
+    	<div class="input-group-prepend">
+		    <span class="input-group-text"> <i class="fa fa-building"></i> </span>
+		</div>
+		<select name="region" class="form-control" id="region">
+            <option selected value=""> Select your region</option>
+            <option value = "Central">Central</option>
+            <option value = "East">East</option>
+            <option value = "North">North</option>
+            <option value = "North-East">North-East</option>
+            <option value = "West">West</option>
+		</select>
+	</div> <!-- form-group end.// -->
+    <div class="form-group input-group">
+    	<div class="input-group-prepend">
+		    <span class="input-group-text"> <i class="fa fa-lock"></i> </span>
+		</div>
+        <input name="password1" class="form-control" placeholder="Create password" type="password" id="password1">
+    </div> <!-- form-group// -->
+    <div class="form-group input-group">
+    	<div class="input-group-prepend">
+		    <span class="input-group-text"> <i class="fa fa-lock"></i> </span>
+		</div>
+        <input name = "password2" class="form-control" placeholder="Repeat password" type="password" id="password2">
+    </div> <!-- form-group// -->                                      
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary btn-block"> Create Account  </button>
+    </div> <!-- form-group// -->      
+    <p class="text-center">Have an account? <a href="">Log In</a> </p>                                                                 
+</form>
+</article>
+</div> <!-- card.// -->
+
+</div> 
+<!--container end.//-->
+
+
+<script>
+	if($('div#status').text()!='')
+	{
+			  alert($('div#status').text());
+	}
+</script>
+</body>
+</html>

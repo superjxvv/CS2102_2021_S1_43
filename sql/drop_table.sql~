@@ -14,3 +14,4 @@ DROP TYPE pet_transfer;
 DROP TABLE hire;
 DROP TABLE indicates_availability;
 DROP TABLE has_leave;
+

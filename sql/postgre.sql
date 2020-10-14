@@ -67,7 +67,7 @@ CREATE TABLE date_range (
   PRIMARY KEY(start_date, end_date)
 );
 
-CREATE TYPE status AS ENUM('pendingAccept', 'rejected', 'pendingPayment', 'paymentMade', 'inProgress', 'completed', 'cancelled');
+CREATE TYPE hire_status AS ENUM('pendingAccept', 'rejected', 'pendingPayment', 'paymentMade', 'inProgress', 'completed', 'cancelled');
 
 CREATE TYPE pet_transfer AS ENUM('cPickup', 'oDeliver', 'office');
 
@@ -77,7 +77,7 @@ CREATE TABLE hire (
   ct_email VARCHAR REFERENCES care_taker(email),
   num_pet_days INTEGER NOT NULL,
   total_cost NUMERIC NOT NULL,
-  status status,
+  hire_status hire_status NOT NULL,
   method_of_pet_transfer pet_transfer NOT NULL,
   method_of_payment VARCHAR NOT NULL,
   start_date DATE NOT NULL,

@@ -37,7 +37,8 @@ app.get("/search", async (req, res) => {
 app.get("/caretaker-summary-info", async (req, res) => {
   try {
     const allCareTaker = await pool.query(sql_query.query.all_caretaker);
-    res.render("caretaker-summary-info", { careTakers: allCareTaker.rows });
+    const allPetTypes = await pool.query(sql_query.query.all_pet_type);
+    res.render("caretaker-summary-info", { careTakers: allCareTaker.rows, petTypes: allPetTypes.rows });
   } catch (err) {
     console.error(err.message);
   }

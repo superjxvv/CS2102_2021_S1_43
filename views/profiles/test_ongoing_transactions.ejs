@@ -6,50 +6,32 @@
 <body>
     <%- include('../partials/profiles/nav_bar.ejs') %>
 
-    <%- include('../partials/profiles/header.ejs') %>    
+    <%- include('../partials/profiles/header.ejs') %>
 
     <div class="container vert-gap-card">
-        <div class="row card">
+        <div class="card">
             <div class="card-body col-12">
-                <div class="row col-12">
-                    <h2>Transaction 1</h2>
-                    <button class="btn btn-primary" type="button" data-toggle="collapse" data-target=".multi-collapse" aria-expanded="false" aria-controls="trans1 trans2">Toggle both elements</button>
+                <div class="row" id="transaction-header">
+                    <div class="col">
+                        <h4>Status</h4>
+                    </div>
+                    <div class="col-6 text-center">
+                        <h4>DDMMYY to DDMMYY</h4>
+                    </div>
+                    <div class="col text-right">
+                        <h4>CareTaker Name</h4>
+                    </div>
+                    <div class="col-1">
+                        <button class="btn btn-primary" type="button" id="toggle-collapse" data-toggle="collapse" data-target=".happy" aria-expanded="false" aria-controls="trans3 trans4"><img src="https://icon-library.com/images/collapse-expand-icon/collapse-expand-icon-29.jpg" width="15"></button>
+                    </div>
                 </div>
                 <div class="row">
-                    <div class="col col-4 collapse multi-collapse" id="trans1">
+                    <div class="col col-4 collapse multi-collapse happy" id="trans3">
                         <p>Date:</p>
                         <p>Time:</p>
                         <p>Care Taker:</p>
                     </div>
-                    <div class="col col-4 collapse multi-collapse" id="trans2">
-                        <p>Status:</p>
-                        <p>Pet:</p>
-                        <p>Total Cost:</p>
-                    </div>
-                </div>
-                
-                
-                <!-- button for payment? -->
-            </div>
-
-        </div>
-        
-    </div>
-
-    <div class="container vert-gap-card">
-        <div class="row card">
-            <div class="card-body col-12">
-                <div class="row col-12">
-                    <h2>Transaction 1</h2>
-                    <button class="btn btn-primary" type="button" data-toggle="collapse" data-target=".multi-collapse" aria-expanded="false" aria-controls="trans3 trans4">Toggle both elements</button>
-                </div>
-                <div class="row">
-                    <div class="col col-4 collapse multi-collapse" id="trans3">
-                        <p>Date:</p>
-                        <p>Time:</p>
-                        <p>Care Taker:</p>
-                    </div>
-                    <div class="col col-4 collapse multi-collapse" id="trans4">
+                    <div class="col col-4 collapse multi-collapse happy" id="trans4">
                         <p>Status:</p>
                         <p>Pet:</p>
                         <p>Total Cost:</p>

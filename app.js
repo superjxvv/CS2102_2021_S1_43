@@ -64,7 +64,6 @@ app.get("/search", async (req, res) => {
 app.get("/caretaker-summary-info", async (req, res) => {
   try {
     const summaryInfo = await pool.query(sql_query.query.caretaker_summary_info);
-    console.log(summaryInfo.rows)
     res.render("caretaker-summary-info", { caretakerSummaryInfo: summaryInfo.rows });
   } catch (err) {
     console.error(err.message);
@@ -80,8 +79,8 @@ app.get("/profile", async (req, res) => {
       {
         title: "Profile", 
         top_ratings: caretaker_top_ratings.rows, 
-        ongoing_transactions: recent_ongoing_transactions,
-        completed_transactions: recent_completed
+        ongoing_transactions: recent_ongoing_transactions.rows,
+        completed_transactions: recent_completed.rows
       });
   } catch (err) {
     console.error(err.message);

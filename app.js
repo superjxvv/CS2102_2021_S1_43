@@ -63,9 +63,9 @@ app.get("/search", async (req, res) => {
 
 app.get("/caretaker-summary-info", async (req, res) => {
   try {
-    const allCareTaker = await pool.query(sql_query.query.all_caretaker);
-    const allPetTypes = await pool.query(sql_query.query.all_pet_type);
-    res.render("caretaker-summary-info", { careTakers: allCareTaker.rows, petTypes: allPetTypes.rows });
+    const summaryInfo = await pool.query(sql_query.query.caretaker_summary_info);
+    console.log(summaryInfo.rows)
+    res.render("caretaker-summary-info", { caretakerSummaryInfo: summaryInfo.rows });
   } catch (err) {
     console.error(err.message);
   }

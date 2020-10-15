@@ -73,3 +73,10 @@ body {
 #transaction-header {
     margin-bottom: 5px;
 }
+
+#square-card {
+    margin-left: 20px;
+    margin-right: 20px;
+    background-color: #e0e0e0;
+    padding-top: 12px;
+}

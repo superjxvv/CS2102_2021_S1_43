@@ -72,7 +72,7 @@
         <% completed_transactions.forEach(completed => { %>
             <div class="card col-sm col-md" id="square-card">
                 <p>Status: <%= completed.hire_status %><br>
-                   Date: <%= completed.start_date %> to <%= ongoing.end_date %><br>
+                   Date: <%= completed.start_date %> to <%= completed.end_date %><br>
                    Caretaker: <%= completed.ct_email %><br>
                    User: <%= completed.email %><br>
                    Pet Name: <%= completed.name %><br>

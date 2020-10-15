@@ -67,6 +67,9 @@ CREATE TABLE date_range (
   PRIMARY KEY(start_date, end_date)
 );
 
+insert into date_range (start_date, end_date) values ('2020-10-16 15:05:26', '2020-10-23 14:41:11'), ('2020-10-15 06:05:49', '2020-10-19 19:30:14'), ('2020-10-16 13:30:39', '2020-10-22 12:17:02'), ('2020-10-16 05:08:00', '2020-10-19 19:50:55'), ('2020-10-13 12:46:00', '2020-10-19 21:42:11');
+
+
 CREATE TYPE hire_status AS ENUM('pendingAccept', 'rejected', 'pendingPayment', 'paymentMade', 'inProgress', 'completed', 'cancelled');
 
 CREATE TYPE pet_transfer AS ENUM('cPickup', 'oDeliver', 'office');
@@ -82,6 +85,7 @@ CREATE TABLE hire (
   method_of_payment VARCHAR NOT NULL,
   start_date DATE NOT NULL,
   end_date DATE NOT NULL,
+  transaction_date DATE NOT NULL,
   rating INTEGER CHECK (rating >= 1 AND rating <= 5),
   review_text VARCHAR,
   PRIMARY KEY(owner_email, name, ct_email, start_date, end_date),
@@ -103,16 +107,16 @@ CREATE TABLE has_leave (
 	PRIMARY KEY(email, start_date, end_date)
 );
 
-insert into care_taker (email, name, password, location, monthly_pet_days, monthly_salary, rating, bank_account, max_concurrent_pet_limit, job) values ('cdrinan0@economist.com', 'Charmion Drinan', '2nlDfqG', 'Cienfuegos', null, null, null, null, null, 'part_timer');
-insert into care_taker (email, name, password, location, monthly_pet_days, monthly_salary, rating, bank_account, max_concurrent_pet_limit, job) values ('carro1@narod.ru', 'Cody Arro', '7HjFxA3Q7yk4', 'Laojun', null, null, null, null, null, 'full_timer');
-insert into care_taker (email, name, password, location, monthly_pet_days, monthly_salary, rating, bank_account, max_concurrent_pet_limit, job) values ('ckempe2@usnews.com', 'Chrissy Kempe', 'Xenqsvp6', 'Basīrpur', null, null, null, null, null, 'full_timer');
-insert into care_taker (email, name, password, location, monthly_pet_days, monthly_salary, rating, bank_account, max_concurrent_pet_limit, job) values ('gbroader3@mozilla.org', 'Goldia Broader', 'gNfijRz8a3J', 'Gotse Delchev', null, null, null, null, null, 'part_timer');
-insert into care_taker (email, name, password, location, monthly_pet_days, monthly_salary, rating, bank_account, max_concurrent_pet_limit, job) values ('fchansonne4@paginegialle.it', 'Farica Chansonne', 'ojbM5BfZ', 'Real', null, null, null, null, null, 'full_timer');
-insert into care_taker (email, name, password, location, monthly_pet_days, monthly_salary, rating, bank_account, max_concurrent_pet_limit, job) values ('sbigly5@marketwatch.com', 'Sharline Bigly', 'AgOnqfCJzN9', 'Tomari', null, null, null, null, null, 'full_timer');
-insert into care_taker (email, name, password, location, monthly_pet_days, monthly_salary, rating, bank_account, max_concurrent_pet_limit, job) values ('iconley6@zimbio.com', 'Isak Conley', 'Y6e9N0B', 'Su-ngai Kolok', null, null, null, null, null, 'full_timer');
-insert into care_taker (email, name, password, location, monthly_pet_days, monthly_salary, rating, bank_account, max_concurrent_pet_limit, job) values ('ksabben7@dailymotion.com', 'Katheryn Sabben', 'yKx2G3vdCFmp', 'Montauban', null, null, null, null, null, 'part_timer');
-insert into care_taker (email, name, password, location, monthly_pet_days, monthly_salary, rating, bank_account, max_concurrent_pet_limit, job) values ('bclendinning8@qq.com', 'Babette Clendinning', '7aprXPzTxeBR', 'Sannikovo', null, null, null, null, null, 'full_timer');
-insert into care_taker (email, name, password, location, monthly_pet_days, monthly_salary, rating, bank_account, max_concurrent_pet_limit, job) values ('jkidson9@msn.com', 'Jethro Kidson', 'DUVrGD5t5R', 'Wright', null, null, null, null, null, 'part_timer');
+insert into care_taker (email, name, password, location, monthly_pet_days, monthly_salary, rating, bank_account, max_concurrent_pet_limit, job) values ('cdrinan0@economist.com', 'Charmion Drinan', '2nlDfqG', 'Cienfuegos', null, null, 5.0, null, null, 'part_timer');
+insert into care_taker (email, name, password, location, monthly_pet_days, monthly_salary, rating, bank_account, max_concurrent_pet_limit, job) values ('carro1@narod.ru', 'Cody Arro', '7HjFxA3Q7yk4', 'Laojun', null, null, 4.1, null, null, 'full_timer');
+insert into care_taker (email, name, password, location, monthly_pet_days, monthly_salary, rating, bank_account, max_concurrent_pet_limit, job) values ('ckempe2@usnews.com', 'Chrissy Kempe', 'Xenqsvp6', 'Basīrpur', null, null, 3.0, null, null, 'full_timer');
+insert into care_taker (email, name, password, location, monthly_pet_days, monthly_salary, rating, bank_account, max_concurrent_pet_limit, job) values ('gbroader3@mozilla.org', 'Goldia Broader', 'gNfijRz8a3J', 'Gotse Delchev', null, null, 4.2, null, null, 'part_timer');
+insert into care_taker (email, name, password, location, monthly_pet_days, monthly_salary, rating, bank_account, max_concurrent_pet_limit, job) values ('fchansonne4@paginegialle.it', 'Farica Chansonne', 'ojbM5BfZ', 'Real', null, null, 3.5, null, null, 'full_timer');
+insert into care_taker (email, name, password, location, monthly_pet_days, monthly_salary, rating, bank_account, max_concurrent_pet_limit, job) values ('sbigly5@marketwatch.com', 'Sharline Bigly', 'AgOnqfCJzN9', 'Tomari', null, null, 3.6, null, null, 'full_timer');
+insert into care_taker (email, name, password, location, monthly_pet_days, monthly_salary, rating, bank_account, max_concurrent_pet_limit, job) values ('iconley6@zimbio.com', 'Isak Conley', 'Y6e9N0B', 'Su-ngai Kolok', null, null, 3.7, null, null, 'full_timer');
+insert into care_taker (email, name, password, location, monthly_pet_days, monthly_salary, rating, bank_account, max_concurrent_pet_limit, job) values ('ksabben7@dailymotion.com', 'Katheryn Sabben', 'yKx2G3vdCFmp', 'Montauban', null, null, 1.0, null, null, 'part_timer');
+insert into care_taker (email, name, password, location, monthly_pet_days, monthly_salary, rating, bank_account, max_concurrent_pet_limit, job) values ('bclendinning8@qq.com', 'Babette Clendinning', '7aprXPzTxeBR', 'Sannikovo', null, null, 2.0, null, null, 'full_timer');
+insert into care_taker (email, name, password, location, monthly_pet_days, monthly_salary, rating, bank_account, max_concurrent_pet_limit, job) values ('jkidson9@msn.com', 'Jethro Kidson', 'DUVrGD5t5R', 'Wright', null, null, 1.5, null, null, 'part_timer');
 insert into care_taker (email, name, password, location, monthly_pet_days, monthly_salary, rating, bank_account, max_concurrent_pet_limit, job) values ('dcastanoa@java.com', 'Devon Castano', 'q8Sur95ui', 'Brodnica', null, null, null, null, null, 'part_timer');
 insert into care_taker (email, name, password, location, monthly_pet_days, monthly_salary, rating, bank_account, max_concurrent_pet_limit, job) values ('screminsb@disqus.com', 'Salaidh Cremins', 'KIWuuhVNyQh', 'Cordova', null, null, null, null, null, 'full_timer');
 insert into care_taker (email, name, password, location, monthly_pet_days, monthly_salary, rating, bank_account, max_concurrent_pet_limit, job) values ('kbirdwhistlec@ucla.edu', 'Kristien Birdwhistle', 'iOuAgwH3', 'Susanino', null, null, null, null, null, 'full_timer');
@@ -313,3 +317,21 @@ insert into pet_type (name, base_daily_price) values ('Turtles', '60.34');
 insert into pet_type (name, base_daily_price) values ('Bird', '93.24');
 insert into pet_type (name, base_daily_price) values ('Reptile', '81.10');
 insert into pet_type (name, base_daily_price) values ('Ferret', '37.94');
+
+insert into pet_owner (email, name, password, location) values ('lhillaby0@jalbum.net', 'Lucas Hillaby', 'YH36kg1', 'West');
+insert into pet_owner (email, name, password, location) values ('sdilks1@cisco.com', 'Sharlene Dilks', 'XF1r1S', 'North');
+insert into pet_owner (email, name, password, location) values ('tchellenham2@dagondesign.com', 'Tierney Chellenham', 'mmuNoFeemz', 'West');
+insert into pet_owner (email, name, password, location) values ('mschwerin3@yellowpages.com', 'Mac Schwerin', '5Bu4PE', 'North');
+insert into pet_owner (email, name, password, location) values ('lgrindley4@last.fm', 'Leonelle Grindley', 'w3c8l5J', 'South');
+
+insert into own_pet (name, special_requirement, email) values ('Chestnut weaver', 'pulvinar sed', 'mschwerin3@yellowpages.com');
+insert into own_pet (name, special_requirement, email) values ('Red-billed hornbill', 'sollicitudin ut suscipit', 'lgrindley4@last.fm');
+insert into own_pet (name, special_requirement, email) values ('Praying mantis (unidentified)', 'nibh ligula nec sem', 'lgrindley4@last.fm');
+insert into own_pet (name, special_requirement, email) values ('Pheasant ring-necked', 'sem', 'lgrindley4@last.fm');
+insert into own_pet (name, special_requirement, email) values ('Oriental short-clawed otter', 'et ultrices posuere cubilia curae', 'lhillaby0@jalbum.net');
+
+insert into hire (owner_email, name, ct_email, num_pet_days, total_cost, hire_status, method_of_pet_transfer, method_of_payment, start_date, end_date, transaction_date, rating, review_text) values ('lgrindley4@last.fm', 'Pheasant ring-necked', 'bclendinning8@qq.com', 10, 76.97, 'inProgress', 'office', 'cash', '2020-10-16 13:30:39', '2020-10-22 12:17:02', '2020-10-08 06:17:55', 4.1, null);
+insert into hire (owner_email, name, ct_email, num_pet_days, total_cost, hire_status, method_of_pet_transfer, method_of_payment, start_date, end_date, transaction_date, rating, review_text) values ('mschwerin3@yellowpages.com', 'Chestnut weaver', 'carro1@narod.ru', 1, 87.27, 'completed', 'cPickup', 'cash', '2020-10-16 13:30:39', '2020-10-23 14:41:11', '2020-10-08 11:47:59', 1.2, null);
+insert into hire (owner_email, name, ct_email, num_pet_days, total_cost, hire_status, method_of_pet_transfer, method_of_payment, start_date, end_date, transaction_date, rating, review_text) values ('lgrindley4@last.fm', 'Praying mantis (unidentified)', 'gbroader3@mozilla.org', 10, 28.16, 'inProgress', 'oDeliver', 'cash', '2020-10-16 05:08:00', '2020-10-23 14:41:11', '2020-10-04 11:27:45', 3.9, null);
+insert into hire (owner_email, name, ct_email, num_pet_days, total_cost, hire_status, method_of_pet_transfer, method_of_payment, start_date, end_date, transaction_date, rating, review_text) values ('lgrindley4@last.fm', 'Pheasant ring-necked', 'ckempe2@usnews.com', 6, 61.77, 'pendingAccept', 'office', 'bank', '2020-10-15 06:05:49', '2020-10-19 19:50:55', '2020-10-08 21:07:13', 2.6, null);
+insert into hire (owner_email, name, ct_email, num_pet_days, total_cost, hire_status, method_of_pet_transfer, method_of_payment, start_date, end_date, transaction_date, rating, review_text) values ('lgrindley4@last.fm', 'Praying mantis (unidentified)', 'jkidson9@msn.com', 2, 65.3, 'paymentMade', 'oDeliver', 'cash', '2020-10-16 13:30:39', '2020-10-19 21:42:11', '2020-10-09 13:35:29', 2.6, null);

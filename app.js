@@ -140,16 +140,22 @@ app.post("/register", async (req, res) => {
 })
 
 app.get("/login", (req, res) => {
-  res.render("login", {msg : ""});
+  if (req.user) {
+    //For now just redirect to profile.
+    //TODO: Add alert message to show that he is already logged in.
+    res.redirect("/profile");
+  } else {
+    res.render("login", {msg : ""});
+  }
 });
 
 //If authenticate successful, redirect to profile, it not, 
 //go to login page and show failure messages (in passportConfig.js)
 app.post("/login", passport.authenticate('local', {
-  successRedirect: "/profile",
-  failureRedirect: "/login",
-  failureFlash: true
-  })
+      successRedirect: "/profile",
+      failureRedirect: "/login",
+      failureFlash: true
+    })
 );
 
 app.get("/logout", (req, res) => {

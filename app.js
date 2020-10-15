@@ -4,16 +4,21 @@ const _ = require("lodash");
 const sql_query = require("./sql");
 const path = require("path");
 const { Pool } = require("pg");
-//Authentication stuff
+//Authentication stuff -------------------
 const bcrypt = require('bcrypt')
 const session = require('express-session');
 const flash = require('express-flash');
+const passport = require("passport")
+const initializePassport = require("./passportConfig");
+initializePassport(passport);
+// -------------------------------------
 
 //create .env file (ignored by git for privacy) to store environment variables
 //etc. DATABASE_URL=postgres://<username>:<password>@localhost:5432/pet_care
 require("dotenv").config();
 
 const app = express();
+
 
 //register view engine
 app.set("view engine", "ejs");
@@ -33,8 +38,13 @@ app.use(session({
 
   saveUninitialized: false
 }));
+
 //Displays flash messages
 app.use(flash());
+
+//Login middleware
+app.use(passport.initialize());
+app.use(passport.session());
 
 //DB connection
 //Use pool.query to run a query on the first available idle client
@@ -82,10 +92,7 @@ app.listen(process.env.PORT || 3000, () => {
 });
 
 /*
-**
-** Section for YS: Register, Login, View Transactions
-**
-**
+** Section for YS: Register, View Transactions
 */
 app.get("/register", (req, res) => {
   res.render("register", {msg : ''});
@@ -114,7 +121,7 @@ app.post("/register", async (req, res) => {
               pool.query(`INSERT INTO pet_care.pet_owner VALUES($1, $2, $3, $4)`, [email, name, hashedPw, region])
                   .then(result => {
                     console.log("Registered");
-                    req.flash("You are now registered, please login.")
+                    req.flash("success_msg", "You are now registered, please login.");
                     res.redirect("/login");
                   })
                   .catch(err => {
@@ -133,19 +140,43 @@ app.post("/register", async (req, res) => {
 })
 
 app.get("/login", (req, res) => {
-  res.send("Placeholder login page.")
-})
+  res.render("login", {msg : ""});
+});
+
+//If authenticate successful, redirect to profile, it not, 
+//go to login page and show failure messages (in passportConfig.js)
+app.post("/login", passport.authenticate('local', {
+  successRedirect: "/profile",
+  failureRedirect: "/login",
+  failureFlash: true
+  })
+);
+
+app.get("/logout", (req, res) => {
+  const userName = req.user.name;
+  req.logout();
+  res.send(userName + " you have been logged out.")
+});
+
+//Use to test if a user is logged in.
+app.get("/user", (req, res) => {
+  if (req.user) {
+    res.send(`${req.user.email}  ${req.user.name}`);
+  } else {
+    res.send("Not logged in");
+  }
+});
 
 app.get("/transactions", (req, res) => {
   //Place holder account email "1"
   const queryText = 'SELECT ct_email, num_pet_days, start_date, end_date,'
               + 'total_cost, status FROM pet_care.hire ' 
               + 'WHERE owner_email = $1';
-  const queryValue = ["1"];
+  const queryValue = [req.user.email];
   pool.query(queryText, queryValue)
       .then(queryRes => {
         console.log(queryRes.rows);
-        res.render('transactions', {transactions : queryRes.rows});
+        res.render('transactions', {transactions : queryRes.rows, name : req.user.name});
       })
       .catch(err => console.error(err.stack))
 

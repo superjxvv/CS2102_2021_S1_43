@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Template Credits: https://bootsnipp.com/snippets/z8699 -->
+
+<head>
+<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<!------ Include the above in your HEAD tag ---------->
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.8/css/all.css">
+
+<style>
+	.invisible {
+		display: none;
+		visibility: hidden;
+   }
+</style>
+<title>
+	Login
+</title>
+</head>
+
+<body>
+<br>
+<br>
+<br>
+<div class="container">
+<!--Used to display error message if any-->
+<div id='status' class='invisible'><%= msg %></div>
+
+<div class="card bg-light">
+<article class="card-body mx-auto" style="max-width: 400px;">
+    <h4 class="card-title mt-3 text-center">User Login</h4>
+    <ul>
+			<% if (messages.success_msg) { %>
+				<li><%= messages.success_msg %></li>
+			<% } %>
+		</ul>
+		
+		<ul>
+			<% if (messages.error) { %>
+				<li><%= messages.error %></li>
+			<% } %>
+		</ul>
+			
+	<p class="text-center"></p>
+	<p>
+	</p>
+	<form action="/login" method="POST">
+	<div class="form-group input-group">
+		<div class="input-group-prepend">
+		 </div>
+    </div> <!-- form-group// -->
+    <div class="form-group input-group">
+    	<div class="input-group-prepend">
+		    <span class="input-group-text"> <i class="fa fa-envelope"></i> </span>
+		 </div>
+        <input name="email" class="form-control" placeholder="Email address" type="email" id="email">
+	</div> <!-- form-group end.// -->
+    <div class="form-group input-group">
+    	<div class="input-group-prepend">
+		    <span class="input-group-text"> <i class="fa fa-lock"></i> </span>
+		</div>
+        <input name="password" class="form-control" placeholder="Password" type="password" id="password">
+    </div> <!-- form-group// -->
+    <div class="form-group input-group">
+    	<div class="input-group-prepend">
+		</div>
+
+    </div> <!-- form-group// -->                                      
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary btn-block">Login  </button>
+    </div> <!-- form-group// -->      
+    <p class="text-center">Don't have an account? <a href="/register">Register</a> </p>                                                                 
+</form>
+</article>
+</div> <!-- card.// -->
+
+</div> 
+<!--container end.//-->
+
+<!--If something was passed into msg variable from NodeJS, it will be shown as alert.-->
+<script>
+	if($('div#status').text()!='')
+	{
+			  alert($('div#status').text());
+	}
+</script>
+</body>
+</html>

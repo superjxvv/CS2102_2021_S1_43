@@ -306,6 +306,16 @@ insert into care_taker (email, name, password, location, monthly_pet_days, month
 insert into care_taker (email, name, password, location, monthly_pet_days, monthly_salary, rating, bank_account, max_concurrent_pet_limit, job) values ('cloveridge5i@homestead.com', 'Cleavland Loveridge', 'XoiPSQO', 'Choloma', null, null, null, null, null, 'full_timer');
 insert into care_taker (email, name, password, location, monthly_pet_days, monthly_salary, rating, bank_account, max_concurrent_pet_limit, job) values ('vdeville5j@blinklist.com', 'Veronica Deville', 'EmLuojk', 'Medveditskiy', null, null, null, null, null, 'part_timer');
 
+insert into pet_owner (email, name, password, location) values ('lhillaby0@jalbum.net', 'Lucas Hillaby', 'YH36kg1', 'West');
+insert into pet_owner (email, name, password, location) values ('sdilks1@cisco.com', 'Sharlene Dilks', 'XF1r1S', 'North');
+insert into pet_owner (email, name, password, location) values ('tchellenham2@dagondesign.com', 'Tierney Chellenham', 'mmuNoFeemz', 'West');
+insert into pet_owner (email, name, password, location) values ('mschwerin3@yellowpages.com', 'Mac Schwerin', '5Bu4PE', 'North');
+insert into pet_owner (email, name, password, location) values ('lgrindley4@last.fm', 'Leonelle Grindley', 'w3c8l5J', 'South');
+insert into pet_owner (email, name, password, location) values ('fchansonne4@paginegialle.it', 'Farica Chansonne', 'ojbM5BfZ', 'Real');
+insert into pet_owner (email, name, password, location) values ('sbigly5@marketwatch.com', 'Sharline Bigly', 'AgOnqfCJzN9', 'Tomari');
+insert into pet_owner (email, name, password, location) values ('iconley6@zimbio.com', 'Isak Conley', 'Y6e9N0B', 'Su-ngai Kolok');
+insert into pet_owner (email, name, password, location) values ('ksabben7@dailymotion.com', 'Katheryn Sabben', 'yKx2G3vdCFmp', 'Montauban');
+
 insert into pet_type (name, base_daily_price) values ('Rabbits', '48.72');
 insert into pet_type (name, base_daily_price) values ('Hamster', '43.68');
 insert into pet_type (name, base_daily_price) values ('Cat', '72.72');
@@ -316,6 +326,12 @@ insert into pet_type (name, base_daily_price) values ('Bird', '93.24');
 insert into pet_type (name, base_daily_price) values ('Reptile', '81.10');
 insert into pet_type (name, base_daily_price) values ('Ferret', '37.94');
 
+
+insert into own_pet (pet_name, special_requirement, email) values ('Chestnut weaver', 'pulvinar sed', 'mschwerin3@yellowpages.com');
+insert into own_pet (pet_name, special_requirement, email) values ('Red-billed hornbill', 'sollicitudin ut suscipit', 'lgrindley4@last.fm');
+insert into own_pet (pet_name, special_requirement, email) values ('Praying mantis (unidentified)', 'nibh ligula nec sem', 'lgrindley4@last.fm');
+insert into own_pet (pet_name, special_requirement, email) values ('Pheasant ring-necked', 'sem', 'lgrindley4@last.fm');
+insert into own_pet (pet_name, special_requirement, email) values ('Oriental short-clawed otter', 'et ultrices posuere cubilia curae', 'lhillaby0@jalbum.net');
 insert into own_pet(pet_name, special_requirement, email) values ('Doggie', 'No chocolate', 'fchansonne4@paginegialle.it');
 insert into own_pet(pet_name, special_requirement, email) values ('Kitkat', 'Likes to sleep', 'sbigly5@marketwatch.com');
 insert into own_pet(pet_name, special_requirement, email) values ('Mickey', 'Allergic to nuts', 'iconley6@zimbio.com');
@@ -330,32 +346,12 @@ insert into date_range(start_date, end_date) values ('2020-10-20', '2020-10-24')
 insert into date_range(start_date, end_date) values ('2020-10-20', '2020-10-22'); 
 insert into date_range(start_date, end_date) values ('2020-10-20', '2020-10-20'); 
 
-insert into hire(owner_email, pet_name, ct_email, num_pet_days, total_cost, hire_status, method_of_pet_transfer, method_of_payment, start_date, end_date, rating, review_text) 
-values ('fchansonne4@paginegialle.it', 'Doggie', 'cdrinan0@economist.com', '5', '414.85', 'completed', 'office', 'cash', '2020-10-20', '2020-10-24', '4', 'Not bad');
-insert into hire(owner_email, pet_name, ct_email, num_pet_days, total_cost, hire_status, method_of_pet_transfer, method_of_payment, start_date, end_date, rating, review_text) 
-values ('sbigly5@marketwatch.com', 'Kitkat', 'carro1@narod.ru', '3', '218.16', 'completed', 'office', 'cash', '2020-10-20', '2020-10-22', '5', 'Excellent!');
-insert into hire(owner_email, pet_name, ct_email, num_pet_days, total_cost, hire_status, method_of_pet_transfer, method_of_payment, start_date, end_date, rating, review_text) 
-values ('iconley6@zimbio.com', 'Mickey', 'ckempe2@usnews.com', '3', '131.04', 'completed', 'office', 'cash', '2020-10-20', '2020-10-22', '3', '-');
-insert into hire(owner_email, pet_name, ct_email, num_pet_days, total_cost, hire_status, method_of_pet_transfer, method_of_payment, start_date, end_date, rating, review_text)
-values ('ksabben7@dailymotion.com', 'Pancakes', 'gbroader3@mozilla.org', '1', '81.10', 'completed', 'office', 'cash', '2020-10-20', '2020-10-20', '4', 'Okay');
-insert into pet_owner (email, name, password, location) values ('lhillaby0@jalbum.net', 'Lucas Hillaby', 'YH36kg1', 'West');
-insert into pet_owner (email, name, password, location) values ('sdilks1@cisco.com', 'Sharlene Dilks', 'XF1r1S', 'North');
-insert into pet_owner (email, name, password, location) values ('tchellenham2@dagondesign.com', 'Tierney Chellenham', 'mmuNoFeemz', 'West');
-insert into pet_owner (email, name, password, location) values ('mschwerin3@yellowpages.com', 'Mac Schwerin', '5Bu4PE', 'North');
-insert into pet_owner (email, name, password, location) values ('lgrindley4@last.fm', 'Leonelle Grindley', 'w3c8l5J', 'South');
-insert into pet_owner (email, name, password, location) values ('fchansonne4@paginegialle.it', 'Farica Chansonne', 'ojbM5BfZ', 'Real');
-insert into pet_owner (email, name, password, location) values ('sbigly5@marketwatch.com', 'Sharline Bigly', 'AgOnqfCJzN9', 'Tomari');
-insert into pet_owner (email, name, password, location) values ('iconley6@zimbio.com', 'Isak Conley', 'Y6e9N0B', 'Su-ngai Kolok');
-insert into pet_owner (email, name, password, location) values ('ksabben7@dailymotion.com', 'Katheryn Sabben', 'yKx2G3vdCFmp', 'Montauban');
-
-insert into own_pet (name, special_requirement, email) values ('Chestnut weaver', 'pulvinar sed', 'mschwerin3@yellowpages.com');
-insert into own_pet (name, special_requirement, email) values ('Red-billed hornbill', 'sollicitudin ut suscipit', 'lgrindley4@last.fm');
-insert into own_pet (name, special_requirement, email) values ('Praying mantis (unidentified)', 'nibh ligula nec sem', 'lgrindley4@last.fm');
-insert into own_pet (name, special_requirement, email) values ('Pheasant ring-necked', 'sem', 'lgrindley4@last.fm');
-insert into own_pet (name, special_requirement, email) values ('Oriental short-clawed otter', 'et ultrices posuere cubilia curae', 'lhillaby0@jalbum.net');
-
-insert into hire (owner_email, name, ct_email, num_pet_days, total_cost, hire_status, method_of_pet_transfer, method_of_payment, start_date, end_date, transaction_date, rating, review_text) values ('lgrindley4@last.fm', 'Pheasant ring-necked', 'bclendinning8@qq.com', 10, 76.97, 'inProgress', 'office', 'cash', '2020-10-16 13:30:39', '2020-10-22 12:17:02', '2020-10-08 06:17:55', 4.1, null);
-insert into hire (owner_email, name, ct_email, num_pet_days, total_cost, hire_status, method_of_pet_transfer, method_of_payment, start_date, end_date, transaction_date, rating, review_text) values ('mschwerin3@yellowpages.com', 'Chestnut weaver', 'carro1@narod.ru', 1, 87.27, 'completed', 'cPickup', 'cash', '2020-10-16 13:30:39', '2020-10-23 14:41:11', '2020-10-08 11:47:59', 1.2, null);
-insert into hire (owner_email, name, ct_email, num_pet_days, total_cost, hire_status, method_of_pet_transfer, method_of_payment, start_date, end_date, transaction_date, rating, review_text) values ('lgrindley4@last.fm', 'Praying mantis (unidentified)', 'gbroader3@mozilla.org', 10, 28.16, 'inProgress', 'oDeliver', 'cash', '2020-10-16 05:08:00', '2020-10-23 14:41:11', '2020-10-04 11:27:45', 3.9, null);
-insert into hire (owner_email, name, ct_email, num_pet_days, total_cost, hire_status, method_of_pet_transfer, method_of_payment, start_date, end_date, transaction_date, rating, review_text) values ('lgrindley4@last.fm', 'Pheasant ring-necked', 'ckempe2@usnews.com', 6, 61.77, 'pendingAccept', 'office', 'bank', '2020-10-15 06:05:49', '2020-10-19 19:50:55', '2020-10-08 21:07:13', 2.6, null);
-insert into hire (owner_email, name, ct_email, num_pet_days, total_cost, hire_status, method_of_pet_transfer, method_of_payment, start_date, end_date, transaction_date, rating, review_text) values ('lgrindley4@last.fm', 'Praying mantis (unidentified)', 'jkidson9@msn.com', 2, 65.3, 'paymentMade', 'oDeliver', 'cash', '2020-10-16 13:30:39', '2020-10-19 21:42:11', '2020-10-09 13:35:29', 2.6, null);
+insert into hire(owner_email, pet_name, ct_email, num_pet_days, total_cost, hire_status, method_of_pet_transfer, method_of_payment, start_date, end_date, transaction_date, rating, review_text) values ('fchansonne4@paginegialle.it', 'Doggie', 'cdrinan0@economist.com', '5', '414.85', 'completed', 'office', 'cash', '2020-10-20', '2020-10-24', '2020-10-13', '4', 'Not bad');
+insert into hire(owner_email, pet_name, ct_email, num_pet_days, total_cost, hire_status, method_of_pet_transfer, method_of_payment, start_date, end_date, transaction_date, rating, review_text) values ('sbigly5@marketwatch.com', 'Kitkat', 'carro1@narod.ru', '3', '218.16', 'completed', 'office', 'cash', '2020-10-20', '2020-10-22', '2020-10-10', '5', 'Excellent!');
+insert into hire(owner_email, pet_name, ct_email, num_pet_days, total_cost, hire_status, method_of_pet_transfer, method_of_payment, start_date, end_date, transaction_date, rating, review_text) values ('iconley6@zimbio.com', 'Mickey', 'ckempe2@usnews.com', '3', '131.04', 'completed', 'office', 'cash', '2020-10-20', '2020-10-22', '2020-10-02', '3', '-');
+insert into hire(owner_email, pet_name, ct_email, num_pet_days, total_cost, hire_status, method_of_pet_transfer, method_of_payment, start_date, end_date, transaction_date, rating, review_text) values ('ksabben7@dailymotion.com', 'Pancakes', 'gbroader3@mozilla.org', '1', '81.10', 'completed', 'office', 'cash', '2020-10-20', '2020-10-20', '2020-10-14', '4', 'Okay');
+insert into hire (owner_email, pet_name, ct_email, num_pet_days, total_cost, hire_status, method_of_pet_transfer, method_of_payment, start_date, end_date, transaction_date, rating, review_text) values ('lgrindley4@last.fm', 'Pheasant ring-necked', 'bclendinning8@qq.com', 10, 76.97, 'inProgress', 'office', 'cash', '2020-10-16 13:30:39', '2020-10-22 12:17:02', '2020-10-08 06:17:55', 4.1, null);
+insert into hire (owner_email, pet_name, ct_email, num_pet_days, total_cost, hire_status, method_of_pet_transfer, method_of_payment, start_date, end_date, transaction_date, rating, review_text) values ('mschwerin3@yellowpages.com', 'Chestnut weaver', 'carro1@narod.ru', 1, 87.27, 'completed', 'cPickup', 'cash', '2020-10-16 13:30:39', '2020-10-23 14:41:11', '2020-10-08 11:47:59', 1.2, null);
+insert into hire (owner_email, pet_name, ct_email, num_pet_days, total_cost, hire_status, method_of_pet_transfer, method_of_payment, start_date, end_date, transaction_date, rating, review_text) values ('lgrindley4@last.fm', 'Praying mantis (unidentified)', 'gbroader3@mozilla.org', 10, 28.16, 'inProgress', 'oDeliver', 'cash', '2020-10-16 05:08:00', '2020-10-23 14:41:11', '2020-10-04 11:27:45', 3.9, null);
+insert into hire (owner_email, pet_name, ct_email, num_pet_days, total_cost, hire_status, method_of_pet_transfer, method_of_payment, start_date, end_date, transaction_date, rating, review_text) values ('lgrindley4@last.fm', 'Pheasant ring-necked', 'ckempe2@usnews.com', 6, 61.77, 'pendingAccept', 'office', 'creditcard', '2020-10-15 06:05:49', '2020-10-19 19:50:55', '2020-10-08 21:07:13', 2.6, null);
+insert into hire (owner_email, pet_name, ct_email, num_pet_days, total_cost, hire_status, method_of_pet_transfer, method_of_payment, start_date, end_date, transaction_date, rating, review_text) values ('lgrindley4@last.fm', 'Praying mantis (unidentified)', 'jkidson9@msn.com', 2, 65.3, 'paymentMade', 'oDeliver', 'cash', '2020-10-16 13:30:39', '2020-10-19 21:42:11', '2020-10-09 13:35:29', 2.6, null);

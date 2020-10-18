@@ -12,10 +12,14 @@
         <div class="row">
             <h2 class="vert-gap-contents">User Information</h2>
         </div>
-        
-        <div class="row">
-            <h4 class="vert-gap-contents">My Pets</h4>
-            <%- include('../partials/profiles/row_of_squares.ejs') %>
+        <div class="row text-center">
+            <% my_pets.forEach(pet => { console.log(pet.special_requirement); %>
+                <div class="card col-sm col-md" id="square-card">
+                    <p>Pet Name: <%= pet.pet_name %><br>
+                       Special Requirements: <%= pet.special_requirement %><br>
+                    </p>
+                </div>
+            <% }) %>
         </div>
         
     </div>
@@ -33,9 +37,7 @@
                         Location: <%= caretaker.location %><br>
                         Job: <%= caretaker.job == "part_timer" ? "Part Time" : "Full Time" %><br>
                     </p>
-                
                 </div>
-                
             <% }) %>
         </div>
         
@@ -52,8 +54,8 @@
                     <p>Status: <%= ongoing.hire_status %><br>
                        Date: <%= ongoing.start_date %> to <%= ongoing.end_date %><br>
                        Caretaker: <%= ongoing.ct_email %><br>
-                       User: <%= ongoing.email %><br>
-                       Pet Name: <%= ongoing.name %><br>
+                       User: <%= ongoing.owner_email %><br>
+                       Pet Name: <%= ongoing.pet_name %><br>
                     </p>
                 </div>
             <% }) %>
@@ -63,7 +65,7 @@
         
     </div>
 
-    <div class="container vert-gap-container">
+    <div class="container vert-gap-container vert-gap-contents">
         <div class="row">
             <h2 class="vert-gap-contents">Recent Transactions</h2>
             <a href="#" style="padding: 13px">See more</a>
@@ -74,8 +76,8 @@
                 <p>Status: <%= completed.hire_status %><br>
                    Date: <%= completed.start_date %> to <%= completed.end_date %><br>
                    Caretaker: <%= completed.ct_email %><br>
-                   User: <%= completed.email %><br>
-                   Pet Name: <%= completed.name %><br>
+                   User: <%= completed.owner_email %><br>
+                   Pet Name: <%= completed.pet_name %><br>
                    Rating: <%= completed.rating %><br>
                    Review: <%= completed.review %><br>
                 </p>

@@ -1,19 +1,29 @@
+<<<<<<< Updated upstream:views/profile.ejs
+<%- include('../functions.ejs') %>
+=======
+<%- include('./functions') %>
+>>>>>>> Stashed changes:views/profiles/test_profile.ejs
+
 <!DOCTYPE html>
 <html lang="en">
 
-<%- include('../partials/head.ejs') %>
+<head>
+    <%- include('./partials/head.ejs') %>
+</head>
 
 <body>
-    <%- include('../partials/profiles/nav_bar.ejs') %>
+    <%- include('./partials/profiles/nav_bar.ejs') %>
 
-    <%- include('../partials/profiles/header.ejs') %>
 
     <div class="container vert-gap-container">
         <div class="row">
             <h2 class="vert-gap-contents">User Information</h2>
         </div>
+        <div class="row">
+            <h4 class="vert-gap-contents">Pet Information</h4>
+        </div>
         <div class="row text-center">
-            <% my_pets.forEach(pet => { console.log(pet.special_requirement); %>
+            <% my_pets.forEach(pet => { %>
                 <div class="card col-sm col-md" id="square-card">
                     <p>Pet Name: <%= pet.pet_name %><br>
                        Special Requirements: <%= pet.special_requirement %><br>
@@ -21,7 +31,6 @@
                 </div>
             <% }) %>
         </div>
-        
     </div>
 
     <div class="container vert-gap-container">
@@ -33,7 +42,7 @@
             <% top_ratings.forEach(caretaker => { %>
                 <div class="card col-sm col-md" id="square-card">
                     <p>Name: <%= caretaker.name %><br>
-                        Rating: <%= caretaker.rating %><br>
+                        Rating: <%= caretaker.rating == null ? "No Rating Yet" : caretaker.rating %><br>
                         Location: <%= caretaker.location %><br>
                         Job: <%= caretaker.job == "part_timer" ? "Part Time" : "Full Time" %><br>
                     </p>
@@ -52,17 +61,14 @@
             <% ongoing_transactions.forEach(ongoing => { %>
                 <div class="card col-sm col-md" id="square-card">
                     <p>Status: <%= ongoing.hire_status %><br>
-                       Date: <%= ongoing.start_date %> to <%= ongoing.end_date %><br>
+                       Date: <%= stringToDate(String(ongoing.start_date)) %> to <%= stringToDate(String(ongoing.end_date)) %><br>
                        Caretaker: <%= ongoing.ct_email %><br>
                        User: <%= ongoing.owner_email %><br>
                        Pet Name: <%= ongoing.pet_name %><br>
                     </p>
                 </div>
             <% }) %>
-        </div>
-        
-        <!-- <%- include('../partials/profiles/row_of_squares.ejs') %> -->
-        
+        </div>        
     </div>
 
     <div class="container vert-gap-container vert-gap-contents">
@@ -70,14 +76,30 @@
             <h2 class="vert-gap-contents">Recent Transactions</h2>
             <a href="#" style="padding: 13px">See more</a>
         </div>
+<<<<<<< Updated upstream:views/profile.ejs
+        <div class="row text-center">
+            <% completed_transactions.forEach(completed => { %>
+                <div class="card col-sm col-md" id="square-card">
+                    <p>Status: <%= completed.hire_status %><br>
+                    Date: <%= stringToDate(String(completed.start_date)) %> to <%= stringToDate(String(completed.end_date)) %><br>
+                    Caretaker: <%= completed.ct_email %><br>
+                    User: <%= completed.owner_email %><br>
+                    Pet Name: <%= completed.pet_name %><br>
+                    Rating: <%= completed.rating == null ? "No Rating Yet" : completed.rating %><br>
+                    Review: <%= completed.review_text == null ? "No Review Yet" : completed.review_text %><br>
+                    </p>
+                </div>
+            <% }) %>
+        </div>
+=======
 
         <% completed_transactions.forEach(completed => { %>
             <div class="card col-sm col-md" id="square-card">
                 <p>Status: <%= completed.hire_status %><br>
-                   Date: <%= completed.start_date %> to <%= completed.end_date %><br>
+                   Date: <%= stringToDate(String(completed.start_date)) %> to <%= stringToDate(String(completed.end_date)) %><br>
                    Caretaker: <%= completed.ct_email %><br>
-                   User: <%= completed.owner_email %><br>
-                   Pet Name: <%= completed.pet_name %><br>
+                   User: <%= completed.email %><br>
+                   Pet Name: <%= completed.name %><br>
                    Rating: <%= completed.rating %><br>
                    Review: <%= completed.review %><br>
                 </p>
@@ -85,6 +107,7 @@
         <% }) %>
     
         <!-- <%- include('../partials/profiles/row_of_squares.ejs') %> -->
+>>>>>>> Stashed changes:views/profiles/test_profile.ejs
     </div>
 
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>

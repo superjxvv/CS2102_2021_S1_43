@@ -81,12 +81,8 @@ app.get("/profile", async (req, res) => {
         title: "Profile", 
         top_ratings: caretaker_top_ratings.rows, 
         ongoing_transactions: recent_ongoing_transactions.rows,
-<<<<<<< Updated upstream
         completed_transactions: recent_completed.rows,
         my_pets: my_pets.rows
-=======
-        completed_transactions: recent_completed.rows
->>>>>>> Stashed changes
       });
   } catch (err) {
     console.error(err.message);

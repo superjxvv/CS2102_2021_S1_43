@@ -75,12 +75,14 @@ app.get("/profile", async (req, res) => {
     const caretaker_top_ratings = await pool.query(sql_query.query.caretaker_top_ratings);
     const recent_ongoing_transactions = await pool.query(sql_query.query.recent_ongoing_transactions);
     const recent_completed = await pool.query(sql_query.query.recent_completed_transactions);
+    const my_pets = await pool.query(sql_query.query.recent_completed_transactions);
     res.render("./profiles/test_profile", 
       {
         title: "Profile", 
         top_ratings: caretaker_top_ratings.rows, 
         ongoing_transactions: recent_ongoing_transactions.rows,
-        completed_transactions: recent_completed.rows
+        completed_transactions: recent_completed.rows,
+        my_pets: my_pets.rows
       });
   } catch (err) {
     console.error(err.message);
@@ -89,7 +91,6 @@ app.get("/profile", async (req, res) => {
 
 app.get("/ongoing_transactions", async (req, res) => {
   try {
-    
     res.render("./profiles/test_ongoing_transactions", {title: "Ongoing Transactions"});
   } catch (err) {
     console.error(err.message);

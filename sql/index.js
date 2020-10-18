@@ -12,7 +12,9 @@ sql.query = {
   // 4 most recent completed transactions
   recent_completed_transactions: "SELECT * FROM hire WHERE hire_status = 'completed' ORDER BY transaction_date DESC LIMIT 4",
   // 4 most recently ongoing transactions
-  recent_ongoing_transactions: "SELECT * FROM hire WHERE hire_status <> 'completed' AND hire_status <> 'cancelled' ORDER BY transaction_date DESC LIMIT 4"
+  recent_ongoing_transactions: "SELECT * FROM hire WHERE hire_status <> 'completed' AND hire_status <> 'cancelled' AND hire_status <> 'rejected' ORDER BY transaction_date DESC LIMIT 4",
+  // 4 of my pets
+  my_pets: "SELECT * FROM own_pet LIMIT 4 WHERE special_requirement IS NOT NULL"
 };
 
 module.exports = sql;

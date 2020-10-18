@@ -32,7 +32,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended : true}));
 //Makes it a session
 app.use(session({
-  secret: "secret",
+  secret: "mySecretCode!",
 
   resave: false,
 
@@ -50,6 +50,10 @@ app.use(passport.session());
 //Use pool.query to run a query on the first available idle client
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL
+});
+
+app.listen(process.env.PORT || 3000, () => {
+  console.log("server has started on port 3000");
 });
 
 app.get("/search", async (req, res) => {
@@ -97,9 +101,7 @@ app.get("/ongoing_transactions", async (req, res) => {
   }
 });
 
-app.listen(process.env.PORT || 3000, () => {
-  console.log("server has started on port 3000");
-});
+
 
 /*
 ** Section for YS: Register, View Transactions
@@ -111,14 +113,14 @@ app.get("/register", (req, res) => {
 app.post("/register", async (req, res) => {
   try {
     console.log(req.body);
-    let {name, email, region, password1} = req.body;
+    let {name, email, region, password1, type} = req.body;
 
     if (!name || !email || region === "") {
       res.render("register", {msg : "Please enter all fields"});
     } else {
       let hashedPw = await bcrypt.hash(password1, 10);
       
-      const queryText = "SELECT 1 FROM pet_care.pet_owner WHERE email = $1";
+      const queryText = "SELECT 1 FROM accounts WHERE email = $1";
       const queryValue = [email];
       //First check if user already exists
       pool.query(queryText, queryValue)
@@ -128,14 +130,18 @@ app.post("/register", async (req, res) => {
             } else {
               console.log("register user");
               //Not exist yet. Insert into db.
-              pool.query(`INSERT INTO pet_care.pet_owner VALUES($1, $2, $3, $4)`, [email, name, hashedPw, region])
+              const insertText = type == 'pet_owner' 
+                ? `INSERT INTO pet_owner VALUES ($1, $2, $3, $4)`
+                : `INSERT INTO care_taker(email, name, password, location, job) VALUES($1, $2, $3, $4, 'part_timer')`;
+
+              pool.query(insertText, [email, name, hashedPw, region])
                   .then(result => {
                     console.log("Registered");
                     req.flash("success_msg", "You are now registered, please login.");
                     res.redirect("/login");
                   })
                   .catch(err => {
-                    throw (error);
+                     console.error(err);
                   });
             }
           })
@@ -145,14 +151,14 @@ app.post("/register", async (req, res) => {
       }
 
     } catch (err) {
-      console.log(err)
+      console.error(err)
     }
 })
 
 app.get("/login", (req, res) => {
   if (req.user) {
-    //For now just redirect to profile.
-    //TODO: Add alert message to show that he is already logged in.
+    //TODO: Add a hidden div in profile page to display this alert.
+    req.flash("error", "You are already logged in, please log out to login to another account.")
     res.redirect("/profile");
   } else {
     res.render("login", {msg : ""});
@@ -171,29 +177,39 @@ app.post("/login", passport.authenticate('local', {
 app.get("/logout", (req, res) => {
   const userName = req.user.name;
   req.logout();
-  res.send(userName + " you have been logged out.")
+  req.flash("success_msg", "Successfully logged out.");
+  res.redirect("/login");
 });
 
 //Use to test if a user is logged in.
 app.get("/user", (req, res) => {
   if (req.user) {
-    res.send(`${req.user.email}  ${req.user.name}`);
+    res.send(`Account email: ${req.user.email} Account name: ${req.user.name} Account type: ${req.user.type}`);
   } else {
     res.send("Not logged in");
   }
 });
 
-app.get("/transactions", (req, res) => {
-  //Place holder account email "1"
-  const queryText = 'SELECT ct_email, num_pet_days, start_date, end_date,'
-              + 'total_cost, status FROM pet_care.hire ' 
-              + 'WHERE owner_email = $1';
-  const queryValue = [req.user.email];
-  pool.query(queryText, queryValue)
-      .then(queryRes => {
-        console.log(queryRes.rows);
-        res.render('transactions', {transactions : queryRes.rows, name : req.user.name});
-      })
-      .catch(err => console.error(err.stack))
 
+app.get("/transactions", (req, res) => {
+  if (req.user) {
+    const userEmail = ["1"];
+    const allTransactions = 'SELECT ct_email, num_pet_days, start_date, end_date,'
+                          + 'total_cost, hire_status FROM hire ' 
+                          + 'WHERE owner_email = $1 ORDER BY start_date DESC, end_date DESC';        
+    
+    pool.query(allTransactions, userEmail)
+        .then(queryRes => {
+          console.log(queryRes.rows);
+          res.render('transactions', {
+            name : req.user.name,
+            resAllTrans : queryRes.rows,
+            resOngoingTrans: queryRes.rows.filter(x => x.hire_status != "completed" && x.hire_status != "rejected"),
+            resPastTrans: queryRes.rows.filter(x => x.hire_status == "completed" || x.hire_status == "rejected")});
+        })
+        .catch(err => console.error(err.stack))
+    } else {
+      req.flash("error", "Please login before accessing your transactions.");
+      res.redirect("/login");
+    }
 });

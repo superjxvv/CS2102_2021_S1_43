@@ -10,7 +10,7 @@ const pool = new Pool({
 function initialize(passport) {
     const authenticatedUser = (email, password, done) => {
         pool.query(
-            `SELECT * FROM pet_care.pet_owner WHERE email = $1`,
+            `SELECT * FROM accounts WHERE email = $1`,
             [email])
             .then(result => {
                 if (result.rows.length == 1) {
@@ -53,7 +53,7 @@ function initialize(passport) {
 		
 		//Uses email in cookie to load user
 		passport.deserializeUser((email, done) => {
-			pool.query(`SELECT * FROM pet_care.pet_owner WHERE email = $1`, [email], (err, results) => {
+			pool.query(`SELECT * FROM accounts WHERE email = $1`, [email], (err, results) => {
 				if (err) {
 					throw err;
 				}

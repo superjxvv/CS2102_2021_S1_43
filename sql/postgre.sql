@@ -1,3 +1,6 @@
+CREATE SCHEMA pet_care;
+SET search_path TO pet_care;
+
 CREATE TABLE pcs_admin(
   email VARCHAR PRIMARY KEY,
   name VARCHAR NOT NULL,
@@ -24,6 +27,14 @@ CREATE TABLE care_taker(
   bank_account VARCHAR,
   max_concurrent_pet_limit INTEGER,
   job job_type NOT NULL
+);
+
+CREATE VIEW accounts AS (
+  SELECT email, name, password, 1 AS type FROM pet_owner
+  UNION
+  SELECT email, name, password, 2 AS type FROM care_taker
+  UNION
+  SELECT email, name, password, 0 AS type FROM pcs_admin
 );
 
 CREATE TABLE part_timer(

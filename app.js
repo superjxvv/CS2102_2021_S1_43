@@ -245,6 +245,9 @@ app.get('/user', (req, res) => {
   }
 });
 
+app.get('/test', (req, res) => {
+  res.render("test");
+})
 app.get('/transactions', (req, res) => {
   if (req.user) {
     const userEmail = [req.user.email];

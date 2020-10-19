@@ -167,7 +167,7 @@ app.post('/register', async (req, res) => {
       const queryText = 'SELECT 1 FROM accounts WHERE email = $1';
       const queryValue = [email];
       //First check if user already exists
-      pool.query(queryText, queryValue)
+      await pool.query(queryText, queryValue)
           .then(queryRes => {
             if (queryRes.rows.length > 0) {
               req.flash("error", "User already exists.");
@@ -245,9 +245,11 @@ app.get('/user', (req, res) => {
   }
 });
 
-app.get('/test', (req, res) => {
-  res.render("test");
+app.get('/checkout', (req, res) => {
+  res.render("bid");
 })
+
+
 app.get('/transactions', (req, res) => {
   if (req.user) {
     const userEmail = [req.user.email];

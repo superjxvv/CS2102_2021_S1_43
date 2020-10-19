@@ -1,8 +1,4 @@
-<<<<<<< Updated upstream:views/profile.ejs
-<%- include('../functions.ejs') %>
-=======
 <%- include('./functions') %>
->>>>>>> Stashed changes:views/profiles/test_profile.ejs
 
 <!DOCTYPE html>
 <html lang="en">
@@ -24,11 +20,11 @@
         </div>
         <div class="row text-center">
             <% my_pets.forEach(pet => { %>
-                <div class="card col-sm col-md" id="square-card">
-                    <p>Pet Name: <%= pet.pet_name %><br>
-                       Special Requirements: <%= pet.special_requirement %><br>
-                    </p>
-                </div>
+            <div class="card col-sm col-md" id="square-card">
+                <p>Pet Name: <%= pet.pet_name %><br>
+                    Special Requirements: <%= pet.special_requirement %><br>
+                </p>
+            </div>
             <% }) %>
         </div>
     </div>
@@ -40,18 +36,18 @@
         </div>
         <div class="row text-center">
             <% top_ratings.forEach(caretaker => { %>
-                <div class="card col-sm col-md" id="square-card">
-                    <p>Name: <%= caretaker.name %><br>
-                        Rating: <%= caretaker.rating == null ? "No Rating Yet" : caretaker.rating %><br>
-                        Location: <%= caretaker.location %><br>
-                        Job: <%= caretaker.job == "part_timer" ? "Part Time" : "Full Time" %><br>
-                    </p>
-                </div>
+            <div class="card col-sm col-md" id="square-card">
+                <p>Name: <%= caretaker.name %><br>
+                    Rating: <%= caretaker.rating == null ? "No Rating Yet" : caretaker.rating %><br>
+                    Location: <%= caretaker.location %><br>
+                    Job: <%= caretaker.job == "part_timer" ? "Part Time" : "Full Time" %><br>
+                </p>
+            </div>
             <% }) %>
         </div>
-        
+
     </div>
-    
+
     <div class="container vert-gap-container">
         <div class="row">
             <h2 class="vert-gap-contents">Ongoing Transactions</h2>
@@ -59,16 +55,17 @@
         </div>
         <div class="row text-center">
             <% ongoing_transactions.forEach(ongoing => { %>
-                <div class="card col-sm col-md" id="square-card">
-                    <p>Status: <%= ongoing.hire_status %><br>
-                       Date: <%= stringToDate(String(ongoing.start_date)) %> to <%= stringToDate(String(ongoing.end_date)) %><br>
-                       Caretaker: <%= ongoing.ct_email %><br>
-                       User: <%= ongoing.owner_email %><br>
-                       Pet Name: <%= ongoing.pet_name %><br>
-                    </p>
-                </div>
+            <div class="card col-sm col-md" id="square-card">
+                <p>Status: <%= ongoing.hire_status %><br>
+                    Date: <%= stringToDate(String(ongoing.start_date)) %> to
+                    <%= stringToDate(String(ongoing.end_date)) %><br>
+                    Caretaker: <%= ongoing.ct_email %><br>
+                    User: <%= ongoing.owner_email %><br>
+                    Pet Name: <%= ongoing.pet_name %><br>
+                </p>
+            </div>
             <% }) %>
-        </div>        
+        </div>
     </div>
 
     <div class="container vert-gap-container vert-gap-contents">
@@ -76,43 +73,30 @@
             <h2 class="vert-gap-contents">Recent Transactions</h2>
             <a href="#" style="padding: 13px">See more</a>
         </div>
-<<<<<<< Updated upstream:views/profile.ejs
-        <div class="row text-center">
-            <% completed_transactions.forEach(completed => { %>
-                <div class="card col-sm col-md" id="square-card">
-                    <p>Status: <%= completed.hire_status %><br>
-                    Date: <%= stringToDate(String(completed.start_date)) %> to <%= stringToDate(String(completed.end_date)) %><br>
-                    Caretaker: <%= completed.ct_email %><br>
-                    User: <%= completed.owner_email %><br>
-                    Pet Name: <%= completed.pet_name %><br>
-                    Rating: <%= completed.rating == null ? "No Rating Yet" : completed.rating %><br>
-                    Review: <%= completed.review_text == null ? "No Review Yet" : completed.review_text %><br>
-                    </p>
-                </div>
-            <% }) %>
-        </div>
-=======
-
         <% completed_transactions.forEach(completed => { %>
-            <div class="card col-sm col-md" id="square-card">
-                <p>Status: <%= completed.hire_status %><br>
-                   Date: <%= stringToDate(String(completed.start_date)) %> to <%= stringToDate(String(completed.end_date)) %><br>
-                   Caretaker: <%= completed.ct_email %><br>
-                   User: <%= completed.email %><br>
-                   Pet Name: <%= completed.name %><br>
-                   Rating: <%= completed.rating %><br>
-                   Review: <%= completed.review %><br>
-                </p>
-            </div>
+        <div class="card col-sm col-md" id="square-card">
+            <p>Status: <%= completed.hire_status %><br>
+                Date: <%= stringToDate(String(completed.start_date)) %> to
+                <%= stringToDate(String(completed.end_date)) %><br>
+                Caretaker: <%= completed.ct_email %><br>
+                User: <%= completed.owner_email %><br>
+                Pet Name: <%= completed.pet_name %><br>
+                Rating: <%= completed.rating == null ? "No Rating Yet" : completed.rating %><br>
+                Review: <%= completed.review_text == null ? "No Review Yet" : completed.review_text %><br>
+            </p>
+        </div>
         <% }) %>
-    
-        <!-- <%- include('../partials/profiles/row_of_squares.ejs') %> -->
->>>>>>> Stashed changes:views/profiles/test_profile.ejs
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
 </body>
 
 </html>

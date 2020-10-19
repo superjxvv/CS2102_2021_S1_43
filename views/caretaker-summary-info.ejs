@@ -51,8 +51,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- <% months.forEach(month=> {%> -->
-                    <% caretakerSummaryInfo.forEach((careTaker, index) => { %>
+                    <% caretakerSummaryInfo.forEach(careTaker => { %>
                     <tr>
                         <td><%= careTaker.name %></td>
                         <td><%= careTaker.email %></td>
@@ -61,7 +60,6 @@
                         <td><%= careTaker.month %></td>
                     </tr>
                     <% }) %>
-                    <!-- <%})%> -->
                 </tbody>
                 <tfoot>
                     <tr>

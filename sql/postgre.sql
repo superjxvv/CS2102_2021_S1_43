@@ -3412,3 +3412,5 @@ insert into hire (owner_email, pet_name, ct_email, total_cost, hire_status, meth
 insert into hire (owner_email, pet_name, ct_email, total_cost, hire_status, method_of_pet_transfer, method_of_payment, start_date, end_date, num_pet_days, transaction_date, rating, review_text) values ('svousden2r@addtoany.com', 'Tallulah', 'awinny4s@un.org', '0.00', 'cancelled', 'office', 'cash', '2020-07-11', '2020-07-16', 6, '2020-7-10', 4, null);
 
 UPDATE hire h SET total_cost = (SELECT (p.base_daily_price + c.daily_price) * h.num_pet_days FROM pet_type p INNER JOIN can_take_care_of c ON p.name = c.pet_type INNER JOIN is_of i ON i.owner_email =  h.owner_email AND i.pet_name = h.pet_name WHERE c.email = h.ct_email AND c.pet_type = i.pet_type);
+
+UPDATE care_taker c SET rating = (SELECT AVG(h.rating) FROM hire h WHERE h.ct_email = c.email)

@@ -1,43 +1,45 @@
-const fs = require("fs");
-const express = require("express");
-const _ = require("lodash");
-const sql_query = require("./sql");
-const path = require("path");
-const { Pool } = require("pg");
+const fs = require('fs');
+const express = require('express');
+const _ = require('lodash');
+const sql_query = require('./sql');
+const path = require('path');
+const { Pool } = require('pg');
+const moment = require('moment');
 //Authentication stuff -------------------
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcrypt');
 const session = require('express-session');
 const flash = require('express-flash');
-const passport = require("passport")
-const initializePassport = require("./passportConfig");
+const passport = require('passport');
+const initializePassport = require('./passportConfig');
 initializePassport(passport);
 // -------------------------------------
 
 //create .env file (ignored by git for privacy) to store environment variables
 //etc. DATABASE_URL=postgres://<username>:<password>@localhost:5432/pet_care
-require("dotenv").config();
+require('dotenv').config();
 
 const app = express();
 
-
 //register view engine
-app.set("view engine", "ejs");
+app.set('view engine', 'ejs');
 //Set default view directory as /views/
-app.set("views");
+app.set('views');
 //Set path for static files
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, 'public')));
 //to parse response to json
 app.use(express.json());
 //Parse POST request
-app.use(express.urlencoded({ extended : true}));
+app.use(express.urlencoded({ extended: true }));
 //Makes it a session
-app.use(session({
-  secret: "mySecretCode!",
+app.use(
+  session({
+    secret: 'mySecretCode!',
 
-  resave: false,
+    resave: false,
 
-  saveUninitialized: false
-}));
+    saveUninitialized: false
+  })
+);
 
 //Displays flash messages
 app.use(flash());
@@ -52,55 +54,77 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL
 });
 
-app.listen(process.env.PORT || 3000, () => {
-  console.log("server has started on port 3000");
+pool.on('connect', (client) => {
+  client.query('SET search_path TO pet_care');
 });
 
-app.get("/search", async (req, res) => {
+app.listen(process.env.PORT || 3000, () => {
+  console.log('server has started on port 3000');
+});
+
+app.get('/search', async (req, res) => {
   try {
     const allCareTaker = await pool.query(sql_query.query.all_caretaker);
-    res.render("search", { careTakers: allCareTaker.rows });
+    console.log(allCareTaker.rows[0]);
+    res.render('search', { careTakers: allCareTaker.rows });
   } catch (err) {
     console.error(err.message);
   }
 });
 
-app.get("/caretaker-summary-info", async (req, res) => {
+app.get('/caretaker-summary-info', async (req, res) => {
   try {
-    const summaryInfo = await pool.query(sql_query.query.caretaker_summary_info);
-    res.render("caretaker-summary-info", { caretakerSummaryInfo: summaryInfo.rows });
+    const summaryInfo = await pool.query(
+      sql_query.query.caretaker_summary_info
+    );
+    res.render('caretaker-summary-info', {
+      caretakerSummaryInfo: summaryInfo.rows,
+      months: moment.months()
+    });
   } catch (err) {
     console.error(err.message);
   }
 });
 
-app.get("/profile", async (req, res) => {
+app.get('/profile', async (req, res) => {
   try {
     if (!req.user) {
       res.redirect('/login');
     }
     const account_type = req.user.type;
     if (account_type != 0) {
-      const query = account_type == 1 ? "SELECT location FROM pet_owner WHERE email = $1" : "SELECT location FROM care_taker WHERE email = $1";
-      const values = ["ahymans0@printfriendly.com"]; // hardcoded
+      const query =
+        account_type == 1
+          ? 'SELECT location FROM pet_owner WHERE email = $1'
+          : 'SELECT location FROM care_taker WHERE email = $1';
+      const values = ['ahymans0@printfriendly.com']; // hardcoded
       const my_location = await pool.query(query, values);
       values[0] = my_location.rows[0].location;
-      const caretaker_top_ratings = await pool.query(sql_query.query.caretaker_top_ratings, values);
-      values[0] = "ahymans0@printfriendly.com";
-      const recent_ongoing_transactions = await pool.query(sql_query.query.ongoing_trxn_po, values);
-      const recent_completed = await pool.query(sql_query.query.recent_trxn_po, values);
+      const caretaker_top_ratings = await pool.query(
+        sql_query.query.caretaker_top_ratings,
+        values
+      );
+      values[0] = 'ahymans0@printfriendly.com';
+      const recent_ongoing_transactions = await pool.query(
+        sql_query.query.ongoing_trxn_po,
+        values
+      );
+      const recent_completed = await pool.query(
+        sql_query.query.recent_trxn_po,
+        values
+      );
       const my_pets = await pool.query(sql_query.query.my_pets, values);
-      res.render("./profile", 
-        {
-          title: "Profile", 
-          top_ratings: caretaker_top_ratings.rows, 
-          ongoing_transactions: recent_ongoing_transactions.rows,
-          completed_transactions: recent_completed.rows,
-          my_pets: my_pets.rows,
-          my_email: req.user.email,
-          hardcode_email: "ahymans0@printfriendly.com"
-        });
-    } else { // if is PCSadmin
+      res.render('./profile', {
+        title: 'Profile',
+        top_ratings: caretaker_top_ratings.rows,
+        ongoing_transactions: recent_ongoing_transactions.rows,
+        completed_transactions: recent_completed.rows,
+        my_pets: my_pets.rows,
+        my_email: req.user.email,
+        hardcode_email: 'ahymans0@printfriendly.com'
+      });
+    } else {
+      // if is PCSadmin
       // have not tried this out
       res.redirect('/caretaker-summary-info');
     }
@@ -109,15 +133,15 @@ app.get("/profile", async (req, res) => {
   }
 });
 
-app.get("/ongoing_transactions", async (req, res) => {
+app.get('/ongoing_transactions', async (req, res) => {
   try {
-    res.render("./test_ongoing_transactions", {title: "Ongoing Transactions"});
+    res.render('./test_ongoing_transactions', {
+      title: 'Ongoing Transactions'
+    });
   } catch (err) {
     console.error(err.message);
   }
 });
-
-
 
 /*
 ** Section for YS: Register, View Transactions
@@ -127,18 +151,18 @@ app.get("/register", (req, res) => {
   res.render("register", {msg : ''});
 });
 
-app.post("/register", async (req, res) => {
+app.post('/register', async (req, res) => {
   try {
     console.log(req.body);
-    let {name, email, region, password1, type} = req.body;
+    let { name, email, region, password1, type } = req.body;
 
     if (!name || !email || region === "") {
       req.flash("error", "Please enter all fields");
       res.render("register");
     } else {
       let hashedPw = await bcrypt.hash(password1, 10);
-      
-      const queryText = "SELECT 1 FROM accounts WHERE email = $1";
+
+      const queryText = 'SELECT 1 FROM accounts WHERE email = $1';
       const queryValue = [email];
       //First check if user already exists
       pool.query(queryText, queryValue)
@@ -153,64 +177,73 @@ app.post("/register", async (req, res) => {
                 ? `INSERT INTO pet_owner VALUES ($1, $2, $3, $4)`
                 : `INSERT INTO care_taker(email, name, password, location, job) VALUES($1, $2, $3, $4, 'part_timer')`;
 
-              pool.query(insertText, [email, name, hashedPw, region])
-                  .then(result => {
-                    console.log("Registered");
-                    req.flash("success_msg", "You are now registered, please login.");
-                    res.redirect("/login");
-                  })
-                  .catch(err => {
-                     console.error(err);
-                  });
-            }
-          })
-          .catch(err => {
-            throw (err);
-          });
-      }
-
-    } catch (err) {
-      console.error(err)
+            pool
+              .query(insertText, [email, name, hashedPw, region])
+              .then((result) => {
+                console.log('Registered');
+                req.flash(
+                  'success_msg',
+                  'You are now registered, please login.'
+                );
+                res.redirect('/login');
+              })
+              .catch((err) => {
+                console.error(err);
+              });
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     }
-})
+  } catch (err) {
+    console.error(err);
+  }
+});
 
-app.get("/login", (req, res) => {
+app.get('/login', (req, res) => {
   if (req.user) {
     //TODO: Add a hidden div in profile page to display this alert.
-    req.flash("error", "You are already logged in, please log out to login to another account.")
-    res.redirect("/profile");
+    req.flash(
+      'error',
+      'You are already logged in, please log out to login to another account.'
+    );
+    res.redirect('/profile');
   } else {
     res.render("login");
   }
 });
 
-//If authenticate successful, redirect to profile, it not, 
+//If authenticate successful, redirect to profile, it not,
 //go to login page and show failure messages (in passportConfig.js)
-app.post("/login", passport.authenticate('local', {
-      successRedirect: "/profile",
-      failureRedirect: "/login",
-      failureFlash: true
-    })
+app.post(
+  '/login',
+  passport.authenticate('local', {
+    successRedirect: '/profile',
+    failureRedirect: '/login',
+    failureFlash: true
+  })
 );
 
-app.get("/logout", (req, res) => {
+app.get('/logout', (req, res) => {
   const userName = req.user.name;
   req.logout();
-  req.flash("success_msg", "Successfully logged out.");
-  res.redirect("/login");
+  req.flash('success_msg', 'Successfully logged out.');
+  res.redirect('/login');
 });
 
 //Use to test if a user is logged in.
-app.get("/user", (req, res) => {
+app.get('/user', (req, res) => {
   if (req.user) {
-    res.send(`Account email: ${req.user.email} Account name: ${req.user.name} Account type: ${req.user.type}`);
+    res.send(
+      `Account email: ${req.user.email} Account name: ${req.user.name} Account type: ${req.user.type}`
+    );
   } else {
-    res.send("Not logged in");
+    res.send('Not logged in');
   }
 });
 
-
-app.get("/transactions", (req, res) => {
+app.get('/transactions', (req, res) => {
   if (req.user) {
     const userEmail = [req.user.email];
     const allTransactions = 'SELECT ct_email, num_pet_days, start_date, end_date,'

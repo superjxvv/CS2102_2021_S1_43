@@ -23,12 +23,18 @@
                 "responsive": true,
                 "autoWidth": false,
             });
+            // var caretakerSummaryInfo = $("#caretakerSummaryInfo").html();
+            // $("tbody tr").on("click", (e) => {
+            //     console.log(e.currentTarget.children[1].innerHTML)
+            //     window.location.href = '/search'
+            // })
         });
     </script>
 </head>
 
 <body>
     <%- include('./partials/profiles/nav_bar.ejs') %>
+    <div style="display:none;" id="caretakerSummaryInfo"><%=caretakerSummaryInfo%></div>
     <div class="card">
         <div class="card-header">
             <h3 class="card-title">Caretaker Summary Information</h3>
@@ -38,24 +44,30 @@
                 <thead>
                     <tr>
                         <th>Name</th>
+                        <th>Email</th>
                         <th>Number of Pet Days</th>
                         <th>Expected Salary ($)</th>
+                        <th>Month</th>
                     </tr>
                 </thead>
                 <tbody>
                     <% caretakerSummaryInfo.forEach(careTaker => { %>
                     <tr>
                         <td><%= careTaker.name %></td>
+                        <td><%= careTaker.email %></td>
                         <td><%= careTaker.num_pet_days %></td>
                         <td><%= careTaker.total_cost %></td>
+                        <td><%= careTaker.month %></td>
                     </tr>
                     <% }) %>
                 </tbody>
                 <tfoot>
                     <tr>
                         <th>Name</th>
+                        <th>Email</th>
                         <th>Number of Pet Days</th>
                         <th>Expected Salary ($)</th>
+                        <th>Month</th>
                     </tr>
                 </tfoot>
             </table>

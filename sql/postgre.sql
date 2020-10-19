@@ -3413,4 +3413,4 @@ insert into hire (owner_email, pet_name, ct_email, total_cost, hire_status, meth
 
 UPDATE hire h SET total_cost = (SELECT (p.base_daily_price + c.daily_price) * h.num_pet_days FROM pet_type p INNER JOIN can_take_care_of c ON p.name = c.pet_type INNER JOIN is_of i ON i.owner_email =  h.owner_email AND i.pet_name = h.pet_name WHERE c.email = h.ct_email AND c.pet_type = i.pet_type);
 
-UPDATE care_taker c SET rating = (SELECT AVG(h.rating) FROM hire h WHERE h.ct_email = c.email)
+UPDATE care_taker c SET rating = (SELECT AVG(h.rating) FROM hire h WHERE h.ct_email = c.email);

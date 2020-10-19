@@ -64,44 +64,32 @@
 
     <div class="container vert-gap-container">
         <div class="row">
-            <h2 class="vert-gap-contents">Ongoing Transactions</h2>
+            <h2 class="vert-gap-contents">Transactions</h2>
             <a href="/transactions" style="padding: 13px">See more</a>
         </div>
         <div class="row text-left">
-            <% ongoing_transactions.forEach(ongoing => { %>
+            <% recent_trxn.forEach(trxn => { %>
             <div class="card col-sm col-md" id="square-card">
-                <p><b>Status</b> <%= ongoing.hire_status %><br>
-                    <b>Date:</b> <%= stringToDate(String(ongoing.start_date)) %> to
-                    <%= stringToDate(String(ongoing.end_date)) %><br>
-                    <b>Caretaker:</b> <%= ongoing.ct_name %><br>
-                    <b>User:</b> <%= ongoing.po_name %><br>
-                    <b>Pet Name:</b> <%= ongoing.pet_name %><br>
+                <p><b>Status</b> <%= trxn.hire_status %><br>
+                    <b>Date:</b> <%= stringToDate(String(trxn.start_date)) %> to
+                    <%= stringToDate(String(trxn.end_date)) %><br>
+                    <b>Caretaker:</b> <%= trxn.ct_name %><br>
+                    <b>User:</b> <%= trxn.po_name %><br>
+                    <b>Pet Name:</b> <%= trxn.pet_name %><br>
+                    <b>Rating:</b> <%= trxn.hire_status == 'completed' ? trxn.rating : 'NA' %><br>
+                    <b>Review:</b> <%= trxn.review_text == 'pendingAccept' || 
+                        trxn.review_text == 'pendingPayment' ||
+                        trxn.review_text == 'paymentMade' ||
+                        trxn.review_text == 'inProgress' 
+                            ? 'NA'
+                            : trxn.review_text
+                        %><br>
                 </p>
             </div>
             <% }) %>
         </div>
     </div>
 
-    <div class="container vert-gap-container vert-gap-contents">
-        <div class="row">
-            <h2 class="vert-gap-contents">Recent Transactions</h2>
-            <a href="/transactions" style="padding: 13px">See more</a>
-        </div>
-        <div class="row text-left">
-            <% completed_transactions.forEach(completed => { %>
-            <div class="card col-sm col-md" id="square-card">
-                <p><b>Status:</b> <%= completed.hire_status %><br>
-                    <b>Date:</b> <%= stringToDate(String(completed.start_date)) %> to
-                    <%= stringToDate(String(completed.end_date)) %><br>
-                    <b>Caretaker:</b> <%= completed.ct_name %><br>
-                    <b>User:</b> <%= completed.po_name %><br>
-                    <b>Pet Name:</b> <%= completed.pet_name %><br>
-                    <b>Rating:</b> <%= completed.rating == null ? "No Rating Yet" : completed.rating %><br>
-                    <b>Review:</b> <%= completed.review_text == null ? "No Review Yet" : completed.review_text %><br>
-                </p>
-            </div>
-            <% }) %>
-        </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"

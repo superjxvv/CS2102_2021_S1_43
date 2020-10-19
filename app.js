@@ -86,7 +86,7 @@ app.get('/caretaker-summary-info', async (req, res) => {
   }
 });
 
-app.get('/profile', async (req, res) => {
+app.get('/dashboard', async (req, res) => {
   try {
     if (!req.user) {
       res.redirect('/login');
@@ -95,8 +95,8 @@ app.get('/profile', async (req, res) => {
       if (account_type != 0) {
         const query =
           account_type == 1
-            ? 'SELECT location FROM pet_owner WHERE email = $1'
-            : 'SELECT location FROM care_taker WHERE email = $1';
+            ? sql_query.query.get_po_info
+            : sql_query.query.get_ct_info;
         const values = ['ahymans0@printfriendly.com']; // hardcoded
         const my_location = await pool.query(query, values);
         values[0] = my_location.rows[0].location;
@@ -105,20 +105,15 @@ app.get('/profile', async (req, res) => {
           values
         );
         values[0] = 'ahymans0@printfriendly.com';
-        const recent_ongoing_transactions = await pool.query(
-          sql_query.query.ongoing_trxn_po,
-          values
-        );
-        const recent_completed = await pool.query(
+        const recent_transactions = await pool.query(
           sql_query.query.recent_trxn_po,
           values
         );
         const my_pets = await pool.query(sql_query.query.my_pets, values);
-        res.render('./profile', {
-          title: 'Profile',
+        res.render('./dashboard', {
+          title: 'Dashboard',
           top_ratings: caretaker_top_ratings.rows,
-          ongoing_transactions: recent_ongoing_transactions.rows,
-          completed_transactions: recent_completed.rows,
+          recent_trxn: recent_transactions.rows,
           my_pets: my_pets.rows,
           my_email: req.user.email,
           my_name: req.user.name,
@@ -135,11 +130,37 @@ app.get('/profile', async (req, res) => {
   }
 });
 
-app.get('/ongoing_transactions', async (req, res) => {
+app.get('/profile', async (req, res) => {
   try {
-    res.render('./test_ongoing_transactions', {
-      title: 'Ongoing Transactions'
-    });
+    if (!req.user) {
+      res.redirect('/login');
+    } else {
+      // get pet owner email
+      // use email to query db
+      // get pet owner information
+      // get pet information
+      // get recent transactions
+      const values = ['ahymans0@printfriendly.com']; // hardcoded
+      const po_info = await pool.query(
+        sql_query.query.get_po_info,
+        values
+      );
+      const po_pets = await pool.query(
+        sql_query.query.my_pets,
+        values
+      );
+      const past_trxn = await pool.query(
+        sql_query.query.recent_trxn_po,
+        values
+      );
+
+        res.render('./pet_owner_profile', {
+          title: 'Profile',
+          past_trxn: past_trxn.rows,
+          pet_info: po_pets.rows,
+          po_info: po_info.rows
+        });
+    }
   } catch (err) {
     console.error(err.message);
   }
@@ -210,7 +231,7 @@ app.get('/login', (req, res) => {
       'error',
       'You are already logged in, please log out to login to another account.'
     );
-    res.redirect('/profile');
+    res.redirect('/dashboard');
   } else {
     res.render("login");
   }
@@ -221,7 +242,7 @@ app.get('/login', (req, res) => {
 app.post(
   '/login',
   passport.authenticate('local', {
-    successRedirect: '/profile',
+    successRedirect: '/dashboard',
     failureRedirect: '/login',
     failureFlash: true
   })

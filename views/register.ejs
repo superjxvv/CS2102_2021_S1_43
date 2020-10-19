@@ -16,31 +16,35 @@
 <script>
 	// Function to check Whether both passwords 
 	// is same or not. 
+	function outputAlert(text) {
+		document.getElementById("alert").innerHTML = 
+					'<div class="alert alert-warning center-block" role="alert">'
+    		+ 	`<p class="text-center" style="margin-bottom: -5px; margin-top:-5px">${text}</p>`
+    		+ '</div>';
+	}
+
 	function checkPassword(form) { 
 		password1 = form.password1.value; 
 		password2 = form.password2.value; 
 
 		// If password not entered 
-		if (password1 == '') {
-			alert ("Please enter Password"); 
+		if (password1 == '' || password2 == '' || email == '' || region.value == '') {
+			outputAlert("Please enter all fields")
 			return false;
 		}
-		// If confirm password not entered 
-		else if (password2 == '') {
-			alert ("Please enter confirm password"); 
-			return false;
-		}
+
 		// If Not same return False.     
 		else if (password1 != password2) { 
-			alert ("\nPassword did not match: Please try again...") 
+			outputAlert("\nPasswords do not match.") 
 			return false; 
-		} 
+		}
 
 		// If same return True. 
 		else{ 
 			return true; 
 		} 
 	}
+
 
 </script>
 
@@ -60,15 +64,24 @@
 <br>
 <br>
 <div class="container">
-<!--Used to display error message if any-->
-<div id='status' class='invisible'><%= msg %></div>
+
 
 <div class="card bg-light">
+
+	<div id="alert">
+		<% if(messages.error){ %>
+			<div class="alert alert-warning center-block" role="alert">
+				<p class="text-center" style="margin-bottom: -5px; margin-top:-5px"><%=messages.error%></p>
+			</div>
+		<% } %>
+	</div>
+
 <article class="card-body mx-auto" style="max-width: 400px;">
+
 	<h4 class="card-title mt-3 text-center">Create Account</h4>
 	<p class="text-center">Select the type of account to create:</p>
-	<p>
-	</p>
+
+
 	<form action="/register" method="POST" onsubmit="return checkPassword(this)">
 		<div class="form-group input-group">
 			<div class="col-md-12 text-center">
@@ -132,13 +145,5 @@
 <!--container end.//-->
 
 
-<script>
-  if($('div#status').text()!='')
-	{
-			  alert($('div#status').text());
-	}
-
-	$().button('toggle')
-</script>
 </body>
 </html>

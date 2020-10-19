@@ -121,6 +121,7 @@ app.get("/ongoing_transactions", async (req, res) => {
 
 /*
 ** Section for YS: Register, View Transactions
+** TODO: Change all msg to flash messages.
 */
 app.get("/register", (req, res) => {
   res.render("register", {msg : ''});
@@ -132,7 +133,8 @@ app.post("/register", async (req, res) => {
     let {name, email, region, password1, type} = req.body;
 
     if (!name || !email || region === "") {
-      res.render("register", {msg : "Please enter all fields"});
+      req.flash("error", "Please enter all fields");
+      res.render("register");
     } else {
       let hashedPw = await bcrypt.hash(password1, 10);
       
@@ -142,7 +144,8 @@ app.post("/register", async (req, res) => {
       pool.query(queryText, queryValue)
           .then(queryRes => {
             if (queryRes.rows.length > 0) {
-              res.render("register", {msg : "User already exists, please use another email"})
+              req.flash("error", "User already exists.");
+              res.render("register");
             } else {
               console.log("register user");
               //Not exist yet. Insert into db.
@@ -177,7 +180,7 @@ app.get("/login", (req, res) => {
     req.flash("error", "You are already logged in, please log out to login to another account.")
     res.redirect("/profile");
   } else {
-    res.render("login", {msg : ""});
+    res.render("login");
   }
 });
 
@@ -209,7 +212,7 @@ app.get("/user", (req, res) => {
 
 app.get("/transactions", (req, res) => {
   if (req.user) {
-    const userEmail = ["1"];
+    const userEmail = [req.user.email];
     const allTransactions = 'SELECT ct_email, num_pet_days, start_date, end_date,'
                           + 'total_cost, hire_status FROM hire ' 
                           + 'WHERE owner_email = $1 ORDER BY start_date DESC, end_date DESC';        

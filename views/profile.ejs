@@ -8,21 +8,35 @@
 </head>
 
 <body>
-    <%- include('./partials/profiles/nav_bar.ejs') %>
-
+    <%- include('./partials/nav_bar.ejs') %>
 
     <div class="container vert-gap-container">
         <div class="row">
             <h2 class="vert-gap-contents">User Information <%= hardcode_email %></h2>
         </div>
+        
         <div class="row">
-            <h4 class="vert-gap-contents">Pet Information</h4>
+            <h4 class="vert-gap-small-header">My Information</h4>
+        </div>
+        <div class="row text-left">
+            <div class="card col-sm col-md" id="square-card" style="margin-bottom: 15px;">
+                <p><b>My Name:</b> <%= my_name %><br>
+                   <b>My Email:</b> <%= my_email %><br>
+                   
+                </p>
+            </div>
+        </div>
+
+        <div class="row">
+            <h4 class="vert-gap-small-header">Pet Information</h4>
+            <button class="btn btn-primary" type="button" id="toggle-collapse" data-toggle="collapse" data-target=".happy" aria-expanded="false" aria-controls="trans3 trans4"><img src="https://icon-library.com/images/collapse-expand-icon/collapse-expand-icon-29.jpg" width="15"></button>
         </div>
         <div class="row text-left">
             <% my_pets.forEach(pet => { %>
             <div class="card col-sm col-md" id="square-card">
                 <p><b>Pet Name:</b> <%= pet.pet_name %><br>
-                    <b>Special Requirements:</b> <%= pet.special_requirement %><br>
+                   <b>Pet Type:</b> <%= pet.pet_type %><br>
+                   <b>Special Requirements:</b> <%= pet.special_requirement %><br>
                 </p>
             </div>
             <% }) %>
@@ -51,7 +65,7 @@
     <div class="container vert-gap-container">
         <div class="row">
             <h2 class="vert-gap-contents">Ongoing Transactions</h2>
-            <a href="/ongoing_transactions" style="padding: 13px">See more</a>
+            <a href="/transactions" style="padding: 13px">See more</a>
         </div>
         <div class="row text-left">
             <% ongoing_transactions.forEach(ongoing => { %>

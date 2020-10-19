@@ -25,64 +25,8 @@
 		</style>
 </head>
 <body>
-  
-<div class="container">    
-  <div class="row justify-content-start" id="TopHeader">
-    <div class="col-sm-8"> 
-      <h1>Transactions</h1>
-    </div>
-        
-  </div>
-  <div class="row">
-		<div class="col-sm-1">
-			<h5>No.</h5>
-		</div>
-    <div class="col-sm-3" id="header">
-      <h5>Caretaker's Email</h5>
-    </div>
-    <div class="col-sm-2" id="header">
-      <h5>Start Date</h5>
-    </div>
-    <div class="col-sm-2">
-      <h5>End Date</h5>
-    </div>
-    <div class="col-sm-2">
-      <h5>No. of Days</h5>
-    </div>
-    <div class="col-sm-1">
-      <h5>Cost</h5>
-    </div>
-    <div class="col-sm-1">
-      <h5>Status</h5>
-    </div>
-	</div>
-	<% transactions.forEach(t => { %>
-		<div class="row">
-			<div class="col-sm-1">
-				1
-			</div>
-			<div class="col-sm-3" id = "rowContent">
-					<%= t.ct_email %>
-			</div>
-			<div class="col-sm-2" id = "rowContent">
-				<%= t.start_date %>
-			</div>
-			<div class="col-sm-2" id = "rowContent">
-				<%= t.end_date %>
-			</div>
-			<div class="col-sm-2" id = "rowContent"> 
-				<%= t.num_pet_days %>
-			</div>
-			<div class="col-sm-1" id = "rowContent">
-				<%= t.total_cost %>
-			</div>
-			<div class="col-sm-1" id = "rowContent">
-				<%= t.status %>
-			</div>
-		</div>
-	<% }) %>
-	<hr class="style11">
-</div>
+	<%- include('./partials/nav_bar.ejs') %>
+	<%- include('./partials/each_transaction.ejs') %>
 
 </body>
 </html>

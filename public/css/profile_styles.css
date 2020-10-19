@@ -28,7 +28,11 @@
 }
 
 .vert-gap-contents {
-    padding-bottom: 30px;
+    margin-bottom: 30px;
+}
+
+.vert-gap-small-header {
+    margin-bottom: 15px;
 }
 
 .vert-gap-words {

@@ -76,18 +76,34 @@ app.get("/caretaker-summary-info", async (req, res) => {
 
 app.get("/profile", async (req, res) => {
   try {
-    const caretaker_top_ratings = await pool.query(sql_query.query.caretaker_top_ratings);
-    const recent_ongoing_transactions = await pool.query(sql_query.query.recent_ongoing_transactions);
-    const recent_completed = await pool.query(sql_query.query.recent_completed_transactions);
-    const my_pets = await pool.query(sql_query.query.my_pets);
-    res.render("./profile", 
-      {
-        title: "Profile", 
-        top_ratings: caretaker_top_ratings.rows, 
-        ongoing_transactions: recent_ongoing_transactions.rows,
-        completed_transactions: recent_completed.rows,
-        my_pets: my_pets.rows
-      });
+    if (!req.user) {
+      res.redirect('/login');
+    }
+    const account_type = req.user.type;
+    if (account_type != 0) {
+      const query = account_type == 1 ? "SELECT location FROM pet_owner WHERE email = $1" : "SELECT location FROM care_taker WHERE email = $1";
+      const values = ["ahymans0@printfriendly.com"]; // hardcoded
+      const my_location = await pool.query(query, values);
+      values[0] = my_location.rows[0].location;
+      const caretaker_top_ratings = await pool.query(sql_query.query.caretaker_top_ratings, values);
+      values[0] = "ahymans0@printfriendly.com";
+      const recent_ongoing_transactions = await pool.query(sql_query.query.ongoing_trxn_po, values);
+      const recent_completed = await pool.query(sql_query.query.recent_trxn_po, values);
+      const my_pets = await pool.query(sql_query.query.my_pets, values);
+      res.render("./profile", 
+        {
+          title: "Profile", 
+          top_ratings: caretaker_top_ratings.rows, 
+          ongoing_transactions: recent_ongoing_transactions.rows,
+          completed_transactions: recent_completed.rows,
+          my_pets: my_pets.rows,
+          my_email: req.user.email,
+          hardcode_email: "ahymans0@printfriendly.com"
+        });
+    } else { // if is PCSadmin
+      // have not tried this out
+      res.redirect('/caretaker-summary-info');
+    }
   } catch (err) {
     console.error(err.message);
   }

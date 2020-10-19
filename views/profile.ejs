@@ -13,16 +13,16 @@
 
     <div class="container vert-gap-container">
         <div class="row">
-            <h2 class="vert-gap-contents">User Information</h2>
+            <h2 class="vert-gap-contents">User Information <%= hardcode_email %></h2>
         </div>
         <div class="row">
             <h4 class="vert-gap-contents">Pet Information</h4>
         </div>
-        <div class="row text-center">
+        <div class="row text-left">
             <% my_pets.forEach(pet => { %>
             <div class="card col-sm col-md" id="square-card">
-                <p>Pet Name: <%= pet.pet_name %><br>
-                    Special Requirements: <%= pet.special_requirement %><br>
+                <p><b>Pet Name:</b> <%= pet.pet_name %><br>
+                    <b>Special Requirements:</b> <%= pet.special_requirement %><br>
                 </p>
             </div>
             <% }) %>
@@ -34,13 +34,13 @@
             <h2 class="vert-gap-contents">Top Caretakers Nearby</h2>
             <a href="/search" style="padding: 13px">See more</a> <!-- link this to search for nearby caretakers-->
         </div>
-        <div class="row text-center">
+        <div class="row text-left">
             <% top_ratings.forEach(caretaker => { %>
             <div class="card col-sm col-md" id="square-card">
-                <p>Name: <%= caretaker.name %><br>
-                    Rating: <%= caretaker.rating == null ? "No Rating Yet" : caretaker.rating %><br>
-                    Location: <%= caretaker.location %><br>
-                    Job: <%= caretaker.job == "part_timer" ? "Part Time" : "Full Time" %><br>
+                <p><b>Name:</b> <%= caretaker.name %><br>
+                    <b>Rating:</b> <%= caretaker.rating == null ? "No Rating Yet" : caretaker.rating %><br>
+                    <b>Location:</b> <%= caretaker.location %><br>
+                    <b>Job:</b> <%= caretaker.job == "part_timer" ? "Part Time" : "Full Time" %><br>
                 </p>
             </div>
             <% }) %>
@@ -53,15 +53,15 @@
             <h2 class="vert-gap-contents">Ongoing Transactions</h2>
             <a href="/ongoing_transactions" style="padding: 13px">See more</a>
         </div>
-        <div class="row text-center">
+        <div class="row text-left">
             <% ongoing_transactions.forEach(ongoing => { %>
             <div class="card col-sm col-md" id="square-card">
-                <p>Status: <%= ongoing.hire_status %><br>
-                    Date: <%= stringToDate(String(ongoing.start_date)) %> to
+                <p><b>Status</b> <%= ongoing.hire_status %><br>
+                    <b>Date:</b> <%= stringToDate(String(ongoing.start_date)) %> to
                     <%= stringToDate(String(ongoing.end_date)) %><br>
-                    Caretaker: <%= ongoing.ct_email %><br>
-                    User: <%= ongoing.owner_email %><br>
-                    Pet Name: <%= ongoing.pet_name %><br>
+                    <b>Caretaker:</b> <%= ongoing.ct_name %><br>
+                    <b>User:</b> <%= ongoing.po_name %><br>
+                    <b>Pet Name:</b> <%= ongoing.pet_name %><br>
                 </p>
             </div>
             <% }) %>
@@ -71,21 +71,23 @@
     <div class="container vert-gap-container vert-gap-contents">
         <div class="row">
             <h2 class="vert-gap-contents">Recent Transactions</h2>
-            <a href="#" style="padding: 13px">See more</a>
+            <a href="/transactions" style="padding: 13px">See more</a>
         </div>
-        <% completed_transactions.forEach(completed => { %>
-        <div class="card col-sm col-md" id="square-card">
-            <p>Status: <%= completed.hire_status %><br>
-                Date: <%= stringToDate(String(completed.start_date)) %> to
-                <%= stringToDate(String(completed.end_date)) %><br>
-                Caretaker: <%= completed.ct_email %><br>
-                User: <%= completed.owner_email %><br>
-                Pet Name: <%= completed.pet_name %><br>
-                Rating: <%= completed.rating == null ? "No Rating Yet" : completed.rating %><br>
-                Review: <%= completed.review_text == null ? "No Review Yet" : completed.review_text %><br>
-            </p>
+        <div class="row text-left">
+            <% completed_transactions.forEach(completed => { %>
+            <div class="card col-sm col-md" id="square-card">
+                <p><b>Status:</b> <%= completed.hire_status %><br>
+                    <b>Date:</b> <%= stringToDate(String(completed.start_date)) %> to
+                    <%= stringToDate(String(completed.end_date)) %><br>
+                    <b>Caretaker:</b> <%= completed.ct_name %><br>
+                    <b>User:</b> <%= completed.po_name %><br>
+                    <b>Pet Name:</b> <%= completed.pet_name %><br>
+                    <b>Rating:</b> <%= completed.rating == null ? "No Rating Yet" : completed.rating %><br>
+                    <b>Review:</b> <%= completed.review_text == null ? "No Review Yet" : completed.review_text %><br>
+                </p>
+            </div>
+            <% }) %>
         </div>
-        <% }) %>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"

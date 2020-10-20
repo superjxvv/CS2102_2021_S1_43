@@ -64,8 +64,31 @@ app.listen(process.env.PORT || 3000, () => {
 
 app.get('/search', async (req, res) => {
   try {
-    const allCareTaker = await pool.query(sql_query.query.all_caretaker);
-    console.log(allCareTaker.rows[0]);
+    const startDate = new Date();
+    const endDate = new Date();
+    console.log(startDate, endDate);
+    const allCareTaker = await pool.query(sql_query.query.all_caretaker, [
+      startDate,
+      endDate
+    ]);
+    res.render('search', { careTakers: allCareTaker.rows });
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
+app.get('/search/:startDate/:endDate', async (req, res) => {
+  try {
+    console.log(new Date(req.params.startDate));
+    console.log(new Date(req.params.endDate));
+    console.log(new Date());
+    const startDate = new Date(req.params.startDate) || new Date();
+    const endDate = new Date(req.params.endDate) || new Date();
+    console.log(startDate, endDate);
+    const allCareTaker = await pool.query(sql_query.query.all_caretaker, [
+      startDate,
+      endDate
+    ]);
     res.render('search', { careTakers: allCareTaker.rows });
   } catch (err) {
     console.error(err.message);
@@ -141,25 +164,19 @@ app.get('/profile', async (req, res) => {
       // get pet information
       // get recent transactions
       const values = ['ahymans0@printfriendly.com']; // hardcoded
-      const po_info = await pool.query(
-        sql_query.query.get_po_info,
-        values
-      );
-      const po_pets = await pool.query(
-        sql_query.query.my_pets,
-        values
-      );
+      const po_info = await pool.query(sql_query.query.get_po_info, values);
+      const po_pets = await pool.query(sql_query.query.my_pets, values);
       const past_trxn = await pool.query(
         sql_query.query.recent_trxn_po,
         values
       );
 
-        res.render('./pet_owner_profile', {
-          title: 'Profile',
-          past_trxn: past_trxn.rows,
-          pet_info: po_pets.rows,
-          po_info: po_info.rows
-        });
+      res.render('./pet_owner_profile', {
+        title: 'Profile',
+        past_trxn: past_trxn.rows,
+        pet_info: po_pets.rows,
+        po_info: po_info.rows
+      });
     }
   } catch (err) {
     console.error(err.message);
@@ -167,11 +184,11 @@ app.get('/profile', async (req, res) => {
 });
 
 /*
-** Section for YS: Register, View Transactions
-** TODO: Change all msg to flash messages.
-*/
-app.get("/register", (req, res) => {
-  res.render("register", {msg : ''});
+ ** Section for YS: Register, View Transactions
+ ** TODO: Change all msg to flash messages.
+ */
+app.get('/register', (req, res) => {
+  res.render('register', { msg: '' });
 });
 
 app.post('/register', async (req, res) => {
@@ -179,24 +196,26 @@ app.post('/register', async (req, res) => {
     console.log(req.body);
     let { name, email, region, password1, type } = req.body;
 
-    if (!name || !email || region === "") {
-      req.flash("error", "Please enter all fields");
-      res.render("register");
+    if (!name || !email || region === '') {
+      req.flash('error', 'Please enter all fields');
+      res.render('register');
     } else {
       let hashedPw = await bcrypt.hash(password1, 10);
 
       const queryText = 'SELECT 1 FROM accounts WHERE email = $1';
       const queryValue = [email];
       //First check if user already exists
-      pool.query(queryText, queryValue)
-          .then(queryRes => {
-            if (queryRes.rows.length > 0) {
-              req.flash("error", "User already exists.");
-              res.render("register");
-            } else {
-              console.log("register user");
-              //Not exist yet. Insert into db.
-              const insertText = type == 'pet_owner' 
+      pool
+        .query(queryText, queryValue)
+        .then((queryRes) => {
+          if (queryRes.rows.length > 0) {
+            req.flash('error', 'User already exists.');
+            res.render('register');
+          } else {
+            console.log('register user');
+            //Not exist yet. Insert into db.
+            const insertText =
+              type == 'pet_owner'
                 ? `INSERT INTO pet_owner VALUES ($1, $2, $3, $4)`
                 : `INSERT INTO care_taker(email, name, password, location, job) VALUES($1, $2, $3, $4, 'part_timer')`;
 
@@ -233,7 +252,7 @@ app.get('/login', (req, res) => {
     );
     res.redirect('/dashboard');
   } else {
-    res.render("login");
+    res.render('login');
   }
 });
 
@@ -267,27 +286,34 @@ app.get('/user', (req, res) => {
 });
 
 app.get('/test', (req, res) => {
-  res.render("test");
-})
+  res.render('test');
+});
 app.get('/transactions', (req, res) => {
   if (req.user) {
     const userEmail = [req.user.email];
-    const allTransactions = 'SELECT ct_email, num_pet_days, start_date, end_date,'
-                          + 'total_cost, hire_status FROM hire ' 
-                          + 'WHERE owner_email = $1 ORDER BY start_date DESC, end_date DESC';        
-    
-    pool.query(allTransactions, userEmail)
-        .then(queryRes => {
-          console.log(queryRes.rows);
-          res.render('transactions', {
-            name : req.user.name,
-            resAllTrans : queryRes.rows,
-            resOngoingTrans: queryRes.rows.filter(x => x.hire_status != "completed" && x.hire_status != "rejected"),
-            resPastTrans: queryRes.rows.filter(x => x.hire_status == "completed" || x.hire_status == "rejected")});
-        })
-        .catch(err => console.error(err.stack))
-    } else {
-      req.flash("error", "Please login before accessing your transactions.");
-      res.redirect("/login");
-    }
+    const allTransactions =
+      'SELECT ct_email, num_pet_days, start_date, end_date,' +
+      'total_cost, hire_status FROM hire ' +
+      'WHERE owner_email = $1 ORDER BY start_date DESC, end_date DESC';
+
+    pool
+      .query(allTransactions, userEmail)
+      .then((queryRes) => {
+        console.log(queryRes.rows);
+        res.render('transactions', {
+          name: req.user.name,
+          resAllTrans: queryRes.rows,
+          resOngoingTrans: queryRes.rows.filter(
+            (x) => x.hire_status != 'completed' && x.hire_status != 'rejected'
+          ),
+          resPastTrans: queryRes.rows.filter(
+            (x) => x.hire_status == 'completed' || x.hire_status == 'rejected'
+          )
+        });
+      })
+      .catch((err) => console.error(err.stack));
+  } else {
+    req.flash('error', 'Please login before accessing your transactions.');
+    res.redirect('/login');
+  }
 });

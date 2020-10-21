@@ -97,6 +97,7 @@ app.get('/search/:startDate/:endDate', async (req, res) => {
 
 app.get('/caretaker-summary-info', async (req, res) => {
   try {
+    //todo: check that user is admin
     const summaryInfo = await pool.query(
       sql_query.query.caretaker_summary_info
     );
@@ -107,6 +108,51 @@ app.get('/caretaker-summary-info', async (req, res) => {
   } catch (err) {
     console.error(err.message);
   }
+});
+
+app.get('/pet-types', async (req, res) => {
+  try {
+    //todo: check that user is admin
+    const allPetTypes = await pool.query(
+      sql_query.query.all_pet_types
+    );
+    var launchToast = req.url.includes("add=pass");
+    console.log(launchToast)
+    res.render('pet-types', {
+      allPetTypes: allPetTypes.rows,
+      showSuccessToast: launchToast
+    });
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
+app.get('/add-pet-type', async (req, res) => {
+  try {
+    //todo: check that user is admin
+    const allPetTypes = await pool.query(
+      sql_query.query.all_pet_types
+    );
+    res.render('add-pet-type', {
+      allPetTypes: allPetTypes.rows
+    });
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
+app.post('/add-pet-type', async (req, res) => {
+  //todo: check that user is admin
+  var name = req.body.name;
+  var baseDailyPrice = req.body.basedailyprice
+
+  await pool.query(sql_query.query.add_pet_type, [name, baseDailyPrice], (err, data) => {
+    if (err) {
+      res.redirect('/add-pet-type?add=fail');
+    } else {
+      res.redirect('/pet-types?add=pass');
+    }
+  });
 });
 
 app.get('/dashboard', async (req, res) => {

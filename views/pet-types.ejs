@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Pet Type</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+        integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/profile_styles.css">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="/dist/css/adminlte.min.css">
+    <script>
+        $(function () {
+            if (showSuccessToast) {
+                $(document).Toasts('create', {
+                    class: 'bg-success',
+                    title: 'Toast Title',
+                    subtitle: 'Subtitle',
+                    body: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr.'
+                })
+            }
+        });
+    </script>
+</head>
+
+<body>
+    <%- include('./partials/nav_bar.ejs') %>
+    <div class="card" style="margin-left: auto; margin-right: auto; margin-top: 5%; width: 80%; align-content: center;">
+        <div class="card-header border-0">
+            <h3 class="card-title">Pet Types</h3>
+            <div class="card-tools">
+                <a href="/add-pet-type" class="btn btn-tool btn-sm">
+                    <i class="fas fa-plus"></i>
+                </a>
+            </div>
+        </div>
+        <div class="card-body table-responsive p-0">
+            <table class="table table-striped table-valign-middle">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Base Daily Price ($)</th>
+                        <th>Edit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% allPetTypes.forEach(petType => { %>
+                    <tr>
+                        <td><%= petType.name %></td>
+                        <td><%= petType.base_daily_price %></td>
+                        <td>
+                            <a href="/edit-pet-type?name=<%= petType.name%>" class="text-muted">
+                                <i class="far fa-edit"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- /.card -->
+</body>
+
+</html>

@@ -1,15 +1,17 @@
 const sql = {};
 
 sql.query = {
-  // all careTaker
+  // Information
   all_caretaker:
     'SELECT c.email, c.name, c.location, c.rating, t.daily_price + p.base_daily_price AS price, t.pet_type, a.start_date, a.end_date FROM care_taker c INNER JOIN can_take_care_of t ON c.email = t.email INNER JOIN pet_type p ON t.pet_type = p.name INNER JOIN indicates_availability as a ON c.email = a.email WHERE a.start_date <= $1 AND a.end_date >= $2',
-  // all pet_type
-  all_pet_type: 'SELECT * FROM pet_type',
-  // caretaker summary info
+  all_pet_types: 'SELECT * FROM pet_type',
   caretaker_summary_info:
     "SELECT C.name, C.email, SUM(H.num_pet_days) AS num_pet_days, SUM(H.total_cost) AS total_cost, EXTRACT(MONTH FROM H.transaction_date) AS month FROM care_taker C, hire H WHERE C.email = H.ct_email AND H.hire_status = 'completed' GROUP BY C.email, EXTRACT(MONTH FROM H.transaction_date)",
-  // top 4 ratings
+  
+  // Insertion
+  add_pet_type: 'INSERT INTO pet_type (name, base_daily_price) VALUES($1,$2)',
+
+    // top 4 ratings
   caretaker_top_ratings:
     'SELECT name, location, rating, job FROM care_taker WHERE location = $1 ORDER BY rating DESC LIMIT 4',
   // 4 most recent transactions

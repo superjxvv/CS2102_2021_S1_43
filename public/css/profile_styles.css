@@ -72,6 +72,8 @@ body {
 #toggle-collapse {
     background-color: white;
     border-style: none;
+    margin-top: auto;
+    margin-bottom: auto;
 }
 
 #transaction-header {

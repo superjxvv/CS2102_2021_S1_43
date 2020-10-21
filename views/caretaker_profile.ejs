@@ -12,34 +12,19 @@
 
     <div class="container vert-gap-container">
         <div class="row">
-            <h2 class="vert-gap-contents">User Information</h2>
+            <h2 class="vert-gap-contents">Caretaker Information</h2>
         </div>
         
         <div class="row">
-            <h4 class="vert-gap-small-header">Pet Owner Information</h4>
+            <h4 class="vert-gap-small-header">Caretaker Information</h4>
         </div>
         <div class="row text-left">
             <div class="card col-sm col-md" id="square-card" style="margin-bottom: 15px;">
-                <p><b>My Name:</b> <%= po_info.name %><br>
-                   <b>My Email:</b> <%= po_info.email %><br>
+                <p><b>My Name:</b> <%= po_info[0].name %><br>
+                   <b>My Email:</b> <%= po_info[0].email %><br>
                    
                 </p>
             </div>
-        </div>
-
-        <div class="row">
-            <h4 class="vert-gap-small-header">Pet Information</h4>
-            <button class="btn btn-primary" type="button" id="toggle-collapse" data-toggle="collapse" data-target=".happy" aria-expanded="false" aria-controls="trans3 trans4"><img src="https://icon-library.com/images/collapse-expand-icon/collapse-expand-icon-29.jpg" width="15"></button>
-        </div>
-        <div class="row text-left">
-            <% pet_info.forEach(pet => { %>
-            <div class="card col-sm col-md" id="square-card">
-                <p><b>Pet Name:</b> <%= pet.pet_name %><br>
-                   <b>Pet Type:</b> <%= pet.pet_type %><br>
-                   <b>Special Requirements:</b> <%= pet.special_requirement %><br>
-                </p>
-            </div>
-            <% }) %>
         </div>
     </div>
 
@@ -55,8 +40,6 @@
                     <b>Date:</b> <%= stringToDate(String(trxn.start_date)) %> to
                     <%= stringToDate(String(trxn.end_date)) %><br>
                     <b>Caretaker:</b> <%= trxn.ct_name %><br>
-                    <b>User:</b> <%= trxn.po_name %><br>
-                    <b>Pet Name:</b> <%= trxn.pet_name %><br>
                     <b>Rating:</b> <%= trxn.hire_status == 'completed' ? trxn.rating : 'NA' %><br>
                     <b>Review:</b> <%= trxn.review_text == 'pendingAccept' || 
                         trxn.review_text == 'pendingPayment' ||

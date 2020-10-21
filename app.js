@@ -153,16 +153,11 @@ app.get('/dashboard', async (req, res) => {
   }
 });
 
-app.get('/profile', async (req, res) => {
+app.get('/profile/:iden', async (req, res) => {
   try {
     if (!req.user) {
       res.redirect('/login');
     } else {
-      // get pet owner email
-      // use email to query db
-      // get pet owner information
-      // get pet information
-      // get recent transactions
       const values = ['ahymans0@printfriendly.com']; // hardcoded
       const po_info = await pool.query(sql_query.query.get_po_info, values);
       const po_pets = await pool.query(sql_query.query.my_pets, values);
@@ -171,7 +166,7 @@ app.get('/profile', async (req, res) => {
         values
       );
 
-      res.render('./pet_owner_profile', {
+      res.render('./caretaker_profile', {
         title: 'Profile',
         past_trxn: past_trxn.rows,
         pet_info: po_pets.rows,

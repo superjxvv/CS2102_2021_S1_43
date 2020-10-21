@@ -1,28 +1,22 @@
+<%- include('../functions') %>
 <div class="container vert-gap-card">
-    <div class="card">
+    <div class="card" style="background-color: whitesmoke;">
         <div class="card-body col-12">
             <div class="row" id="transaction-header">
                 <div class="col">
-                    <h4>Status</h4>
+                    <h4>Transaction Date: <%= stringToDate(String(all.transaction_date)) %></h4>
                 </div>
-                <div class="col-6 text-center">
-                    <h4>DDMMYY to DDMMYY</h4>
-                </div>
-                <div class="col text-right">
-                    <h4>CareTaker Name</h4>
-                </div>
-
             </div>
             <div class="row">
                 <div class="col col-4" id="trans3">
-                    <p>Date:</p>
-                    <p>Time:</p>
-                    <p>Care Taker:</p>
+                    <p>Date: <%= stringToDate(String(all.start_date)) %> to <%= stringToDate(String(all.end_date)) %></p>
+                    <p>Time: ? </p>
+                    <p>Caretaker: <%= all.ct_email %></p>
                 </div>
                 <div class="col col-4" id="trans4">
-                    <p>Status:</p>
-                    <p>Pet:</p>
-                    <p>Total Cost:</p>
+                    <p>Status: <%= all.hire_status %></p>
+                    <p>Pet: <%= all.pet_name %></p>
+                    <p>Total Cost: <%= all.total_cost %></p>
                 </div>
             </div>
             

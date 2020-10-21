@@ -1,0 +1,110 @@
+<%- include('./functions') %>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <%- include('./partials/head.ejs') %>
+</head>
+
+<body>
+    <%- include('./partials/nav_bar.ejs') %>
+
+    <div class="container vert-gap-container">
+        <div class="row">
+            <h2 class="vert-gap-contents">User Information <%= hardcode_email %></h2>
+        </div>
+        
+        <div class="row">
+            <h4 class="vert-gap-small-header">My Information</h4>
+        </div>
+        <div class="row text-left">
+            <div class="card col-sm col-md" id="square-card">
+                <p><b>My Name:</b> <%= my_name %><br>
+                   <b>My Email:</b> <%= my_email %><br>
+                </p>
+            </div>
+        </div>
+
+        <div class="row align-middle">
+            <h4 class="vert-gap-small-header" style="margin-top: 15px;">Pet Information</h4>
+            <% if (!my_pets.length >= 2) { console.log(my_pets.length); %>
+                <button class="btn btn-primary" type="button" id="toggle-collapse" data-toggle="collapse" data-target=".happy" aria-expanded="false" aria-controls="trans3 trans4" style="height:auto;"><img src="https://icon-library.com/images/collapse-expand-icon/collapse-expand-icon-29.jpg" width="15"></button>
+            <% } %>
+        </div>
+        <div class="row text-left">
+            <% my_pets.forEach(pet => { %>
+            <div class="card col-sm col-md" id="square-card">
+                <p><b>Pet Name:</b> <%= pet.pet_name %><br>
+                   <b>Pet Type:</b> <%= pet.pet_type %><br>
+                   <b>Special Requirements:</b> <%= pet.special_requirement %><br>
+                </p>
+            </div>
+            <% }) %>
+        </div>
+    </div>
+
+    <div class="container vert-gap-container">
+        <div class="row">
+            <h2 class="vert-gap-contents">Top Caretakers Nearby</h2>
+            <a href="/search" style="padding: 13px">See more</a> <!-- link this to search for nearby caretakers-->
+        </div>
+        
+        <div class="row text-left">
+            <% top_ratings.forEach(caretaker => { %>
+                <a href="/profile/<%= caretaker.name %>" class="card col-sm col-md" id="square-card">
+                    <!-- <div class="card col-sm col-md" id="square-card"> -->
+                        <p><b>Name:</b> <%= caretaker.name %><br>
+                           <b>Rating:</b> <%= caretaker.rating == null ? "No Rating Yet" : caretaker.rating %><br>
+                           <b>Location:</b> <%= caretaker.location %><br>
+                           <b>Job:</b> <%= caretaker.job == "part_timer" ? "Part Time" : "Full Time" %><br>
+                        </p>
+                    <!-- </div> -->
+                </a>
+            <% }) %>
+        </div>
+
+    </div>
+
+    <div class="container vert-gap-container">
+        <div class="row">
+            <h2 class="vert-gap-contents">Transactions</h2>
+            <a href="/transactions" style="padding: 13px">See more</a>
+        </div>
+        <div class="row text-left">
+            <% recent_trxn.forEach(trxn => { %>
+            <div class="card col-sm col-md" id="square-card" style="margin-bottom: 30px;">
+                <p><b>Status</b> <%= trxn.hire_status %><br>
+                    <b>Date:</b> <%= stringToDate(String(trxn.start_date)) %> to
+                    <%= stringToDate(String(trxn.end_date)) %><br>
+                    <b>Caretaker:</b> <a href="/profile/<%= trxn.ct_name %>"><%= trxn.ct_name %></a><br>
+                    <b>User:</b> <%= trxn.po_name %><br>
+                    <b>Pet Name:</b> <%= trxn.pet_name %><br>
+                    <b>Rating:</b> <%= trxn.hire_status == 'completed' ? trxn.rating : 'NA' %><br>
+                    <b>Review:</b> <%= trxn.review_text == 'pendingAccept' || 
+                        trxn.review_text == 'pendingPayment' ||
+                        trxn.review_text == 'paymentMade' ||
+                        trxn.review_text == 'inProgress' 
+                            ? 'NA'
+                            : trxn.review_text
+                        %><br>
+                </p>
+            </div>
+            <% }) %>
+        </div>
+    </div>
+
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>

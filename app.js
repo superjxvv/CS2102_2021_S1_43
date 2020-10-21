@@ -64,8 +64,31 @@ app.listen(process.env.PORT || 3000, () => {
 
 app.get('/search', async (req, res) => {
   try {
-    const allCareTaker = await pool.query(sql_query.query.all_caretaker);
-    console.log(allCareTaker.rows[0]);
+    const startDate = new Date();
+    const endDate = new Date();
+    console.log(startDate, endDate);
+    const allCareTaker = await pool.query(sql_query.query.all_caretaker, [
+      startDate,
+      endDate
+    ]);
+    res.render('search', { careTakers: allCareTaker.rows });
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
+app.get('/search/:startDate/:endDate', async (req, res) => {
+  try {
+    console.log(new Date(req.params.startDate));
+    console.log(new Date(req.params.endDate));
+    console.log(new Date());
+    const startDate = new Date(req.params.startDate) || new Date();
+    const endDate = new Date(req.params.endDate) || new Date();
+    console.log(startDate, endDate);
+    const allCareTaker = await pool.query(sql_query.query.all_caretaker, [
+      startDate,
+      endDate
+    ]);
     res.render('search', { careTakers: allCareTaker.rows });
   } catch (err) {
     console.error(err.message);
@@ -86,7 +109,7 @@ app.get('/caretaker-summary-info', async (req, res) => {
   }
 });
 
-app.get('/profile', async (req, res) => {
+app.get('/dashboard', async (req, res) => {
   try {
     if (!req.user) {
       res.redirect('/login');
@@ -95,8 +118,8 @@ app.get('/profile', async (req, res) => {
       if (account_type != 0) {
         const query =
           account_type == 1
-            ? 'SELECT location FROM pet_owner WHERE email = $1'
-            : 'SELECT location FROM care_taker WHERE email = $1';
+            ? sql_query.query.get_po_info
+            : sql_query.query.get_ct_info;
         const values = ['ahymans0@printfriendly.com']; // hardcoded
         const my_location = await pool.query(query, values);
         values[0] = my_location.rows[0].location;
@@ -105,20 +128,15 @@ app.get('/profile', async (req, res) => {
           values
         );
         values[0] = 'ahymans0@printfriendly.com';
-        const recent_ongoing_transactions = await pool.query(
-          sql_query.query.ongoing_trxn_po,
-          values
-        );
-        const recent_completed = await pool.query(
+        const recent_transactions = await pool.query(
           sql_query.query.recent_trxn_po,
           values
         );
         const my_pets = await pool.query(sql_query.query.my_pets, values);
-        res.render('./profile', {
-          title: 'Profile',
+        res.render('./dashboard', {
+          title: 'Dashboard',
           top_ratings: caretaker_top_ratings.rows,
-          ongoing_transactions: recent_ongoing_transactions.rows,
-          completed_transactions: recent_completed.rows,
+          recent_trxn: recent_transactions.rows,
           my_pets: my_pets.rows,
           my_email: req.user.email,
           my_name: req.user.name,
@@ -135,22 +153,37 @@ app.get('/profile', async (req, res) => {
   }
 });
 
-app.get('/ongoing_transactions', async (req, res) => {
+app.get('/profile/:iden', async (req, res) => {
   try {
-    res.render('./test_ongoing_transactions', {
-      title: 'Ongoing Transactions'
-    });
+    if (!req.user) {
+      res.redirect('/login');
+    } else {
+      const values = ['ahymans0@printfriendly.com']; // hardcoded
+      const po_info = await pool.query(sql_query.query.get_po_info, values);
+      const po_pets = await pool.query(sql_query.query.my_pets, values);
+      const past_trxn = await pool.query(
+        sql_query.query.recent_trxn_po,
+        values
+      );
+
+      res.render('./caretaker_profile', {
+        title: 'Profile',
+        past_trxn: past_trxn.rows,
+        pet_info: po_pets.rows,
+        po_info: po_info.rows
+      });
+    }
   } catch (err) {
     console.error(err.message);
   }
 });
 
 /*
-** Section for YS: Register, View Transactions
-** TODO: Change all msg to flash messages.
-*/
-app.get("/register", (req, res) => {
-  res.render("register", {msg : ''});
+ ** Section for YS: Register, View Transactions
+ ** TODO: Change all msg to flash messages.
+ */
+app.get('/register', (req, res) => {
+  res.render('register', { msg: '' });
 });
 
 app.post('/register', async (req, res) => {
@@ -158,9 +191,9 @@ app.post('/register', async (req, res) => {
     console.log(req.body);
     let { name, email, region, password1, type } = req.body;
 
-    if (!name || !email || region === "") {
-      req.flash("error", "Please enter all fields");
-      res.render("register");
+    if (!name || !email || region === '') {
+      req.flash('error', 'Please enter all fields');
+      res.render('register');
     } else {
       let hashedPw = await bcrypt.hash(password1, 10);
 
@@ -210,9 +243,9 @@ app.get('/login', (req, res) => {
       'error',
       'You are already logged in, please log out to login to another account.'
     );
-    res.redirect('/profile');
+    res.redirect('/dashboard');
   } else {
-    res.render("login");
+    res.render('login');
   }
 });
 
@@ -221,7 +254,7 @@ app.get('/login', (req, res) => {
 app.post(
   '/login',
   passport.authenticate('local', {
-    successRedirect: '/profile',
+    successRedirect: '/dashboard',
     failureRedirect: '/login',
     failureFlash: true
   })
@@ -252,23 +285,27 @@ app.get('/checkout', (req, res) => {
 
 app.get('/transactions', (req, res) => {
   if (req.user) {
-    const userEmail = [req.user.email];
-    const allTransactions = 'SELECT ct_email, num_pet_days, start_date, end_date,'
-                          + 'total_cost, hire_status FROM hire ' 
-                          + 'WHERE owner_email = $1 ORDER BY start_date DESC, end_date DESC';        
-    
-    pool.query(allTransactions, userEmail)
-        .then(queryRes => {
-          console.log(queryRes.rows);
-          res.render('transactions', {
-            name : req.user.name,
-            resAllTrans : queryRes.rows,
-            resOngoingTrans: queryRes.rows.filter(x => x.hire_status != "completed" && x.hire_status != "rejected"),
-            resPastTrans: queryRes.rows.filter(x => x.hire_status == "completed" || x.hire_status == "rejected")});
-        })
-        .catch(err => console.error(err.stack))
-    } else {
-      req.flash("error", "Please login before accessing your transactions.");
-      res.redirect("/login");
-    }
+    const userEmail = ['ahymans0@printfriendly.com']; // hardcoded
+    const allTransactions = sql_query.query.get_my_trxn;
+
+    pool
+      .query(allTransactions, userEmail)
+      .then((queryRes) => {
+        console.log(queryRes.rows);
+        res.render('transactions', {
+          name: req.user.name,
+          resAllTrans: queryRes.rows,
+          resOngoingTrans: queryRes.rows.filter(
+            (x) => x.hire_status != 'completed' && x.hire_status != 'rejected'
+          ),
+          resPastTrans: queryRes.rows.filter(
+            (x) => x.hire_status == 'completed' || x.hire_status == 'rejected'
+          )
+        });
+      })
+      .catch((err) => console.error(err.stack));
+  } else {
+    req.flash('error', 'Please login before accessing your transactions.');
+    res.redirect('/login');
+  }
 });

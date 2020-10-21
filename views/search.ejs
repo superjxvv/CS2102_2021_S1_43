@@ -9,14 +9,18 @@
     integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
   <link rel="stylesheet" href="/css/profile_styles.css">
   <script src="/plugins/jquery/jquery.min.js"></script>
+  <script src="/plugins/moment/moment.min.js"></script>
   <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
   <script src="/plugins/datatables/jquery.dataTables.min.js"></script>
   <script src="/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
   <script src="/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
   <script src="/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+  <script src="/plugins/daterangepicker/daterangepicker.js"></script>
   <script src="/dist/js/adminlte.min.js"></script>
   <link rel="stylesheet" href="/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
   <link rel="stylesheet" href="/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+  <link rel="stylesheet" href="/plugins/daterangepicker/daterangepicker.css">
+  <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
   <script>
     $(function () {
       // Setup - add a text input to each footer cell
@@ -50,6 +54,19 @@
           $('#example1 thead').append(r);
         }
       });
+      let urlArray = window.location.href.split('/')
+      if (urlArray[urlArray.length - 1] == 'search') {
+        $('#reservation').daterangepicker({}, function (start, end, label) {
+          console.log("A new date selection was made: " + start.format('MM-DD-YYYY') + ' to ' + end.format('MM-DD-YYYY'));
+          window.location.href = '/search/' + start.format('MM-DD-YYYY') + '/' + end.format('MM-DD-YYYY')
+        })
+      } else {
+        $('#reservation').daterangepicker({ startDate: new Date(urlArray[urlArray.length - 2]), endDate: new Date(urlArray[urlArray.length - 1]) }, function (start, end, label) {
+          console.log("A new date selection was made: " + start.format('MM-DD-YYYY') + ' to ' + end.format('MM-DD-YYYY'));
+          window.location.href = '/search/' + start.format('MM-DD-YYYY') + '/' + end.format('MM-DD-YYYY')
+        })
+      }
+
     });
   </script>
 </head>
@@ -62,6 +79,18 @@
     </div>
     <!-- /.card-header -->
     <div class="card-body">
+      <div class="form-group">
+        <label>Availability Date range:</label>
+        <div class="input-group">
+          <div class="input-group-prepend">
+            <span class="input-group-text">
+              <i class="far fa-calendar-alt"></i>
+            </span>
+          </div>
+          <input type="text" class="form-control float-right" id="reservation">
+        </div>
+        <!-- /.input group -->
+      </div>
       <table id="example1" class="table table-bordered table-striped">
         <thead>
           <tr>

@@ -30,24 +30,20 @@
 	<br>
 	<div class="container">
 		<div class="row">
-			<div class="col-12 ">
+			<div class="col-12 " style="margin-bottom: 30px;">
 				<nav>
 					<div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-						<a class="nav-item nav-link active" id="nav-home-tab" data-toggle="tab" href="#nav-home" role="tab" aria-controls="nav-home" aria-selected="true">All Cares</a>
-						<a class="nav-item nav-link" id="nav-profile-tab" data-toggle="tab" href="#nav-profile" role="tab" aria-controls="nav-profile" aria-selected="false">Ongoing Cares</a>
-						<a class="nav-item nav-link" id="nav-contact-tab" data-toggle="tab" href="#nav-contact" role="tab" aria-controls="nav-contact" aria-selected="false">Past Cares</a>
-						<a class="nav-item nav-link" id="nav-about-tab" data-toggle="tab" href="#nav-about" role="tab" aria-controls="nav-about" aria-selected="false">About</a>
+						<a class="nav-item nav-link active" id="nav-all-tab" data-toggle="tab" href="#nav-all" role="tab" aria-controls="nav-all" aria-selected="true">All Cares</a>
+						<a class="nav-item nav-link" id="nav-ongoing-tab" data-toggle="tab" href="#nav-ongoing" role="tab" aria-controls="nav-ongoing" aria-selected="false">Ongoing Cares</a>
+						<a class="nav-item nav-link" id="nav-past-tab" data-toggle="tab" href="#nav-past" role="tab" aria-controls="nav-past" aria-selected="false">Past Cares</a>
+						<!-- <a class="nav-item nav-link" id="nav-about-tab" data-toggle="tab" href="#nav-about" role="tab" aria-controls="nav-about" aria-selected="false">About</a> -->
 					</div>
 				</nav>
-				<div>
-					<div class="tab-content" id="nav-tabContent">
-						<div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
-							Et et consectetur ipsum labore excepte ssssssss
-						</div>
+				<% resAllTrans.forEach(trxn => { %>
+					<div>
+						<%- include('./partials/each_transaction.ejs', {all: trxn}) %>
 					</div>
-					<%- include('./partials/each_transaction.ejs') %>
-				</div>
-			
+				<% }) %>
 			</div>
 		</div>
 </div>

@@ -285,11 +285,8 @@ app.get('/test', (req, res) => {
 });
 app.get('/transactions', (req, res) => {
   if (req.user) {
-    const userEmail = [req.user.email];
-    const allTransactions =
-      'SELECT ct_email, num_pet_days, start_date, end_date,' +
-      'total_cost, hire_status FROM hire ' +
-      'WHERE owner_email = $1 ORDER BY start_date DESC, end_date DESC';
+    const userEmail = ['ahymans0@printfriendly.com']; // hardcoded
+    const allTransactions = sql_query.query.get_my_trxn;
 
     pool
       .query(allTransactions, userEmail)

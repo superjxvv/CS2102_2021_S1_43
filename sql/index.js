@@ -22,7 +22,8 @@ sql.query = {
     'SELECT * FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.email = $1 LIMIT 4',
   get_po_info: 'SELECT * FROM pet_owner WHERE email = $1',
   get_ct_info: 'SELECT * FROM care_taker WHERE email = $1',
-  get_my_trxn: 'SELECT * FROM hire H INNER JOIN care_taker C ON H.ct_email = C.email WHERE H.owner_email = $1 ORDER BY transaction_date DESC, start_date DESC, end_date DESC'
+  get_my_trxn: 'SELECT * FROM hire H INNER JOIN care_taker C ON H.ct_email = C.email WHERE H.owner_email = $1 ORDER BY transaction_date DESC, start_date DESC, end_date DESC',
+  get_ct_email: 'SELECT C.name AS ct_name, C.email AS ct_email, H.hire_status, H.start_date, H.end_date, H.rating, H.review_text FROM care_taker C INNER JOIN hire H ON C.email = H.ct_email WHERE C.name = $1 ORDER BY H.transaction_date DESC LIMIT 4'
 };
 
 module.exports = sql;

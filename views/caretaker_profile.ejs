@@ -20,9 +20,8 @@
         </div>
         <div class="row text-left">
             <div class="card col-sm col-md" id="square-card" style="margin-bottom: 15px;">
-                <p><b>My Name:</b> <%= po_info[0].name %><br>
-                   <b>My Email:</b> <%= po_info[0].email %><br>
-                   
+                <p><b>My Name:</b> <%= get_ct_trxns[0].ct_name %><br>
+                   <b>My Email:</b> <%= get_ct_trxns[0].ct_email %><br>
                 </p>
             </div>
         </div>
@@ -31,10 +30,12 @@
     <div class="container vert-gap-container">
         <div class="row">
             <h2 class="vert-gap-contents">Past Transactions</h2>
-            <a href="/transactions" style="padding: 13px">See more</a> <!-- link to transactions and search by pet_owner email? -->
+            <% if (get_ct_trxns.length >= 4) { %>
+                <a href="/transactions" style="padding: 13px">See more</a>
+            <% } %>
         </div>
         <div class="row text-left">
-            <% past_trxn.forEach(trxn => { %>
+            <% get_ct_trxns.forEach(trxn => { %>
             <div class="card col-sm col-md" id="square-card">
                 <p><b>Status</b> <%= trxn.hire_status %><br>
                     <b>Date:</b> <%= stringToDate(String(trxn.start_date)) %> to

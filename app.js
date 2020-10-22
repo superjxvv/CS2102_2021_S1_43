@@ -204,19 +204,15 @@ app.get('/profile/:iden', async (req, res) => {
     if (!req.user) {
       res.redirect('/login');
     } else {
-      const values = ['ahymans0@printfriendly.com']; // hardcoded
-      const po_info = await pool.query(sql_query.query.get_po_info, values);
-      const po_pets = await pool.query(sql_query.query.my_pets, values);
-      const past_trxn = await pool.query(
-        sql_query.query.recent_trxn_po,
-        values
-      );
+      const ct_name = req.params.iden;
+      const values = [ct_name]; 
+      const get_ct_trxns = await pool.query(sql_query.query.get_ct_email, values)
+      // const po_info = await pool.query(sql_query.query.get_po_info, values);
+      // const po_pets = await pool.query(sql_query.query.my_pets, values);
 
       res.render('./caretaker_profile', {
         title: 'Profile',
-        past_trxn: past_trxn.rows,
-        pet_info: po_pets.rows,
-        po_info: po_info.rows
+        get_ct_trxns: get_ct_trxns.rows
       });
     }
   } catch (err) {
@@ -342,10 +338,10 @@ app.get('/transactions', (req, res) => {
           name: req.user.name,
           resAllTrans: queryRes.rows,
           resOngoingTrans: queryRes.rows.filter(
-            (x) => x.hire_status != 'completed' && x.hire_status != 'rejected'
+            (x) => x.hire_status != 'completed' && x.hire_status != 'rejected' && x.hire_status != 'cancelled'
           ),
           resPastTrans: queryRes.rows.filter(
-            (x) => x.hire_status == 'completed' || x.hire_status == 'rejected'
+            (x) => x.hire_status == 'completed' || x.hire_status == 'rejected' || x.hire_status == 'cancelled'
           )
         });
       })

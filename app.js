@@ -97,6 +97,7 @@ app.get('/search/:startDate/:endDate', async (req, res) => {
 
 app.get('/caretaker-summary-info', async (req, res) => {
   try {
+    //todo: check that user is admin
     const summaryInfo = await pool.query(
       sql_query.query.caretaker_summary_info
     );
@@ -107,6 +108,51 @@ app.get('/caretaker-summary-info', async (req, res) => {
   } catch (err) {
     console.error(err.message);
   }
+});
+
+app.get('/pet-types', async (req, res) => {
+  try {
+    //todo: check that user is admin
+    const allPetTypes = await pool.query(
+      sql_query.query.all_pet_types
+    );
+    var launchToast = req.url.includes("add=pass");
+    console.log(launchToast)
+    res.render('pet-types', {
+      allPetTypes: allPetTypes.rows,
+      showSuccessToast: launchToast
+    });
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
+app.get('/add-pet-type', async (req, res) => {
+  try {
+    //todo: check that user is admin
+    const allPetTypes = await pool.query(
+      sql_query.query.all_pet_types
+    );
+    res.render('add-pet-type', {
+      allPetTypes: allPetTypes.rows
+    });
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
+app.post('/add-pet-type', async (req, res) => {
+  //todo: check that user is admin
+  var name = req.body.name;
+  var baseDailyPrice = req.body.basedailyprice
+
+  await pool.query(sql_query.query.add_pet_type, [name, baseDailyPrice], (err, data) => {
+    if (err) {
+      res.redirect('/add-pet-type?add=fail');
+    } else {
+      res.redirect('/pet-types?add=pass');
+    }
+  });
 });
 
 app.get('/dashboard', async (req, res) => {
@@ -158,19 +204,15 @@ app.get('/profile/:iden', async (req, res) => {
     if (!req.user) {
       res.redirect('/login');
     } else {
-      const values = ['ahymans0@printfriendly.com']; // hardcoded
-      const po_info = await pool.query(sql_query.query.get_po_info, values);
-      const po_pets = await pool.query(sql_query.query.my_pets, values);
-      const past_trxn = await pool.query(
-        sql_query.query.recent_trxn_po,
-        values
-      );
+      const ct_name = req.params.iden;
+      const values = [ct_name]; 
+      const get_ct_trxns = await pool.query(sql_query.query.get_ct_email, values)
+      // const po_info = await pool.query(sql_query.query.get_po_info, values);
+      // const po_pets = await pool.query(sql_query.query.my_pets, values);
 
       res.render('./caretaker_profile', {
         title: 'Profile',
-        past_trxn: past_trxn.rows,
-        pet_info: po_pets.rows,
-        po_info: po_info.rows
+        get_ct_trxns: get_ct_trxns.rows
       });
     }
   } catch (err) {
@@ -296,10 +338,10 @@ app.get('/transactions', (req, res) => {
           name: req.user.name,
           resAllTrans: queryRes.rows,
           resOngoingTrans: queryRes.rows.filter(
-            (x) => x.hire_status != 'completed' && x.hire_status != 'rejected'
+            (x) => x.hire_status != 'completed' && x.hire_status != 'rejected' && x.hire_status != 'cancelled'
           ),
           resPastTrans: queryRes.rows.filter(
-            (x) => x.hire_status == 'completed' || x.hire_status == 'rejected'
+            (x) => x.hire_status == 'completed' || x.hire_status == 'rejected' || x.hire_status == 'cancelled'
           )
         });
       })

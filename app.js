@@ -229,33 +229,31 @@ app.get('/register', (req, res) => {
 });
 
 app.post('/register', async (req, res) => {
-  try {
-    console.log(req.body);
-    let { name, email, region, password1, type } = req.body;
+  console.log(req.body);
+  let { name, email, region, password1, type } = req.body;
 
-    if (!name || !email || region === '') {
-      req.flash('error', 'Please enter all fields');
-      res.render('register');
-    } else {
-      let hashedPw = await bcrypt.hash(password1, 10);
+  if (!name || !email || region === '') {
+    req.flash('error', 'Please enter all fields');
+    res.render('register');
+  } else {
+    let hashedPw = await bcrypt.hash(password1, 10);
 
-      const queryText = 'SELECT 1 FROM accounts WHERE email = $1';
-      const queryValue = [email];
-      //First check if user already exists
-      await pool.query(queryText, queryValue)
-          .then(queryRes => {
-            if (queryRes.rows.length > 0) {
-              req.flash("error", "User already exists.");
-              res.render("register");
-            } else {
-              console.log("register user");
-              //Not exist yet. Insert into db.
-              const insertText = type == 'pet_owner' 
-                ? `INSERT INTO pet_owner VALUES ($1, $2, $3, $4)`
-                : `INSERT INTO care_taker(email, name, password, location, job) VALUES($1, $2, $3, $4, 'part_timer')`;
+    const queryText = 'SELECT 1 FROM accounts WHERE email = $1';
+    const queryValue = [email];
+    //First check if user already exists
+    pool.query(queryText, queryValue)
+        .then(queryRes => {
+          if (queryRes.rows.length > 0) {
+            req.flash("error", "User already exists.");
+            res.render("register");
+          } else {
+            console.log("register user");
+            //Not exist yet. Insert into db.
+            const insertText = type == 'pet_owner' 
+              ? `INSERT INTO pet_owner VALUES ($1, $2, $3, $4)`
+              : `INSERT INTO care_taker(email, name, password, location, job) VALUES($1, $2, $3, $4, 'part_timer')`;
 
-            pool
-              .query(insertText, [email, name, hashedPw, region])
+          pool.query(insertText, [email, name, hashedPw, region])
               .then((result) => {
                 console.log('Registered');
                 req.flash(
@@ -272,11 +270,8 @@ app.post('/register', async (req, res) => {
         .catch((err) => {
           console.log(err);
         });
-    }
-  } catch (err) {
-    console.error(err);
   }
-});
+});       
 
 app.get('/login', (req, res) => {
   if (req.user) {
@@ -324,6 +319,30 @@ app.get('/checkout', (req, res) => {
   res.render("bid");
 })
 
+const transferConvert = (method) => {
+  if (method == 'oDeliver') {
+    return "Dropoff at caretaker";
+  } else if (method == 'cPickup') {
+    return "Caretaker pickup";
+  } else if (method == 'office') {
+    return "Dropoff at Pet Care office"
+  }
+};
+
+app.post('/edit_bid', (req, res) => {
+  console.log(req.body);
+  queryText = "SELECT * FROM hire WHERE owner_email = $1 AND ct_email = $2 AND start_date = $3 AND end_date = $4 AND pet_name = $5";
+  queryValues = Object.values(req.body);
+  console.log(queryValues);
+  pool.query(queryText, queryValues)
+      .then(queryRes => {
+        res.render('edit_bid', {
+          trans : queryRes.rows[0],
+          transferConvert: transferConvert
+        })
+      }).catch(err => console.error(err));
+
+})
 
 app.get('/transactions', (req, res) => {
   if (req.user) {
@@ -333,7 +352,6 @@ app.get('/transactions', (req, res) => {
     pool
       .query(allTransactions, userEmail)
       .then((queryRes) => {
-        console.log(queryRes.rows);
         res.render('transactions', {
           name: req.user.name,
           resAllTrans: queryRes.rows,
@@ -342,7 +360,8 @@ app.get('/transactions', (req, res) => {
           ),
           resPastTrans: queryRes.rows.filter(
             (x) => x.hire_status == 'completed' || x.hire_status == 'rejected' || x.hire_status == 'cancelled'
-          )
+          ),
+          moment: moment
         });
       })
       .catch((err) => console.error(err.stack));

@@ -12,9 +12,7 @@
 
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="/assets/dist/css/bootstrap.min.css" >
-    <script>
-    </script>
-
+    <link rel="stylesheet" href="/plugins/bootstrap-datepicker-1.9.0-dist/css/bootstrap-datepicker.css">
     <style>
     </style>
     <!-- Custom styles for this template -->
@@ -67,14 +65,16 @@
     <div class="col-md-8 order-md-1">
       <form action="/bid" class="needs-validation" novalidate method="POST">
         <div class="row">
-          <div class="col-md-5 mb-3">
-            <label for="transfer"><b>Change Pet Transfer Method</b></label>
-            <p>Currently: <%= transferConvert(trans.method_of_pet_transfer) %></p>
-            <select class="custom-select d-block w-100" id="transferMethod" required> 
-              <option value = "cPickup">Caretaker pickup</option>
-              <option value = "oDeliver">Dropoff at caretaker</option>
-              <option value = "office">Dropoff at Pet Care office.</option>
-            </select>
+          <div class="col-md-7 mb-3">
+            <h4 class="mb-3">Change Pet Transfer Method</h4>
+            <p>Current method: <%= transferConvert(trans.method_of_pet_transfer) %></p>
+            <div class="float-left">
+              <select class="custom-select d-block" id="transferMethod" required> 
+                <option value = "cPickup">Caretaker pickup</option>
+                <option value = "oDeliver">Dropoff at caretaker</option>
+                <option value = "office">Dropoff at Pet Care office.</option>
+              </select>
+            </div>
             <div class="invalid-feedback">
               Please select a valid pet transfer method.
             </div>
@@ -82,13 +82,17 @@
           
         </div>
         <hr class="mb-4">
-        <div class="custom-control custom-checkbox">
-          <input type="checkbox" class="custom-control-input" id="same-address">
-          <label class="custom-control-label" for="same-address">Shipping address is the same as my billing address</label>
-        </div>
-        <div class="custom-control custom-checkbox">
-          <input type="checkbox" class="custom-control-input" id="save-info">
-          <label class="custom-control-label" for="save-info">Save this information for next time</label>
+        <h4 class="mb-3">Change Dates</h4>
+        <div class="row justify-content-between">
+          <div class="input-daterange input-group">
+            <div class="col-3">
+              <input type="text" class="form-control" style="text-align:left" id="start_date">
+            </div>
+            <div class="input-group-addon">to</div>
+            <div class="col-3">
+              <input type="text" class="form-control" id="end_date" style="text-align:left;">
+            </div>
+          </div>
         </div>
         <hr class="mb-4">
 
@@ -155,7 +159,37 @@
   <footer class="my-5 pt-5 text-muted text-center text-small">
   </footer>
 </div>
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-      <script>window.jQuery || document.write('<script src="/assets/js/vendor/jquery.slim.min.js"><\/script>')</script><script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-        <script src="/plugins/bootstrap/js/form-validation.js"></script></body>
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+  <script>window.jQuery || document.write('<script src="/assets/js/vendor/jquery.slim.min.js"><\/script>')</script>
+  <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/plugins/bootstrap/js/form-validation.js"></script>
+  <script src="/plugins/bootstrap-datepicker-1.9.0-dist/js/bootstrap-datepicker.js"></script>
+  <script type="text/javascript">
+    $('.input-daterange').each(function() {
+      $(this).datepicker('clearDates');
+    });
+    function set_parameters() {
+      var date_start_input = $('#start_date');
+      var date_end_input = $('#end_date');
+      
+      var options = {
+        format: 'dd/mm/yyyy',
+        todayHighlight: true,
+        autoclose: true,
+        orientation: 'top left'
+      };
+
+      date_start_input.datepicker(options).on('changeDate', function(e){
+        date_end_input.datepicker("setStartDate", e.date);
+      });
+      date_end_input.datepicker(options).on('changeDate', function(e){
+        date_start_input.datepicker("setEndDate", e.date);
+      });
+    };
+
+    $(document).ready(function() {
+      set_parameters();
+    });
+  </script>
+</body>
 </html>

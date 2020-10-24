@@ -11,6 +11,8 @@ const session = require('express-session');
 const flash = require('express-flash');
 const passport = require('passport');
 const initializePassport = require('./passportConfig');
+const { exception } = require('console');
+const e = require('express');
 initializePassport(passport);
 // -------------------------------------
 
@@ -329,20 +331,71 @@ const transferConvert = (method) => {
   }
 };
 
-app.post('/edit_bid', (req, res) => {
-  console.log(req.body);
-  queryText = "SELECT * FROM hire WHERE owner_email = $1 AND ct_email = $2 AND start_date = $3 AND end_date = $4 AND pet_name = $5";
-  queryValues = Object.values(req.body);
-  console.log(queryValues);
-  pool.query(queryText, queryValues)
-      .then(queryRes => {
-        res.render('edit_bid', {
-          trans : queryRes.rows[0],
-          transferConvert: transferConvert
-        })
-      }).catch(err => console.error(err));
 
-})
+/*
+Pushes all dates within given range into outputArr.
+Function takes in 3 arguments with 1 optional argument, criteriaSet. 
+If a date is in criteria set it won't be added to output set.
+function(startDate, endDate, outputSet, criteriaSet)
+*/
+function datesFromRange(startDate, endDate, outputSet) {
+  var startDate = arguments[0].toISOString();
+  var endDate = arguments[1].toISOString();
+  var dateMove = new Date(startDate);
+  var strDate = startDate;
+
+  while (strDate < endDate){
+    var strDate = dateMove.toISOString().slice(0,10);
+    if (arguments[3]) {
+      if (!argumemts[3].has(strDate)) {
+        arguments[2].add(strDate);
+      }
+    } else {
+      arguments[2].add(strDate);
+    }
+    dateMove.setDate(dateMove.getDate()+1);
+  };
+
+}
+
+app.post('/edit_bid', async (req, res) => {
+    console.log(req.body);
+    //req.body contains the primary key for that particular hire to be edited, passed in by a form from /transactions.
+    const originalQueryValues = Object.values(req.body);
+    const originalHire = await pool.query(sql_query.query.get_a_hire, originalQueryValues);
+    const ct_email = [originalHire.rows[0].ct_email];
+    //Whether ct is full time or part time
+    const jobType = await pool.query(sql_query.query.get_ct_type, ct_email);
+    //Dates that this ct is already booked.
+    const datesCaring = await pool.query(sql_query.query.dates_caring, ct_email);
+    var datesToDelete = new Set();
+    for (var i = 0; i < datesCaring.rows.length; i ++) {
+      const usedDate = datesCaring.rows[i];
+      datesFromRange(usedDate.start_date, usedDate.end_date, datesToDelete);
+    }
+    console.log(datesToDelete);
+    var datesToAllow = new Set();
+
+    //Part timer only show available dates
+    if (jobType.rows[0].job == 'part_timer') {
+      const availability = await pool.query(sql_query.query.part_timer_availability, ct_email);
+      for (var i = 0; i < availability.rows.length; i ++) {
+        const canDate = availability.rows[i];
+        datesFromRange(canDate.start_date, canDate.end_date, datesToAllow, datesToDelete);
+      }
+      res.render("edit_bid", {transferCover : transferConvert, trans : originalHire.rows[0]});
+
+
+    //Full timer will disable some dates
+    } else {
+      const leave = await pool.query(sql_query.query.full_timer_leave, ct_email); 
+      for (var i = 0; i < leave.rows.length; i++) {
+        const leaveDate = leave.rows[i];
+        datesFromRange(leaveDate.start_date, leaveDate.end_date, datesToDelete);
+      }
+      res.render("edit_bid", {transferConvert : transferConvert, trans : originalHire.rows[0]});
+    }
+});
 
 app.get('/transactions', (req, res) => {
   if (req.user) {

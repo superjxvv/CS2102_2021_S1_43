@@ -11,7 +11,15 @@ CREATE TABLE pet_owner(
   email VARCHAR PRIMARY KEY,
   name VARCHAR NOT NULL,
   password VARCHAR NOT NULL,
-  location VARCHAR NOT NULL
+  location VARCHAR NOT NULL,
+  address VARCHAR
+);
+
+CREATE TABLE has_credit_card(
+  number VARCHAR NOT NULL,
+  email VARCHAR REFERENCES pet_owner(email),
+  expiry VARCHAR NOT NULL,
+  PRIMARY KEY(number, email)
 );
 
 CREATE TYPE job_type AS ENUM ('part_timer', 'full_timer');
@@ -26,7 +34,8 @@ CREATE TABLE care_taker(
   rating NUMERIC,
   bank_account VARCHAR,
   max_concurrent_pet_limit INTEGER,
-  job job_type NOT NULL
+  job job_type NOT NULL,
+  address VARCHAR
 );
 
 CREATE VIEW accounts AS (

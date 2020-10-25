@@ -13,6 +13,7 @@ const passport = require('passport');
 const initializePassport = require('./passportConfig');
 const { exception } = require('console');
 const e = require('express');
+const { send } = require('process');
 initializePassport(passport);
 // -------------------------------------
 
@@ -349,9 +350,6 @@ app.get('/user', (req, res) => {
   }
 });
 
-app.get('/checkout', (req, res) => {
-  res.render("bid");
-})
 
 const transferConvert = (method) => {
   if (method == 'oDeliver') {
@@ -379,7 +377,7 @@ function datesFromRange(startDate, endDate, outputSet) {
   while (strDate < endDate){
     var strDate = dateMove.toISOString().slice(0,10);
     if (arguments[3]) {
-      if (!argumemts[3].has(strDate)) {
+      if (!arguments[3].has(strDate)) {
         arguments[2].add(strDate);
       }
     } else {
@@ -387,8 +385,80 @@ function datesFromRange(startDate, endDate, outputSet) {
     }
     dateMove.setDate(dateMove.getDate()+1);
   };
-
 }
+
+/*
+Removes dates within a particular range from the set.
+*/
+function removeDatesFromRange(startDate, endDate, outputSet) {
+  var startDate = arguments[0].toISOString();
+  var endDate = arguments[1].toISOString();
+  var dateMove = new Date(startDate);
+  var strDate = startDate;
+
+  while (strDate < endDate){
+    var strDate = dateMove.toISOString().slice(0,10);
+    arguments[2].delete(strDate);
+    dateMove.setDate(dateMove.getDate()+1);
+  };
+}
+
+//Converts date format to DD/MM/YYYY
+function convertDate(inputFormat) {
+  function pad(s) { return (s < 10) ? '0' + s : s; }
+  var d = new Date(inputFormat)
+  return [pad(d.getDate()), pad(d.getMonth()+1), d.getFullYear()].join('/')
+}
+
+//Number of days between 2 dates
+const diffDays = (firstDate, secondDate) => Math.round(Math.abs((firstDate.getTime() - secondDate.getTime()) / (24 * 60 * 60 * 1000)));
+
+//Jeremy (Chua) please pass in ct_name, ct_email, start_date, end_date, pet type. I will change method to post once that is done.
+app.get('/bid', async (req, res) => {
+  const ct_email = "bjoesbury4d@yahoo.co.jp";
+  const owner_email = 'ahymans0@printfriendly.com'
+  const start_date = "06-25-2021";
+  const end_date = "06-27-2021";
+  const pet_type = "Rabbit";
+  const ct_name = "Joe";
+  const num_days = diffDays(new Date(start_date), new Date(end_date));
+
+  //Query all pet names with this type.
+  const petQuery = await pool.query(sql_query.query.petFromType, [owner_email, pet_type]);
+  const dailyPriceQuery = await pool.query(sql_query.query.dailyPriceGivenTypeAndCT, [ct_email, pet_type]);
+  const addrQuery = await pool.query(sql_query.query.ownerAddress, [owner_email]);
+  const pets = petQuery.rows;
+  const daily_price = dailyPriceQuery.rows[0].daily_price
+  res.render('bid', {
+    ct_name : ct_name,
+    pets : pets,
+    ct_email : ct_email,
+    start_date : convertDate(start_date),
+    end_date : convertDate(end_date),
+    pet_type : pet_type,
+    daily_price : daily_price,
+    num_days : num_days,
+    addr : addrQuery.rows[0].address
+  })
+
+});
+
+app.post('/submit_bid', async (req, res) => {
+  //Change to req.user.email when available.
+  const owner_email = 'ahymans0@printfriendly.com'
+  console.log(req.body);
+  queryValues = [owner_email, req.body.pet_name, req.body.ct_email, 
+                 req.body.num_days, req.body.total_cost, req.body.transferMethod,
+                 req.body.start_date, req.body.end_date, new Date()];
+
+  //Add date range to date range table if not exists
+  await pool.query("INSERT INTO date_range VALUES($1, $2) ON CONFLICT DO NOTHING", [req.body.start_date, req.body.end_date]);
+  //Add bid to hire table
+  await pool.query(sql_query.query.add_bid, queryValues);
+  req.flash("success_msg", "Bid was successful");
+  res.redirect("/dashboard");
+})
+
 
 app.post('/edit_bid', async (req, res) => {
     console.log(req.body);
@@ -398,6 +468,7 @@ app.post('/edit_bid', async (req, res) => {
     const ct_email = [originalHire.rows[0].ct_email];
     //Whether ct is full time or part time
     const jobType = await pool.query(sql_query.query.get_ct_type, ct_email);
+
     //Dates that this ct is already booked.
     const datesCaring = await pool.query(sql_query.query.dates_caring, ct_email);
     var datesToDelete = new Set();
@@ -405,19 +476,17 @@ app.post('/edit_bid', async (req, res) => {
       const usedDate = datesCaring.rows[i];
       datesFromRange(usedDate.start_date, usedDate.end_date, datesToDelete);
     }
-    console.log(datesToDelete);
     var datesToAllow = new Set();
-
+    var isPartTimer = false;
     //Part timer only show available dates
     if (jobType.rows[0].job == 'part_timer') {
       const availability = await pool.query(sql_query.query.part_timer_availability, ct_email);
+      isPartTimer = true;
       for (var i = 0; i < availability.rows.length; i ++) {
         const canDate = availability.rows[i];
         datesFromRange(canDate.start_date, canDate.end_date, datesToAllow, datesToDelete);
       }
-      res.render("edit_bid", {transferCover : transferConvert, trans : originalHire.rows[0]});
-
-
+    
     //Full timer will disable some dates
     } else {
       const leave = await pool.query(sql_query.query.full_timer_leave, ct_email); 
@@ -425,8 +494,41 @@ app.post('/edit_bid', async (req, res) => {
         const leaveDate = leave.rows[i];
         datesFromRange(leaveDate.start_date, leaveDate.end_date, datesToDelete);
       }
-      res.render("edit_bid", {transferConvert : transferConvert, trans : originalHire.rows[0]});
     }
+
+    //Must remove the original dates from blocked dates so that can still choose back original date.
+    removeDatesFromRange(new Date(req.body.start_date), new Date(req.body.end_date), datesToDelete);
+    console.log(datesToDelete);
+    res.render("edit_bid2", {
+      originalStartDate : req.body.start_date,
+      originalEndDate : req.body.end_date,
+      convertDate : convertDate,
+      moment : moment,
+      transferConvert : transferConvert, 
+      trans : originalHire.rows[0],
+      today : new Date().toISOString().slice(0, 10),
+      isPartTimer : isPartTimer,
+      //latestDate is 1 year from now for a fulltimer
+      latestDate : new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().slice(0, 10),
+      blockedDates : Array.from(datesToDelete),
+      availableDates : Array.from(datesToAllow)
+    });
+});
+
+app.post('/submit_edit', async (req, res) => {
+  //Need to delete old bid
+  console.log(req.body);
+  const owner_email = 'ahymans0@printfriendly.com';
+  await pool.query(sql_query.query.delete_bid, [owner_email, req.body.ct_email, 
+                                                req.body.ori_start_date, req.body.ori_end_date, 
+                                                req.body.pet_name]);
+  //Put in replacement bid.
+  queryValues = [owner_email, req.body.pet_name, req.body.ct_email, 
+                 req.body.num_days, req.body.total_cost, req.body.transferMethod,
+                 req.body.start_date, req.body.end_date, new Date()];
+  await pool.query(sql_query.query.add_bid, queryValues)
+  req.flash("success_msg", "Bid successfully updated.");
+  res.redirect('transactions');
 });
 
 app.get('/transactions', (req, res) => {

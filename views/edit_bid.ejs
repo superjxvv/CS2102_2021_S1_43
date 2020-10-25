@@ -178,7 +178,6 @@
         autoclose: true,
         orientation: 'top left'
       };
-
       date_start_input.datepicker(options).on('changeDate', function(e){
         date_end_input.datepicker("setStartDate", e.date);
       });
@@ -186,7 +185,6 @@
         date_start_input.datepicker("setEndDate", e.date);
       });
     };
-
     $(document).ready(function() {
       set_parameters();
     });

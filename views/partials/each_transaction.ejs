@@ -8,12 +8,12 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col col-6" id="trans3">
+                <div class="col-5" id="trans3">
                     <p>Date: From <%= stringToDate(String(all.start_date)) %> to <%= stringToDate(String(all.end_date)) %></p>
                     <p>Pet: <%= all.pet_name %></p>
                     <p>Caretaker: <a href="/profile/<%= all.ct_email %>"><%= all.ct_name %></a></p>
                 </div>
-                <div class="col col-6" id="trans4">
+                <div class="col-4" id="trans4">
                     <p>Status: 
                     <% if (all.hire_status == 'completed') { %>
                         <span class="badge badge-success"><%= all.hire_status %></span><br>
@@ -26,18 +26,18 @@
                     <% } %></p>
                     <p>Total Cost: <%= all.total_cost %></p>
                 </div>
-									<% if (all.button == 1) { %>
-                    <div class="col col-4">
-												<form method="POST" action="/edit_bid">
-													<input type="hidden" name="owner_email" value=<%=all.owner_email %>>
-													<input type="hidden" name="ct_email" value=<%=all.ct_email %>>
-													<input type="hidden" name="start_date" value=<%=moment(all.start_date).format() %>>
-													<input type="hidden" name="end_date" value=<%=moment(all.end_date).format() %>>
-													<input type="hidden" name="pet_name" value=<%=all.pet_name %>>
-													<button type="submit" class="btn btn-secondary btn-lg">Change care details</input>
-												</form>
-										</div>
-									<% } %>
+            <% if (all.button == 1) { %>
+                <div class="col-3">
+                        <form method="POST" action="/edit_bid">
+                            <input type="hidden" name="owner_email" value=<%=all.owner_email %>>
+                            <input type="hidden" name="ct_email" value=<%=all.ct_email %>>
+                            <input type="hidden" name="start_date" value=<%=moment(all.start_date).format() %>>
+                            <input type="hidden" name="end_date" value=<%=moment(all.end_date).format() %>>
+                            <input type="hidden" name="pet_name" value=<%=all.pet_name %>>
+                            <button type="submit" class="btn btn-secondary btn-lg">Change care details</input>
+                        </form>
+                </div>
+            <% } %>
             </div>
             
             <!-- button for payment? -->

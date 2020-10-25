@@ -101,7 +101,7 @@ CREATE TABLE hire (
   total_cost NUMERIC NOT NULL,
   hire_status hire_status NOT NULL,
   method_of_pet_transfer pet_transfer NOT NULL,
-  method_of_payment method_of_payment NOT NULL,
+  method_of_payment method_of_payment NULL,
   start_date DATE NOT NULL,
   end_date DATE NOT NULL,
   transaction_date DATE NOT NULL,

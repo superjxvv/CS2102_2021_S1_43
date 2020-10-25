@@ -8,16 +8,21 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
         integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
     <link rel="stylesheet" href="/css/profile_styles.css">
-    <!-- Font Awesome Icons -->
+    <script src="/plugins/jquery/jquery.min.js"></script>
+    <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/dist/js/adminlte.min.js"></script>
     <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
-    <!-- Theme style -->
-    <link rel="stylesheet" href="/dist/css/adminlte.min.css">
+
+    <!-- AdminLTE App -->
+    <script src="/dist/js/adminlte.min.js"></script>
     <script>
-        $(function () {
+        $(document).ready(function () {
+            console.log("In script function")
+            console.log("from script" + showSuccessToast)
             if (showSuccessToast) {
                 $(document).Toasts('create', {
                     class: 'bg-success',
-                    title: 'Toast Title',
+                    title: 'Pet Type added successfully!',
                     subtitle: 'Subtitle',
                     body: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr.'
                 })
@@ -26,10 +31,10 @@
     </script>
 </head>
 
-<body>
+<body style="background-color: lightgrey;">
     <%- include('./partials/nav_bar.ejs') %>
     <div class="card" style="margin-left: auto; margin-right: auto; margin-top: 5%; width: 80%; align-content: center;">
-        <div class="card-header border-0">
+        <div class="card-header border-0" style="flex-direction: row; display: flex; justify-content: space-between;">
             <h3 class="card-title">Pet Types</h3>
             <div class="card-tools">
                 <a href="/add-pet-type" class="btn btn-tool btn-sm">
@@ -43,7 +48,7 @@
                     <tr>
                         <th>Name</th>
                         <th>Base Daily Price ($)</th>
-                        <th>Edit</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>

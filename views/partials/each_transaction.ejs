@@ -4,19 +4,26 @@
         <div class="card-body col-12">
             <div class="row" id="transaction-header">
                 <div class="col">
-										<h4>Transaction Date: <%= stringToDate(String(all.transaction_date)) %></h4>
-										
+                    <h4>Transaction Date: <%= stringToDate(String(all.transaction_date)) %></h4>
                 </div>
             </div>
             <div class="row">
-                <div class="col col-4" id="trans3">
-									<p>Date: <%= stringToDate(String(all.start_date)) %> to <%= stringToDate(String(all.end_date)) %></p>
-                    <p>Time: ? </p>
-                    <p>Caretaker: <%= all.ct_email %></p>
-                </div>
-                <div class="col col-4" id="trans4">
-                    <p>Status: <%= all.hire_status %></p>
+                <div class="col col-6" id="trans3">
+                    <p>Date: From <%= stringToDate(String(all.start_date)) %> to <%= stringToDate(String(all.end_date)) %></p>
                     <p>Pet: <%= all.pet_name %></p>
+                    <p>Caretaker: <a href="/profile/<%= all.ct_email %>"><%= all.ct_name %></a></p>
+                </div>
+                <div class="col col-6" id="trans4">
+                    <p>Status: 
+                    <% if (all.hire_status == 'completed') { %>
+                        <span class="badge badge-success"><%= all.hire_status %></span><br>
+                    <% } else if (all.hire_status == 'cancelled' || all.hire_status == 'rejected') { %>
+                        <span class="badge badge-danger"><%= all.hire_status %></span><br>
+                    <% } else if (all.hire_status == 'pendingPayment') { %>
+                        <span class="badge badge-warning"><%= all.hire_status %></span><br>
+                    <% } else { %>
+                        <span class="badge badge-info"><%= all.hire_status %></span><br>
+                    <% } %></p>
                     <p>Total Cost: <%= all.total_cost %></p>
                 </div>
 									<% if (all.button == 1) { %>

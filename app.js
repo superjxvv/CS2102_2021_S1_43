@@ -157,6 +157,38 @@ app.post('/add-pet-type', async (req, res) => {
   });
 });
 
+app.get('/edit-pet-type', async (req, res) => {
+  try {
+    //todo: check that user is admin
+    const allPetTypes = await pool.query(
+      sql_query.query.all_pet_types
+    );
+    res.render('add-pet-type', {
+      allPetTypes: allPetTypes.rows
+    });
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
+app.get('/pcs-admin-dashboard', async (req, res) => {
+  try {
+    //todo: check that user is admin
+    const first4PetTypes = await pool.query(
+      sql_query.query.first_4_pet_types
+    );
+    const first4Caretakers = await pool.query(
+      sql_query.query.first_4_caretakers
+    );
+    res.render('pcs-admin-dashboard', {
+      first4PetTypes: first4PetTypes.rows,
+      first4Caretakers: first4Caretakers.rows
+    });
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
 app.get('/dashboard', async (req, res) => {
   try {
     if (!req.user) {
@@ -206,14 +238,14 @@ app.get('/profile/:iden', async (req, res) => {
     if (!req.user) {
       res.redirect('/login');
     } else {
-      const ct_name = req.params.iden;
-      const values = [ct_name]; 
-      const get_ct_trxns = await pool.query(sql_query.query.get_ct_email, values)
+      const ct_email = req.params.iden;
+      const values = [ct_email]; 
+      const get_ct_trxns = await pool.query(sql_query.query.get_ct_trxn, values)
       // const po_info = await pool.query(sql_query.query.get_po_info, values);
       // const po_pets = await pool.query(sql_query.query.my_pets, values);
 
       res.render('./caretaker_profile', {
-        title: 'Profile',
+        title: 'Profile of ' + get_ct_trxns.rows[0].ct_name,
         get_ct_trxns: get_ct_trxns.rows
       });
     }

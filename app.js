@@ -155,6 +155,38 @@ app.post('/add-pet-type', async (req, res) => {
   });
 });
 
+app.get('/edit-pet-type', async (req, res) => {
+  try {
+    //todo: check that user is admin
+    const allPetTypes = await pool.query(
+      sql_query.query.all_pet_types
+    );
+    res.render('add-pet-type', {
+      allPetTypes: allPetTypes.rows
+    });
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
+app.get('/pcs-admin-dashboard', async (req, res) => {
+  try {
+    //todo: check that user is admin
+    const first4PetTypes = await pool.query(
+      sql_query.query.first_4_pet_types
+    );
+    const first4Caretakers = await pool.query(
+      sql_query.query.first_4_caretakers
+    );
+    res.render('pcs-admin-dashboard', {
+      first4PetTypes: first4PetTypes.rows,
+      first4Caretakers: first4Caretakers.rows
+    });
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
 app.get('/dashboard', async (req, res) => {
   try {
     if (!req.user) {

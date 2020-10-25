@@ -12,7 +12,7 @@
 
     <div class="container vert-gap-container">
         <div class="row">
-            <h2 class="vert-gap-contents">User Information <%= hardcode_email %></h2>
+            <h2 class="vert-gap-contents">User Information</h2>
         </div>
         
         <div class="row">
@@ -72,20 +72,22 @@
         <div class="row text-left">
             <% recent_trxn.forEach(trxn => { %>
             <div class="card col-sm col-md" id="square-card" style="margin-bottom: 30px;">
-                <p><b>Status</b> <%= trxn.hire_status %><br>
+                <p><b>Status:</b> <%= trxn.hire_status %><br>
                     <b>Date:</b> <%= stringToDate(String(trxn.start_date)) %> to
                     <%= stringToDate(String(trxn.end_date)) %><br>
                     <b>Caretaker:</b> <a href="/profile/<%= trxn.ct_name %>"><%= trxn.ct_name %></a><br>
                     <b>User:</b> <%= trxn.po_name %><br>
                     <b>Pet Name:</b> <%= trxn.pet_name %><br>
-                    <b>Rating:</b> <%= trxn.hire_status == 'completed' ? trxn.rating : 'NA' %><br>
-                    <b>Review:</b> <%= trxn.review_text == 'pendingAccept' || 
+                    <% if (trxn.hire_status == 'completed') { %>
+                        <b>Rating:</b> <%= trxn.hire_status == 'completed' ? trxn.rating : 'NA' %><br>
+                        <b>Review:</b> <%= trxn.review_text == 'pendingAccept' || 
                         trxn.review_text == 'pendingPayment' ||
                         trxn.review_text == 'paymentMade' ||
                         trxn.review_text == 'inProgress' 
                             ? 'NA'
                             : trxn.review_text
                         %><br>
+                    <% } %>
                 </p>
             </div>
             <% }) %>

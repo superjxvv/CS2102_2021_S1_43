@@ -11,6 +11,8 @@ const session = require('express-session');
 const flash = require('express-flash');
 const passport = require('passport');
 const initializePassport = require('./passportConfig');
+const { exception } = require('console');
+const e = require('express');
 initializePassport(passport);
 // -------------------------------------
 
@@ -236,19 +238,15 @@ app.get('/profile/:iden', async (req, res) => {
     if (!req.user) {
       res.redirect('/login');
     } else {
-      const values = ['ahymans0@printfriendly.com']; // hardcoded
-      const po_info = await pool.query(sql_query.query.get_po_info, values);
-      const po_pets = await pool.query(sql_query.query.my_pets, values);
-      const past_trxn = await pool.query(
-        sql_query.query.recent_trxn_po,
-        values
-      );
+      const ct_name = req.params.iden;
+      const values = [ct_name]; 
+      const get_ct_trxns = await pool.query(sql_query.query.get_ct_email, values)
+      // const po_info = await pool.query(sql_query.query.get_po_info, values);
+      // const po_pets = await pool.query(sql_query.query.my_pets, values);
 
       res.render('./caretaker_profile', {
         title: 'Profile',
-        past_trxn: past_trxn.rows,
-        pet_info: po_pets.rows,
-        po_info: po_info.rows
+        get_ct_trxns: get_ct_trxns.rows
       });
     }
   } catch (err) {
@@ -265,35 +263,31 @@ app.get('/register', (req, res) => {
 });
 
 app.post('/register', async (req, res) => {
-  try {
-    console.log(req.body);
-    let { name, email, region, password1, type } = req.body;
+  console.log(req.body);
+  let { name, email, region, password1, type } = req.body;
 
-    if (!name || !email || region === '') {
-      req.flash('error', 'Please enter all fields');
-      res.render('register');
-    } else {
-      let hashedPw = await bcrypt.hash(password1, 10);
+  if (!name || !email || region === '') {
+    req.flash('error', 'Please enter all fields');
+    res.render('register');
+  } else {
+    let hashedPw = await bcrypt.hash(password1, 10);
 
-      const queryText = 'SELECT 1 FROM accounts WHERE email = $1';
-      const queryValue = [email];
-      //First check if user already exists
-      pool
-        .query(queryText, queryValue)
-        .then((queryRes) => {
+    const queryText = 'SELECT 1 FROM accounts WHERE email = $1';
+    const queryValue = [email];
+    //First check if user already exists
+    pool.query(queryText, queryValue)
+        .then(queryRes => {
           if (queryRes.rows.length > 0) {
-            req.flash('error', 'User already exists.');
-            res.render('register');
+            req.flash("error", "User already exists.");
+            res.render("register");
           } else {
-            console.log('register user');
+            console.log("register user");
             //Not exist yet. Insert into db.
-            const insertText =
-              type == 'pet_owner'
-                ? `INSERT INTO pet_owner VALUES ($1, $2, $3, $4)`
-                : `INSERT INTO care_taker(email, name, password, location, job) VALUES($1, $2, $3, $4, 'part_timer')`;
+            const insertText = type == 'pet_owner' 
+              ? `INSERT INTO pet_owner VALUES ($1, $2, $3, $4)`
+              : `INSERT INTO care_taker(email, name, password, location, job) VALUES($1, $2, $3, $4, 'part_timer')`;
 
-            pool
-              .query(insertText, [email, name, hashedPw, region])
+          pool.query(insertText, [email, name, hashedPw, region])
               .then((result) => {
                 console.log('Registered');
                 req.flash(
@@ -310,11 +304,8 @@ app.post('/register', async (req, res) => {
         .catch((err) => {
           console.log(err);
         });
-    }
-  } catch (err) {
-    console.error(err);
   }
-});
+});       
 
 app.get('/login', (req, res) => {
   if (req.user) {
@@ -358,9 +349,86 @@ app.get('/user', (req, res) => {
   }
 });
 
-app.get('/test', (req, res) => {
-  res.render('test');
+app.get('/checkout', (req, res) => {
+  res.render("bid");
+})
+
+const transferConvert = (method) => {
+  if (method == 'oDeliver') {
+    return "Dropoff at caretaker";
+  } else if (method == 'cPickup') {
+    return "Caretaker pickup";
+  } else if (method == 'office') {
+    return "Dropoff at Pet Care office"
+  }
+};
+
+
+/*
+Pushes all dates within given range into outputArr.
+Function takes in 3 arguments with 1 optional argument, criteriaSet. 
+If a date is in criteria set it won't be added to output set.
+function(startDate, endDate, outputSet, criteriaSet)
+*/
+function datesFromRange(startDate, endDate, outputSet) {
+  var startDate = arguments[0].toISOString();
+  var endDate = arguments[1].toISOString();
+  var dateMove = new Date(startDate);
+  var strDate = startDate;
+
+  while (strDate < endDate){
+    var strDate = dateMove.toISOString().slice(0,10);
+    if (arguments[3]) {
+      if (!argumemts[3].has(strDate)) {
+        arguments[2].add(strDate);
+      }
+    } else {
+      arguments[2].add(strDate);
+    }
+    dateMove.setDate(dateMove.getDate()+1);
+  };
+
+}
+
+app.post('/edit_bid', async (req, res) => {
+    console.log(req.body);
+    //req.body contains the primary key for that particular hire to be edited, passed in by a form from /transactions.
+    const originalQueryValues = Object.values(req.body);
+    const originalHire = await pool.query(sql_query.query.get_a_hire, originalQueryValues);
+    const ct_email = [originalHire.rows[0].ct_email];
+    //Whether ct is full time or part time
+    const jobType = await pool.query(sql_query.query.get_ct_type, ct_email);
+    //Dates that this ct is already booked.
+    const datesCaring = await pool.query(sql_query.query.dates_caring, ct_email);
+    var datesToDelete = new Set();
+    for (var i = 0; i < datesCaring.rows.length; i ++) {
+      const usedDate = datesCaring.rows[i];
+      datesFromRange(usedDate.start_date, usedDate.end_date, datesToDelete);
+    }
+    console.log(datesToDelete);
+    var datesToAllow = new Set();
+
+    //Part timer only show available dates
+    if (jobType.rows[0].job == 'part_timer') {
+      const availability = await pool.query(sql_query.query.part_timer_availability, ct_email);
+      for (var i = 0; i < availability.rows.length; i ++) {
+        const canDate = availability.rows[i];
+        datesFromRange(canDate.start_date, canDate.end_date, datesToAllow, datesToDelete);
+      }
+      res.render("edit_bid", {transferCover : transferConvert, trans : originalHire.rows[0]});
+
+
+    //Full timer will disable some dates
+    } else {
+      const leave = await pool.query(sql_query.query.full_timer_leave, ct_email); 
+      for (var i = 0; i < leave.rows.length; i++) {
+        const leaveDate = leave.rows[i];
+        datesFromRange(leaveDate.start_date, leaveDate.end_date, datesToDelete);
+      }
+      res.render("edit_bid", {transferConvert : transferConvert, trans : originalHire.rows[0]});
+    }
 });
+
 app.get('/transactions', (req, res) => {
   if (req.user) {
     const userEmail = ['ahymans0@printfriendly.com']; // hardcoded
@@ -369,16 +437,16 @@ app.get('/transactions', (req, res) => {
     pool
       .query(allTransactions, userEmail)
       .then((queryRes) => {
-        console.log(queryRes.rows);
         res.render('transactions', {
           name: req.user.name,
           resAllTrans: queryRes.rows,
           resOngoingTrans: queryRes.rows.filter(
-            (x) => x.hire_status != 'completed' && x.hire_status != 'rejected'
+            (x) => x.hire_status != 'completed' && x.hire_status != 'rejected' && x.hire_status != 'cancelled'
           ),
           resPastTrans: queryRes.rows.filter(
-            (x) => x.hire_status == 'completed' || x.hire_status == 'rejected'
-          )
+            (x) => x.hire_status == 'completed' || x.hire_status == 'rejected' || x.hire_status == 'cancelled'
+          ),
+          moment: moment
         });
       })
       .catch((err) => console.error(err.stack));

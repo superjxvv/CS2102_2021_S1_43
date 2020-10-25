@@ -25,7 +25,13 @@ sql.query = {
     'SELECT * FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.email = $1 LIMIT 4',
   get_po_info: 'SELECT * FROM pet_owner WHERE email = $1',
   get_ct_info: 'SELECT * FROM care_taker WHERE email = $1',
-  get_my_trxn: 'SELECT * FROM hire H INNER JOIN care_taker C ON H.ct_email = C.email WHERE H.owner_email = $1 ORDER BY transaction_date DESC, start_date DESC, end_date DESC'
+  get_my_trxn: "SELECT *, CASE WHEN H.hire_status = 'pendingAccept' OR H.hire_status = 'pendingPayment' THEN 1 ELSE 2 END AS button FROM hire H INNER JOIN care_taker C ON H.ct_email = C.email WHERE H.owner_email = $1 ORDER BY transaction_date DESC, start_date DESC, end_date DESC",
+  get_ct_email: 'SELECT C.name AS ct_name, C.email AS ct_email, H.hire_status, H.start_date, H.end_date, H.rating, H.review_text FROM care_taker C INNER JOIN hire H ON C.email = H.ct_email WHERE C.name = $1 ORDER BY H.transaction_date DESC LIMIT 4',
+  get_a_hire: "SELECT * FROM hire WHERE owner_email = $1 AND ct_email = $2 AND start_date = $3 AND end_date = $4 AND pet_name = $5",
+  get_ct_type: "SELECT job FROM care_taker WHERE email = $1",
+  dates_caring: "SELECT start_date, end_date FROM hire WHERE ct_email = $1",
+  part_timer_availability: "SELECT start_date, end_date FROM indicates_availability WHERE email = $1",
+  full_timer_leave: "SELECT start_date, end_date FROM has_leave WHERE email = $1"
 };
 
 module.exports = sql;

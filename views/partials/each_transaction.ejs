@@ -4,12 +4,13 @@
         <div class="card-body col-12">
             <div class="row" id="transaction-header">
                 <div class="col">
-                    <h4>Transaction Date: <%= stringToDate(String(all.transaction_date)) %></h4>
+										<h4>Transaction Date: <%= stringToDate(String(all.transaction_date)) %></h4>
+										
                 </div>
             </div>
             <div class="row">
                 <div class="col col-4" id="trans3">
-                    <p>Date: <%= stringToDate(String(all.start_date)) %> to <%= stringToDate(String(all.end_date)) %></p>
+									<p>Date: <%= stringToDate(String(all.start_date)) %> to <%= stringToDate(String(all.end_date)) %></p>
                     <p>Time: ? </p>
                     <p>Caretaker: <%= all.ct_email %></p>
                 </div>
@@ -18,6 +19,18 @@
                     <p>Pet: <%= all.pet_name %></p>
                     <p>Total Cost: <%= all.total_cost %></p>
                 </div>
+									<% if (all.button == 1) { %>
+                    <div class="col col-4">
+												<form method="POST" action="/edit_bid">
+													<input type="hidden" name="owner_email" value=<%=all.owner_email %>>
+													<input type="hidden" name="ct_email" value=<%=all.ct_email %>>
+													<input type="hidden" name="start_date" value=<%=moment(all.start_date).format() %>>
+													<input type="hidden" name="end_date" value=<%=moment(all.end_date).format() %>>
+													<input type="hidden" name="pet_name" value=<%=all.pet_name %>>
+													<button type="submit" class="btn btn-secondary btn-lg">Change care details</input>
+												</form>
+										</div>
+									<% } %>
             </div>
             
             <!-- button for payment? -->

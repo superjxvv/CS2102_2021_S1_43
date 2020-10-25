@@ -28,8 +28,8 @@
 
         <div class="row align-middle">
             <h4 class="vert-gap-small-header" style="margin-top: 15px;">Pet Information</h4>
-            <% if (!my_pets.length >= 2) { console.log(my_pets.length); %>
-                <button class="btn btn-primary" type="button" id="toggle-collapse" data-toggle="collapse" data-target=".happy" aria-expanded="false" aria-controls="trans3 trans4" style="height:auto;"><img src="https://icon-library.com/images/collapse-expand-icon/collapse-expand-icon-29.jpg" width="15"></button>
+            <% if (my_pets.length >= 4) { %>
+                <button class="btn btn-primary" type="button" id="toggle-collapse" data-toggle="collapse" data-target=".pets" aria-expanded="false" aria-controls="pets" style="height:auto;"><img src="https://icon-library.com/images/collapse-expand-icon/collapse-expand-icon-29.jpg" width="15"></button>
             <% } %>
         </div>
         <div class="row text-left">
@@ -52,15 +52,13 @@
         
         <div class="row text-left">
             <% top_ratings.forEach(caretaker => { %>
-                <a href="/profile/<%= caretaker.name %>" class="card col-sm col-md" id="square-card">
-                    <!-- <div class="card col-sm col-md" id="square-card"> -->
+                    <button class="card col-sm col-md" id="square-card" onclick="location.href='/profile/<%= caretaker.name %>'">
                         <p><b>Name:</b> <%= caretaker.name %><br>
                            <b>Rating:</b> <%= caretaker.rating == null ? "No Rating Yet" : caretaker.rating %><br>
                            <b>Location:</b> <%= caretaker.location %><br>
                            <b>Job:</b> <%= caretaker.job == "part_timer" ? "Part Time" : "Full Time" %><br>
                         </p>
-                    <!-- </div> -->
-                </a>
+                    </button>
             <% }) %>
         </div>
 

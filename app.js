@@ -265,7 +265,7 @@ app.get('/register', (req, res) => {
 
 app.post('/register', async (req, res) => {
   console.log(req.body);
-  let { name, email, region, password1, type } = req.body;
+  let { name, email, region, password1, type , address} = req.body;
 
   if (!name || !email || region === '') {
     req.flash('error', 'Please enter all fields');
@@ -284,27 +284,33 @@ app.post('/register', async (req, res) => {
           } else {
             console.log("register user");
             //Not exist yet. Insert into db.
-            const insertText = type == 'pet_owner' 
-              ? `INSERT INTO pet_owner VALUES ($1, $2, $3, $4)`
-              : `INSERT INTO care_taker(email, name, password, location, job) VALUES($1, $2, $3, $4, 'part_timer')`;
-
-          pool.query(insertText, [email, name, hashedPw, region])
-              .then((result) => {
-                console.log('Registered');
-                req.flash(
-                  'success_msg',
-                  'You are now registered, please login.'
-                );
-                res.redirect('/login');
-              })
-              .catch((err) => {
-                console.error(err);
-              });
+            //Check if address field consists of any alphabet. If not, treat as no address.
+            const hasAddress = /[a-zA-Z]/g.test(address);
+            const insertText = type == 'pet_owner'
+              ? hasAddress
+                ? `INSERT INTO pet_owner VALUES ($1, $2, $3, $4, $5)`
+                : `INSERT INTO pet_owner(email, name, password, location) VALUES ($1, $2, $3, $4)`
+              : hasAddress
+                ? `INSERT INTO care_taker(email, name, password, location, job, address) VALUES($1, $2, $3, $4, 'part_timer', $5)`
+                : `INSERT INTO care_taker(email, name, password, location, job) VALUES($1, $2, $3, $4, 'part_timer')`;
+            createAccountQueryValues = hasAddress ? [email, name, hashedPw, region, address] : [email, name, hashedPw, region]
+            pool.query(insertText, createAccountQueryValues)
+                .then((result) => {
+                  console.log('Registered');
+                  req.flash(
+                    'success_msg',
+                    'You are now registered, please login.'
+                  );
+                  res.redirect('/login');
+                })
+                .catch((err) => {
+                  console.error(err);
+                });
           }
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+          })
+          .catch((err) => {
+            console.log(err);
+          });
   }
 });       
 

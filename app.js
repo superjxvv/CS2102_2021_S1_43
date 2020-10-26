@@ -453,8 +453,12 @@ app.post('/submit_bid', async (req, res) => {
   //Change to req.user.email when available.
   const owner_email = 'ahymans0@printfriendly.com'
   console.log(req.body);
+  //Convert DD/MM/YYYY to js Date then get difference between dates as numdays
+  const num_days = diffDays(moment(req.body.start_date, "DD/MM/YYYY").toDate(), moment(req.body.end_date, "DD/MM/YYYY").toDate());
+  const dailyPriceQuery = await pool.query(sql_query.query.dailyPriceGivenTypeAndCT, [req.body.ct_email, req.body.pet_type]);
+  console.log(num_days);
   queryValues = [owner_email, req.body.pet_name, req.body.ct_email, 
-                 req.body.num_days, req.body.total_cost, req.body.transferMethod,
+                 num_days, num_days * dailyPriceQuery.rows[0].daily_price , req.body.transferMethod,
                  req.body.start_date, req.body.end_date, new Date()];
 
   //Add date range to date range table if not exists
@@ -470,13 +474,22 @@ app.post('/edit_bid', async (req, res) => {
     console.log(req.body);
     //req.body contains the primary key for that particular hire to be edited, passed in by a form from /transactions.
     const originalQueryValues = Object.values(req.body);
-    const originalHire = await pool.query(sql_query.query.get_a_hire, originalQueryValues);
-    const ct_email = [originalHire.rows[0].ct_email];
+    const originalHireQuery = await pool.query(sql_query.query.get_a_hire, originalQueryValues);
+    const originalHire = originalHireQuery.rows[0]
+    const ct_email = originalHire.ct_email;
     //Whether ct is full time or part time
-    const jobType = await pool.query(sql_query.query.get_ct_type, ct_email);
+    const jobTypeQuery = await pool.query(sql_query.query.get_ct_type, [ct_email]);
+    const jobType = jobTypeQuery.rows[0].job;
+
+    const petTypeQuery = await pool.query(sql_query.query.petTypeFromOwnerAndName, [originalHire.owner_email, originalHire.pet_name]);
+    const petType = petTypeQuery.rows[0].pet_type;
+
+    //Cost per day for that pet type
+    const costPerDayQuery = await pool.query(sql_query.query.dailyPriceGivenTypeAndCT, [ct_email, petType]);
+    const costPerDay = costPerDayQuery.rows[0].daily_price;
 
     //Dates that this ct is already booked.
-    const datesCaring = await pool.query(sql_query.query.dates_caring, ct_email);
+    const datesCaring = await pool.query(sql_query.query.dates_caring, [ct_email]);
     var datesToDelete = new Set();
     for (var i = 0; i < datesCaring.rows.length; i ++) {
       const usedDate = datesCaring.rows[i];
@@ -485,8 +498,8 @@ app.post('/edit_bid', async (req, res) => {
     var datesToAllow = new Set();
     var isPartTimer = false;
     //Part timer only show available dates
-    if (jobType.rows[0].job == 'part_timer') {
-      const availability = await pool.query(sql_query.query.part_timer_availability, ct_email);
+    if (jobType == 'part_timer') {
+      const availability = await pool.query(sql_query.query.part_timer_availability, [ct_email]);
       isPartTimer = true;
       for (var i = 0; i < availability.rows.length; i ++) {
         const canDate = availability.rows[i];
@@ -495,43 +508,58 @@ app.post('/edit_bid', async (req, res) => {
     
     //Full timer will disable some dates
     } else {
-      const leave = await pool.query(sql_query.query.full_timer_leave, ct_email); 
+      const leave = await pool.query(sql_query.query.full_timer_leave, [ct_email]); 
       for (var i = 0; i < leave.rows.length; i++) {
         const leaveDate = leave.rows[i];
         datesFromRange(leaveDate.start_date, leaveDate.end_date, datesToDelete);
       }
     }
 
-    //Must remove the original dates from blocked dates so that can still choose back original date.
+    //Must remove the original chosen dates from blocked dates so that can still choose back original date.
     removeDatesFromRange(new Date(req.body.start_date), new Date(req.body.end_date), datesToDelete);
-    console.log(datesToDelete);
     res.render("edit_bid2", {
-      originalStartDate : req.body.start_date,
-      originalEndDate : req.body.end_date,
+      originalStartDate : originalHire.start_date,
+      originalEndDate : originalHire.end_date,
       convertDate : convertDate,
       moment : moment,
       transferConvert : transferConvert, 
-      trans : originalHire.rows[0],
+      trans : originalHire,
       today : new Date().toISOString().slice(0, 10),
       isPartTimer : isPartTimer,
       //latestDate is 1 year from now for a fulltimer
       latestDate : new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().slice(0, 10),
       blockedDates : Array.from(datesToDelete),
-      availableDates : Array.from(datesToAllow)
+      availableDates : Array.from(datesToAllow),
+      costPerDay : costPerDay,
+      numDays : diffDays(originalHire.start_date, originalHire.end_date),
+      petName : originalHire.pet_name,
+      petType : petType
     });
 });
 
 app.post('/submit_edit', async (req, res) => {
   //Need to delete old bid
   console.log(req.body);
-  const owner_email = 'ahymans0@printfriendly.com';
+  const owner_email = 'ahymans0@printfriendly.com'; //Change to req.user.email when ready
   await pool.query(sql_query.query.delete_bid, [owner_email, req.body.ct_email, 
                                                 req.body.ori_start_date, req.body.ori_end_date, 
                                                 req.body.pet_name]);
+  const startDate = req.body.start_date === "" ? new Date(req.body.ori_start_date) : new Date(req.body.start_date);
+  const endDate = req.body.end_date === "" ? new Date(req.body.ori_end_date) : new Date(req.body.end_date);
+  const numDays = diffDays(startDate, endDate);
+  //Use pet type to server query cost per day to be sure
+  const petTypeQuery = await pool.query(sql_query.query.petTypeFromOwnerAndName, [owner_email, req.body.pet_name]);
+  const petType = petTypeQuery.rows[0].pet_type;
+  //Cost per day for that pet type
+  const costPerDayQuery = await pool.query(sql_query.query.dailyPriceGivenTypeAndCT, [req.body.ct_email, petType]);
+  const costPerDay = costPerDayQuery.rows[0].daily_price;
+  const totalCost = numDays * costPerDay;
+  //Add date range to date range table if not exists
+  await pool.query("INSERT INTO date_range VALUES($1, $2) ON CONFLICT DO NOTHING", [startDate, endDate]);                                             
   //Put in replacement bid.
   queryValues = [owner_email, req.body.pet_name, req.body.ct_email, 
-                 req.body.num_days, req.body.total_cost, req.body.transferMethod,
-                 req.body.start_date, req.body.end_date, new Date()];
+                 numDays, totalCost, req.body.transferMethod,
+                 startDate, endDate, new Date()];
   await pool.query(sql_query.query.add_bid, queryValues)
   req.flash("success_msg", "Bid successfully updated.");
   res.redirect('transactions');

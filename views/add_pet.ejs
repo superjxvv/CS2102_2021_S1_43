@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <%- include('./partials/head.ejs') %>
+</head>
+
+<body>
+    <%- include('./partials/nav_bar.ejs') %>
+    <div id="content-wrapper">
+        <div class="container-fluid">
+            <div class="card" style="width: 60%; margin: auto; margin-top: 5%">
+                <div class="card-header">
+                    <i class="fas fa-dice-d20"></i> &nbsp; <b> Add Pet Type </b>
+                </div>
+                <form method="post" action="/add_pet">
+                    <div class="card-body">
+                        <div class="form-group row">
+                            <label for="pet_name" class="col-sm-3 col-form-label">Pet Name: </label>
+                            <div class="col-sm-9">
+                                <input type="text" required="required" class="form-control" placeholder="Name" id="pet_name"
+                                    name="pet_name" value="">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="special_req" class="col-sm-3 col-form-label">Special Requirements: </label>
+                            <div class="col-sm-9">
+                                <input type="text" required="required" class="form-control" id="special_req"
+                                    placeholder="Special Requirements" name="special_req" value="">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="pet_type" class="col-sm-3 col-form-label">Pet Type: </label>
+                            <div class="col-sm-9">
+                                <select id="pet_type" name="pet_type">
+                                    <!-- <% console.log(pet_types); %> -->
+                                    <% pet_types.forEach(type => { %>
+                                        <option value=<%= type.name %>><%= type.name %></option>
+                                    <% }) %>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer small text-muted">
+                        <button type="submit" class="btn btn-secondary">Add Pet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,20 +1,20 @@
 <%- include('../functions') %>
 <div class="container vert-gap-card">
-    <div class="card" style="background-color: whitesmoke;">
-        <div class="card-body col-12">
+    <div class="card" style="background-color: whitesmoke; padding-bottom: 0px;">
+        <div class="card-body col-12" style="padding-bottom: 0px; padding-top: 15px;">
             <div class="row" id="transaction-header">
                 <div class="col">
                     <h4>Transaction Date: <%= stringToDate(String(all.transaction_date)) %></h4>
                 </div>
             </div>
             <div class="row">
-                <div class="col col-6" id="trans3">
-                    <p>Date: From <%= stringToDate(String(all.start_date)) %> to <%= stringToDate(String(all.end_date)) %></p>
-                    <p>Pet: <%= all.pet_name %></p>
-                    <p>Caretaker: <a href="/profile/<%= all.ct_email %>"><%= all.ct_name %></a></p>
+                <div class="col col-6">
+                    <p><b>Date:</b> From <%= stringToDate(String(all.start_date)) %> to <%= stringToDate(String(all.end_date)) %></p>
+                    <p><b>Pet:</b> <%= all.pet_name %></p>
+                    <p><b>Caretaker:</b> <a href="/profile/<%= all.ct_email %>"><%= all.ct_name %></a></p>
                 </div>
-                <div class="col col-6" id="trans4">
-                    <p>Status: 
+                <div class="col col-6">
+                    <p><b>Status:</b> 
                     <% if (all.hire_status == 'completed') { %>
                         <span class="badge badge-success"><%= all.hire_status %></span><br>
                     <% } else if (all.hire_status == 'cancelled' || all.hire_status == 'rejected') { %>
@@ -24,25 +24,21 @@
                     <% } else { %>
                         <span class="badge badge-info"><%= all.hire_status %></span><br>
                     <% } %></p>
-                    <p>Total Cost: <%= all.total_cost %></p>
+                    <p><b>Total Cost:</b> <%= all.total_cost %></p>
                 </div>
-									<% if (all.button == 1) { %>
-                    <div class="col col-4">
-												<form method="POST" action="/edit_bid">
-													<input type="hidden" name="owner_email" value=<%=all.owner_email %>>
-													<input type="hidden" name="ct_email" value=<%=all.ct_email %>>
-													<input type="hidden" name="start_date" value=<%=moment(all.start_date).format() %>>
-													<input type="hidden" name="end_date" value=<%=moment(all.end_date).format() %>>
-													<input type="hidden" name="pet_name" value=<%=all.pet_name %>>
-													<button type="submit" class="btn btn-secondary btn-lg">Change care details</input>
-												</form>
-										</div>
-									<% } %>
+                    <% if (all.button == 1) { %>
+                        <div class="col col-4">
+                            <form method="POST" action="/edit_bid">
+                                <input type="hidden" name="owner_email" value=<%=all.owner_email %>>
+                                <input type="hidden" name="ct_email" value=<%=all.ct_email %>>
+                                <input type="hidden" name="start_date" value=<%=moment(all.start_date).format() %>>
+                                <input type="hidden" name="end_date" value=<%=moment(all.end_date).format() %>>
+                                <input type="hidden" name="pet_name" value=<%=all.pet_name %>>
+                                <button type="submit" class="btn btn-secondary btn-lg">Change care details</input>
+                            </form>
+                        </div>
+                    <% } %>
             </div>
-            
-            <!-- button for payment? -->
         </div>
-
     </div>
-    
 </div>

@@ -23,6 +23,8 @@ sql.query = {
   // 4 of my pets
   my_pets:
     'SELECT * FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.email = $1 LIMIT 4',
+  all_my_pets:
+    'SELECT * FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.email = $1',
   get_po_info: 'SELECT * FROM pet_owner WHERE email = $1',
   get_ct_info: 'SELECT * FROM care_taker WHERE email = $1',
   get_my_trxn: "SELECT C.email AS ct_email, C.name as ct_name, *, CASE WHEN H.hire_status = 'pendingAccept' OR H.hire_status = 'pendingPayment' THEN 1 ELSE 2 END AS button FROM hire H INNER JOIN care_taker C ON H.ct_email = C.email WHERE H.owner_email = $1 ORDER BY transaction_date DESC, start_date DESC, end_date DESC",
@@ -31,7 +33,9 @@ sql.query = {
   get_ct_type: "SELECT job FROM care_taker WHERE email = $1",
   dates_caring: "SELECT start_date, end_date FROM hire WHERE ct_email = $1",
   part_timer_availability: "SELECT start_date, end_date FROM indicates_availability WHERE email = $1",
-  full_timer_leave: "SELECT start_date, end_date FROM has_leave WHERE email = $1"
+  full_timer_leave: "SELECT start_date, end_date FROM has_leave WHERE email = $1",
+  all_pet_types: "SELECT name FROM pet_type",
+  add_pet: 'CALL "add_pet"($1, $2, $3, $4)'
 };
 
 module.exports = sql;

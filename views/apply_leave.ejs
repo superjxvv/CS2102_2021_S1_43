@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('./partials/head.ejs') %>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+</head>
+
+<!-- 1. Need to check that doesn't clash with other leave days and check other constraints too.
+2. Need to automatically calculate and display number of days used based on start date and end date.
+3. check doesn't exceed remaining leave days. (DONE)
+4. Need to make sure end date > start date and cannot select start date earlier than today. (DONE)
+5. No date selected?-->
+<body>
+    <%- include('./partials/nav_bar.ejs') %>
+    <div id="content-wrapper">
+        <div class="container-fluid">
+            <div class="card" style="width: 60%; margin: auto; margin-top: 5%">
+                <div class="card-header">
+                    <i class="fas fa-dice-d20"></i> &nbsp; <b> Submit New Leave Request </b>
+                </div>
+                <form method="post" action="/apply_leave">
+                    <div class="card-body">
+                        <p><class="col"><b>Number of leave days remaining: </b>Placeholder<br></p>
+                        
+                        <div class="form-group row">
+                            <label for="date_range" class="col-sm-3 col-form-label">Select start and end date: </label>
+
+                            <div class="col-sm-9">
+                                <input type="text" required="required" name="datefilter" value="" />
+                                <script type="text/javascript">
+                                    var today = new Date();
+                                    var dd = String(today.getDate()).padStart(2, '0');
+                                    var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+                                    var yyyy = today.getFullYear();
+                                    today = mm + '/' + dd + '/' + yyyy;
+                                    $(function () {
+
+                                        $('input[name="datefilter"]').daterangepicker({
+                                            drops: "up",
+                                            autoUpdateInput: false,
+                                            showDropdowns: true,
+                                            autoApply: true,
+                                            maxSpan: {days: 7}, // set maxSpan to be number of leave days remaining
+                                            minDate: today,
+                                            locale: {
+                                                format: "MM/DD/YYYY",
+                                                firstDay: 0,
+                                                cancelLabel: 'Clear'
+                                            }
+                                            
+                                        }, function (start, end, label) {
+                                            console.log('New date range selected: ' + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD') + ' (predefined range: ' + label + ')');
+                                        });
+
+                                        $('input[name="datefilter"]').on('apply.daterangepicker', function (ev, picker) {
+                                            $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+                                        });
+
+                                        $('input[name="datefilter"]').on('cancel.daterangepicker', function (ev, picker) {
+                                            $(this).val('');
+                                        });
+
+                                    });
+                                </script>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="card-footer small text-muted">
+                        <button type="submit" class="btn btn-secondary">Submit Request</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

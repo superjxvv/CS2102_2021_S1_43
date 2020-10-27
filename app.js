@@ -542,6 +542,28 @@ app.get('/dashboard-caretaker-ft', async (req, res) => {
   }
 });
 
+app.get('/apply_leave', async (req, res) => {
+  try {
+    if (!req.user) {
+      res.redirect('/login');
+    } else {
+      const account_type = req.user.type;
+      if (account_type != 0) {
+        res.render('./apply_leave', {
+          title: 'Apply Leave',
+          statusToHuman: statusToHuman
+        });
+      } else {
+        // if is PCSadmin
+        // have not tried this out
+        res.redirect('/caretaker-summary-info');
+      }
+    }
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
 app.get('/my_pets', async (req, res) => {
   if (!req.user) {
     res.redirect('/login');

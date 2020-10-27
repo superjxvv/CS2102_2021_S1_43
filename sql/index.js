@@ -23,6 +23,8 @@ sql.query = {
   // 4 of my pets
   my_pets:
     'SELECT * FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.email = $1 LIMIT 4',
+  all_my_pets:
+    'SELECT * FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.email = $1',
   get_po_info: 'SELECT * FROM pet_owner WHERE email = $1',
   get_ct_info: 'SELECT * FROM care_taker WHERE email = $1',
   get_my_trxn: "SELECT C.email AS ct_email, C.name as ct_name, *, CASE WHEN H.hire_status = 'pendingAccept' THEN 1 ELSE 2 END AS button FROM hire H INNER JOIN care_taker C ON H.ct_email = C.email WHERE H.owner_email = $1 ORDER BY transaction_date DESC, start_date DESC, end_date DESC",
@@ -37,8 +39,10 @@ sql.query = {
   add_bid: "INSERT INTO hire(owner_email, pet_name, ct_email, num_pet_days, total_cost, hire_status, method_of_pet_transfer, start_date, end_date, transaction_date) VALUES ($1, $2, $3, $4, $5, 'pendingAccept', $6, $7, $8, $9)",
   dailyPriceGivenTypeAndCT : "SELECT daily_price FROM can_take_care_of WHERE email = $1 AND pet_type = $2",
   ownerAddress: "SELECT address FROM pet_owner WHERE email = $1",
-  petTypeFromOwnerAndName: "SELECT pet_type FROM is_of WHERE owner_email = $1 and pet_name = $2"
-
+  petTypeFromOwnerAndName: "SELECT pet_type FROM is_of WHERE owner_email = $1 and pet_name = $2",
+  
+  all_pet_types: "SELECT name FROM pet_type",
+  add_pet: 'CALL "add_pet"($1, $2, $3, $4)'
 };
 
 module.exports = sql;

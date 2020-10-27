@@ -3520,3 +3520,13 @@ insert into indicates_availability (email, start_date, end_date) values ('eportw
 insert into indicates_availability (email, start_date, end_date) values ('vbleything14@a8.net', '2021-01-28', '2022-09-06');
 insert into indicates_availability (email, start_date, end_date) values ('lgrinov4y@canalblog.com', '2020-10-28', '2022-10-18');
 insert into indicates_availability (email, start_date, end_date) values ('jgeffinger1s@blog.com', '2020-11-13', '2022-10-15');
+
+CREATE OR REPLACE PROCEDURE 
+add_pet(pet_name VARCHAR, special_requirement VARCHAR, email VARCHAR, pet_type VARCHAR) AS
+'
+BEGIN 
+INSERT INTO own_pet (pet_name, special_requirement, email) VALUES (pet_name, special_requirement, email);
+INSERT INTO is_of (pet_type, pet_name, owner_email) VALUES (pet_type, pet_name, email);
+END;
+'
+LANGUAGE plpgsql;

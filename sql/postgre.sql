@@ -17,9 +17,8 @@ CREATE TABLE pet_owner(
 
 CREATE TABLE has_credit_card(
   number VARCHAR NOT NULL,
-  name VARCHAR NOT NULL,
-  email VARCHAR PRIMARY KEY REFERENCES pet_owner(email),
-  expiry VARCHAR NOT NULL,
+  email VARCHAR REFERENCES pet_owner(email) PRIMARY KEY,
+  expiry VARCHAR NOT NULL
 );
 
 CREATE TYPE job_type AS ENUM ('part_timer', 'full_timer');
@@ -3527,6 +3526,16 @@ add_pet(pet_name VARCHAR, special_requirement VARCHAR, email VARCHAR, pet_type V
 BEGIN 
 INSERT INTO own_pet (pet_name, special_requirement, email) VALUES (pet_name, special_requirement, email);
 INSERT INTO is_of (pet_type, pet_name, owner_email) VALUES (pet_type, pet_name, email);
+END;
+'
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE PROCEDURE 
+edit_po_info(po_email VARCHAR, po_name VARCHAR, po_pw VARCHAR, po_loc VARCHAR, po_addr VARCHAR, cc_num VARCHAR, cc_exp VARCHAR) AS
+'
+BEGIN 
+UPDATE pet_owner SET name = po_name, password = po_pw, location = po_loc, address = po_addr WHERE email = po_email;
+UPDATE has_credit_card SET number = cc_num, expiry = cc_exp WHERE email = po_email;
 END;
 '
 LANGUAGE plpgsql;

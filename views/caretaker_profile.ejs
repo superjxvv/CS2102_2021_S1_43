@@ -37,18 +37,25 @@
         <div class="row text-left">
             <% get_ct_trxns.forEach(trxn => { %>
             <div class="card col-sm col-md" id="square-card">
-                <p><b>Status</b> <%= trxn.hire_status %><br>
+                <p><b>Status:</b> 
+                    <% if (trxn.hire_status == 'completed') { %>
+                        <span class="badge badge-success"><%= trxn.hire_status %></span><br>
+                    <% } else if (trxn.hire_status == 'cancelled' || trxn.hire_status == 'rejected') { %>
+                        <span class="badge badge-danger"><%= trxn.hire_status %></span><br>
+                    <% } else if (trxn.hire_status == 'pendingPayment') { %>
+                        <span class="badge badge-warning"><%= trxn.hire_status %></span><br>
+                    <% } else { %>
+                        <span class="badge badge-info"><%= trxn.hire_status %></span><br>
+                    <% } %>
                     <b>Date:</b> <%= stringToDate(String(trxn.start_date)) %> to
                     <%= stringToDate(String(trxn.end_date)) %><br>
+                    <b>Pet Owner: </b><%= trxn.po_name %><br>
+                    <b>Pet Type: </b><%= trxn.type %><br>
                     <b>Caretaker:</b> <%= trxn.ct_name %><br>
-                    <b>Rating:</b> <%= trxn.hire_status == 'completed' ? trxn.rating : 'NA' %><br>
-                    <b>Review:</b> <%= trxn.review_text == 'pendingAccept' || 
-                        trxn.review_text == 'pendingPayment' ||
-                        trxn.review_text == 'paymentMade' ||
-                        trxn.review_text == 'inProgress' 
-                            ? 'NA'
-                            : trxn.review_text
-                        %><br>
+                    <% if (trxn.hire_status == 'completed') { %>
+                        <b>Rating:</b> <%= trxn.rating == null ? 'NA' : trxn.rating %><br>
+                        <b>Review:</b> <%= trxn.review_text == null ? 'NA' : trxn.review_text %><br>
+                    <% } %>
                 </p>
             </div>
             <% }) %>

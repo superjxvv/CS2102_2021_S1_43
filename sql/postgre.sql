@@ -11,7 +11,15 @@ CREATE TABLE pet_owner(
   email VARCHAR PRIMARY KEY,
   name VARCHAR NOT NULL,
   password VARCHAR NOT NULL,
-  location VARCHAR NOT NULL
+  location VARCHAR NOT NULL,
+  address VARCHAR
+);
+
+CREATE TABLE has_credit_card(
+  number VARCHAR NOT NULL,
+  email VARCHAR REFERENCES pet_owner(email),
+  expiry VARCHAR NOT NULL,
+  PRIMARY KEY(number, email)
 );
 
 CREATE TYPE job_type AS ENUM ('part_timer', 'full_timer');
@@ -26,7 +34,8 @@ CREATE TABLE care_taker(
   rating NUMERIC,
   bank_account VARCHAR,
   max_concurrent_pet_limit INTEGER,
-  job job_type NOT NULL
+  job job_type NOT NULL,
+  address VARCHAR
 );
 
 CREATE VIEW accounts AS (
@@ -92,7 +101,7 @@ CREATE TABLE hire (
   total_cost NUMERIC NOT NULL,
   hire_status hire_status NOT NULL,
   method_of_pet_transfer pet_transfer NOT NULL,
-  method_of_payment method_of_payment NOT NULL,
+  method_of_payment method_of_payment NULL,
   start_date DATE NOT NULL,
   end_date DATE NOT NULL,
   transaction_date DATE NOT NULL,
@@ -3511,3 +3520,13 @@ insert into indicates_availability (email, start_date, end_date) values ('eportw
 insert into indicates_availability (email, start_date, end_date) values ('vbleything14@a8.net', '2021-01-28', '2022-09-06');
 insert into indicates_availability (email, start_date, end_date) values ('lgrinov4y@canalblog.com', '2020-10-28', '2022-10-18');
 insert into indicates_availability (email, start_date, end_date) values ('jgeffinger1s@blog.com', '2020-11-13', '2022-10-15');
+
+CREATE OR REPLACE PROCEDURE 
+add_pet(pet_name VARCHAR, special_requirement VARCHAR, email VARCHAR, pet_type VARCHAR) AS
+'
+BEGIN 
+INSERT INTO own_pet (pet_name, special_requirement, email) VALUES (pet_name, special_requirement, email);
+INSERT INTO is_of (pet_type, pet_name, owner_email) VALUES (pet_type, pet_name, email);
+END;
+'
+LANGUAGE plpgsql;

@@ -12,7 +12,7 @@
 
     <div class="container vert-gap-container">
         <div class="row">
-            <h2 class="vert-gap-contents">User Information <%= hardcode_email %></h2>
+            <h2 class="vert-gap-contents">User Information</h2>
         </div>
         
         <div class="row">
@@ -26,10 +26,10 @@
             </div>
         </div>
 
-        <div class="row align-middle">
+        <div class="row">
             <h4 class="vert-gap-small-header" style="margin-top: 15px;">Pet Information</h4>
-            <% if (my_pets.length >= 4) { %>
-                <button class="btn btn-primary" type="button" id="toggle-collapse" data-toggle="collapse" data-target=".pets" aria-expanded="false" aria-controls="pets" style="height:auto;"><img src="https://icon-library.com/images/collapse-expand-icon/collapse-expand-icon-29.jpg" width="15"></button>
+            <% if (my_pets.length >= 1) { %>
+                <a href="/my_pets" style="padding-left: 13px; padding-top: 17px;">See more</a>
             <% } %>
         </div>
         <div class="row text-left">
@@ -52,16 +52,15 @@
         
         <div class="row text-left">
             <% top_ratings.forEach(caretaker => { %>
-                    <button class="card col-sm col-md" id="square-card" onclick="location.href='/profile/<%= caretaker.name %>'">
-                        <p><b>Name:</b> <%= caretaker.name %><br>
-                           <b>Rating:</b> <%= caretaker.rating == null ? "No Rating Yet" : caretaker.rating %><br>
-                           <b>Location:</b> <%= caretaker.location %><br>
-                           <b>Job:</b> <%= caretaker.job == "part_timer" ? "Part Time" : "Full Time" %><br>
-                        </p>
-                    </button>
+                <button class="card col-sm col-md" id="square-card" onclick="location.href='/profile/<%= caretaker.email %>'">
+                    <p><b>Name:</b> <%= caretaker.name %><br>
+                        <b>Rating:</b> <%= caretaker.rating == null ? "No Rating Yet" : caretaker.rating %><br>
+                        <b>Location:</b> <%= caretaker.location %><br>
+                        <b>Job:</b> <%= caretaker.job == "part_timer" ? "Part Time" : "Full Time" %><br>
+                    </p>
+                </button>
             <% }) %>
         </div>
-
     </div>
 
     <div class="container vert-gap-container">
@@ -72,20 +71,24 @@
         <div class="row text-left">
             <% recent_trxn.forEach(trxn => { %>
             <div class="card col-sm col-md" id="square-card" style="margin-bottom: 30px;">
-                <p><b>Status</b> <%= trxn.hire_status %><br>
+                <p><b>Status:</b> 
+                    <% if (trxn.hire_status == 'completed') { %>
+                        <span class="badge badge-success"><%= trxn.hire_status %></span><br>
+                    <% } else if (trxn.hire_status == 'cancelled' || trxn.hire_status == 'rejected') { %>
+                        <span class="badge badge-danger"><%= trxn.hire_status %></span><br>
+                    <% } else if (trxn.hire_status == 'pendingPayment') { %>
+                        <span class="badge badge-warning"><%= trxn.hire_status %></span><br>
+                    <% } else { %>
+                        <span class="badge badge-info"><%= trxn.hire_status %></span><br>
+                    <% } %>
                     <b>Date:</b> <%= stringToDate(String(trxn.start_date)) %> to
                     <%= stringToDate(String(trxn.end_date)) %><br>
-                    <b>Caretaker:</b> <a href="/profile/<%= trxn.ct_name %>"><%= trxn.ct_name %></a><br>
-                    <b>User:</b> <%= trxn.po_name %><br>
+                    <b>Caretaker:</b> <a href="/profile/<%= trxn.ct_email %>"><%= trxn.ct_name %></a><br>
                     <b>Pet Name:</b> <%= trxn.pet_name %><br>
-                    <b>Rating:</b> <%= trxn.hire_status == 'completed' ? trxn.rating : 'NA' %><br>
-                    <b>Review:</b> <%= trxn.review_text == 'pendingAccept' || 
-                        trxn.review_text == 'pendingPayment' ||
-                        trxn.review_text == 'paymentMade' ||
-                        trxn.review_text == 'inProgress' 
-                            ? 'NA'
-                            : trxn.review_text
-                        %><br>
+                    <% if (trxn.hire_status == 'completed') { %>
+                        <b>Rating:</b> <%= trxn.hire_status == null ? 'NA' : trxn.rating %><br>
+                        <b>Review:</b> <%= trxn.review_text == null ? 'NA' : trxn.review_text %><br>
+                    <% } %>
                 </p>
             </div>
             <% }) %>
@@ -94,15 +97,10 @@
 
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
-        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
-        crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
-        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
-        crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
-        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
-        crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
 </body>
 
 </html>

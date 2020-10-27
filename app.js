@@ -395,24 +395,20 @@ app.get('/dashboard', async (req, res) => {
     } else {
       const account_type = req.user.type;
       if (account_type != 0) {
-        const query =
-          account_type == 1
-            ? sql_query.query.get_po_info
-            : sql_query.query.get_ct_info;
-        const values = [req.user.email]; // hardcoded
-        const my_location = await pool.query(query, values);
-        values[0] = my_location.rows[0].location;
+        const values = [req.user.email];
+        console.log(values);
+        const my_details = await pool.query(sql_query.query.get_po_info, values);
+        console.log(my_details.rows);
         const caretaker_top_ratings = await pool.query(
           sql_query.query.caretaker_top_ratings,
-          values
+          [my_details.rows[0].location]
         );
-        values[0] = req.user.email;
         const recent_transactions = await pool.query(
           sql_query.query.recent_trxn_po,
           values
         );
         const my_pets = await pool.query(sql_query.query.my_pets, values);
-        const my_details = await pool.query(sql_query.query.get_po_info, values);
+        
         res.render('./dashboard', {
           title: 'Dashboard',
           top_ratings: caretaker_top_ratings.rows,

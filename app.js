@@ -412,13 +412,14 @@ app.get('/dashboard', async (req, res) => {
           values
         );
         const my_pets = await pool.query(sql_query.query.my_pets, values);
+        const my_details = await pool.query(sql_query.query.get_po_info, values);
         res.render('./dashboard', {
           title: 'Dashboard',
           top_ratings: caretaker_top_ratings.rows,
           recent_trxn: recent_transactions.rows,
           my_pets: my_pets.rows,
-          my_email: req.user.email,
-          my_name: req.user.name,
+          my_details: my_details.rows,
+          statusToHuman : statusToHuman
         });
       } else {
         // if is PCSadmin
@@ -448,9 +449,8 @@ app.get('/edit_particulars', async (req, res) => {
   if (!req.user) {
     res.redirect('/login');
   } else {
-    const values = [req.body.email]; // hardcoded
+    const values = [req.user.email]; // hardcoded
     const po_info = await pool.query(sql_query.query.get_po_info, values);
-    // console.log(po_info);
     res.render('./edit_particulars', {
       title: "Edit Particulars",
       po_info: po_info.rows
@@ -466,25 +466,42 @@ app.post('/edit_particulars', async (req, res) => {
     const pw2 = req.body.pw2;
     if (pw1 && pw2 && pw1 == pw2) {
       const name = req.body.po_name;
-      const email = req.body.po_email;
+      const email = req.user.email;
       const location = req.body.location;
-      const address = "sengkang";
-      const cc_num = "798";
-      const cc_date = "99";
-      const password = await bcrypt.hash(req.body.pw1, 10);
-      console.log(name);
+      const address = req.body.address;
+      const cc_num = req.body.cc_num;
+      const cc_date = req.body.cc_date;
+      const password = await bcrypt.hash(pw1, 10);
       const values = [email, name, password, location, address, cc_num, cc_date];
       await pool.query(sql_query.query.update_po_info, values, (err, data) => {
         if (err) {
           console.log(err);
           res.redirect('/edit_particulars?add=fail');
         } else {
-          res.redirect('/edit_particulars?add=pass');
+          // should show some kind of success message
+          // req.flash('success_msg', 'Particulars updated.');
+          res.redirect('/dashboard');
         }
       });
-    } else if (password != confirm_pw) {
+    } else if (pw1 && pw2 && pw1 != pw2) {
       res.redirect('/edit_particulars?add=fail');
-    }
+    } else if (!pw1 && !pw2) {
+      const name = req.body.po_name;
+      const email = req.user.email;
+      const location = req.body.location;
+      const address = req.body.address;
+      const cc_num = req.body.cc_num;
+      const cc_date = req.body.cc_date;
+      const values = [email, name, location, address, cc_num, cc_date];
+      await pool.query(sql_query.query.update_po_info_no_pw, values, (err, data) => {
+        if (err) {
+          console.log(err);
+          res.redirect('/edit_particulars?add=fail');
+        } else {
+          res.redirect('/dashboard');
+        }
+      });
+    } 
   }
 });
 

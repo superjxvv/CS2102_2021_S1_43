@@ -57,7 +57,7 @@ sql.query = {
     'SELECT * FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.email = $1 LIMIT 4',
   all_my_pets:
     'SELECT * FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.email = $1',
-  get_po_info: 'SELECT * FROM pet_owner WHERE email = $1',
+  get_po_info: 'SELECT * FROM pet_owner P INNER JOIN has_credit_card C ON P.email = C.email WHERE P.email = $1',
   get_ct_info: 'SELECT * FROM care_taker WHERE email = $1',
   get_my_trxn: "SELECT C.email AS ct_email, C.name as ct_name, *, CASE WHEN H.hire_status = 'pendingAccept' THEN 1 ELSE 2 END AS button FROM hire H INNER JOIN care_taker C ON H.ct_email = C.email WHERE H.owner_email = $1 ORDER BY transaction_date DESC, start_date DESC, end_date DESC",
   get_ct_trxn: 'SELECT C.name AS ct_name, C.email AS ct_email, H.hire_status, H.start_date, H.end_date, H.rating, H.review_text, P.name AS po_name, I.pet_type AS type, H.pet_name FROM care_taker C INNER JOIN hire H ON C.email = H.ct_email INNER JOIN pet_owner P ON P.email = H.owner_email INNER JOIN is_of I ON I.owner_email = P.email WHERE C.email = $1 ORDER BY H.transaction_date DESC LIMIT 4',
@@ -76,6 +76,7 @@ sql.query = {
   all_pet_types: "SELECT name FROM pet_type",
   add_pet: 'CALL "add_pet"($1, $2, $3, $4)',
   update_po_info: 'CALL "edit_po_info"($1, $2, $3, $4, $5, $6, $7)',
+  update_po_info_no_pw: 'CALL "edit_po_info_no_pw"($1, $2, $3, $4, $5, $6)',
 };
 
 module.exports = sql;

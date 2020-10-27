@@ -5,9 +5,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Search</title>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-    integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
-  <link rel="stylesheet" href="/css/profile_styles.css">
   <script src="/plugins/jquery/jquery.min.js"></script>
   <script src="/plugins/moment/moment.min.js"></script>
   <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
@@ -16,120 +13,216 @@
   <script src="/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
   <script src="/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
   <script src="/plugins/daterangepicker/daterangepicker.js"></script>
+  <script src="/plugins/select2/js/select2.full.min.js"></script>
+  <script src="/plugins/bootstrap-switch/js/bootstrap-switch.min.js"></script>
   <script src="/dist/js/adminlte.min.js"></script>
+  <link rel="stylesheet" href="/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/dist/css/adminlte.min.css">
   <link rel="stylesheet" href="/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
   <link rel="stylesheet" href="/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
   <link rel="stylesheet" href="/plugins/daterangepicker/daterangepicker.css">
   <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+  <link rel="stylesheet" href="/plugins/select2/css/select2.min.css">
+  <link rel="stylesheet" href="/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">
   <script>
     $(function () {
-      // Setup - add a text input to each footer cell
-      $('#example1 tfoot th').each(function () {
-        var title = $(this).text();
-        $(this).html('<input type="text" placeholder="Search ' + title + '" style="width: 100%;"/>');
-      });
-
-      // DataTable
-      var table = $('#example1').DataTable({
-        "responsive": true,
-        "autoWidth": false,
-        initComplete: function () {
-          // Apply the search
-          this.api().columns().every(function () {
-            var that = this;
-
-            $('input', this.footer()).on('keyup change clear', function () {
-              if (that.search() !== this.value) {
-                that
-                  .search(this.value)
-                  .draw();
-              }
-            });
-          });
-
-          var r = $('#example1 tfoot tr');
-          r.find('th').each(function () {
-            $(this).css('padding', 8);
-          });
-          $('#example1 thead').append(r);
-        }
-      });
+      let startDate;
+      let endDate;
+      let selectedPetTypes = [];
+      let ratingSort = 'DESC';
+      let priceSort = 'DESC';
+      const petTypes = JSON.parse('<%- JSON.stringify(petTypes) %>');
+      selectedPetTypes = JSON.parse('<%- JSON.stringify(selectedPetTypes) %>') ? JSON.parse('<%- JSON.stringify(selectedPetTypes) %>') : [];
+      $('.select2').select2({
+        data: petTypes.map((item) => {
+          return item.name;
+        }),
+        allowClear: true,
+      })
+      $('.select2').val(selectedPetTypes);
+      $('.select2').trigger('change.select2');
       let urlArray = window.location.href.split('/')
       if (urlArray[urlArray.length - 1] == 'search') {
-        $('#reservation').daterangepicker({}, function (start, end, label) {
-          console.log("A new date selection was made: " + start.format('MM-DD-YYYY') + ' to ' + end.format('MM-DD-YYYY'));
-          window.location.href = '/search/' + start.format('MM-DD-YYYY') + '/' + end.format('MM-DD-YYYY')
+        startDate = new Date()
+        endDate = new Date()
+        $('#reservation').daterangepicker({ startDate, endDate }, function (start, end, label) {
+          window.location.href = '/search/' + start.format('MM-DD-YYYY') + '/' + end.format('MM-DD-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort
         })
       } else {
-        $('#reservation').daterangepicker({ startDate: new Date(urlArray[urlArray.length - 2]), endDate: new Date(urlArray[urlArray.length - 1]) }, function (start, end, label) {
-          console.log("A new date selection was made: " + start.format('MM-DD-YYYY') + ' to ' + end.format('MM-DD-YYYY'));
-          window.location.href = '/search/' + start.format('MM-DD-YYYY') + '/' + end.format('MM-DD-YYYY')
+        ratingSort = JSON.parse('<%- JSON.stringify(rating) %>');
+        priceSort = JSON.parse('<%- JSON.stringify(price) %>');
+        startDate = new Date(urlArray[urlArray.length - 6])
+        endDate = new Date(urlArray[urlArray.length - 5])
+        $('#reservation').daterangepicker({ startDate, endDate }, function (start, end, label) {
+          window.location.href = '/search/' + start.format('MM-DD-YYYY') + '/' + end.format('MM-DD-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort;
         })
       }
+
+      check = () => {
+        window.location.href = '/search/' + moment(startDate).format('MM-DD-YYYY') + '/' + moment(endDate).format('MM-DD-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort;
+      };
+
+      $('.select2').on('change', function (e) {
+        console.log($('input[name="location"]:checked').val())
+        window.location.href = '/search/' + moment(startDate).format('MM-DD-YYYY') + '/' + moment(endDate).format('MM-DD-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort;
+      });
+
+      // $("input[data-bootstrap-switch]").each(function () {
+      //   $(this).bootstrapSwitch();
+      // });
+      $('input[name="sort-rating"]').bootstrapSwitch({
+        state: ratingSort == 'DESC',
+        onSwitchChange: function (event, state) {
+          event.preventDefault()
+          if (state) {
+            ratingSort = 'DESC'
+            window.location.href = '/search/' + moment(startDate).format('MM-DD-YYYY') + '/' + moment(endDate).format('MM-DD-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort;
+          } else {
+            ratingSort = 'ASC'
+            window.location.href = '/search/' + moment(startDate).format('MM-DD-YYYY') + '/' + moment(endDate).format('MM-DD-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort;
+          }
+        }
+      });
+      $('input[name="sort-price"]').bootstrapSwitch({
+        state: priceSort == 'DESC',
+        onSwitchChange: function (event, state) {
+          event.preventDefault()
+          if (state) {
+            priceSort = 'DESC'
+            window.location.href = '/search/' + moment(startDate).format('MM-DD-YYYY') + '/' + moment(endDate).format('MM-DD-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort;
+          } else {
+            priceSort = 'ASC'
+            window.location.href = '/search/' + moment(startDate).format('MM-DD-YYYY') + '/' + moment(endDate).format('MM-DD-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort;
+          }
+        }
+      });
 
     });
   </script>
 </head>
 
-<body>
-  <%- include('./partials/nav_bar.ejs') %>
-  <div class="card">
-    <div class="card-header">
-      <h3 class="card-title">Search Care Takers</h3>
+<body class="sidebar-mini layout-fixed sidebar-closed sidebar-collapse">
+  <%- include('./partials/top-nav-bar.ejs') %>
+  <%- include('./partials/side-nav-bar.ejs', {loggedInUser: loggedInUser}) %>
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1 class="m-0 text-dark">Search Care Takers</h1>
+          </div><!-- /.col -->
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+              <li class="breadcrumb-item active">Search Care Takers</li>
+            </ol>
+          </div><!-- /.col -->
+        </div><!-- /.row -->
+      </div><!-- /.container-fluid -->
     </div>
-    <!-- /.card-header -->
-    <div class="card-body">
-      <div class="form-group">
-        <label>Availability Date range:</label>
-        <div class="input-group">
-          <div class="input-group-prepend">
-            <span class="input-group-text">
-              <i class="far fa-calendar-alt"></i>
-            </span>
-          </div>
-          <input type="text" class="form-control float-right" id="reservation">
+    <section class="content row p-3">
+      <div class="card card-solid col-9">
+        <div class="card-header">
+          <h3 class="card-title">Search Care Takers</h3>
         </div>
-        <!-- /.input group -->
+        <!-- /.card-header -->
+        <div class="card-body">
+
+          <div class="row">
+            <% for(let i = 0; i < careTakers.length; i++) { %>
+            <div class="col-4">
+              <div class="card bg-light">
+                <div class="card-header text-muted border-bottom-0">
+                  <small class="badge badge-secondary"> <%=careTakers[i].job%> </small>
+                </div>
+                <div class="card-body pt-0">
+                  <div class="row">
+                    <div class="col-7 ">
+                      <h2 class="lead">
+                        <b><%=careTakers[i].name%></b></h2>
+                      <p class="text-muted text-sm">
+                        <b>location: <%=careTakers[i].location%></b>
+                      </p>
+                      <p class="text-muted text-sm">
+                        <b>rating: <%=Number(careTakers[i].rating).toFixed(2)%></b>
+                      </p>
+                      <p class="text-muted text-sm">
+                        <span class="d-flex flex-wrap">
+                          <% for(let j = 0; j < careTakers[i].pet_types.length; j++) {%>
+                          <p>
+                            <small class="badge badge-dark">
+                              <%=careTakers[i].pet_types[j]%>
+                            </small>
+                          </p>
+                          <% } %>
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-footer">
+                  <div class="text-center footer-buttons">
+                    <a href="/profile/<%=careTakers[i].email%>" class="btn btn-sm btn-primary">
+                      <i class="fas fa-user"></i> View Profile
+                    </a>
+                    <a href="/profile/bid/<%=careTakers[i].email%>" class="btn btn-sm btn-primary">
+                      <i class="fas fa-user"></i> Bid for Care Taker
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <% } %>
+          </div>
+        </div>
+        <!-- /.card-body -->
       </div>
-      <table id="example1" class="table table-bordered table-striped">
-        <thead>
-          <tr>
-            <th>Email</th>
-            <th>Name</th>
-            <th>Location</th>
-            <th>Rating</th>
-            <th>Daily Price</th>
-            <th>Pet Type</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% for(var i = 0; i < careTakers.length; i++) { %>
-          <tr>
-            <td><%= careTakers[i].email %></td>
-            <td><%= careTakers[i].name %>
-            </td>
-            <td><%= careTakers[i].location %></td>
-            <td><%= Number(careTakers[i].rating).toFixed(2) %></td>
-            <td><%= careTakers[i].price %></td>
-            <td><%= careTakers[i].pet_type %></td>
-          </tr>
-          <% } %>
-        </tbody>
-        <tfoot>
-          <tr>
-            <th>Email</th>
-            <th>Name</th>
-            <th>Location</th>
-            <th>Rating</th>
-            <th>Daily Price</th>
-            <th>Pet Type</th>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
-    <!-- /.card-body -->
+      <!-- /.card -->
+      <div class="col-3">
+        <h4 style="color: grey;"> Refine Search </h4>
+
+        <div class="form-group">
+          <h5>Availability Date range:</h5>
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text">
+                <i class="far fa-calendar-alt"></i>
+              </span>
+            </div>
+            <input type="text" class="form-control float-right" id="reservation">
+          </div>
+          <!-- /.input group -->
+        </div>
+
+        <div class="form-group">
+          <h5>Location</h5>
+          <% var location = ['North', 'West', 'East', 'North-East', 'Central', 'All']%>
+          <%for(let k = 0; k < location.length; k++) {%>
+          <div class="radio">
+            <label>
+              <input type="radio" name="location" value="<%=location[k]%>" <% if(location[k] == selectedLocation) {%>checked<%}%> onChange="check()" />
+              <%=location[k]%> </label>
+          </div>
+          <%}%>
+        </div>
+
+        <div class="form-group select2-dark">
+          <h5>Pet Type</h5>
+          <select class="select2" multiple="multiple" data-placeholder="Filter by pet type"
+            data-dropdown-css-class="select2-dark" style="width: 100%;">
+          </select>
+        </div>
+        <div class="row">
+          <h5 class="col-12">Sort By</h5>
+          <label class="col-6">Rating</label>
+          <input type="checkbox" name="sort-rating" checked data-bootstrap-switch data-on-text="DESC" data-off-text="ASC">
+          <label class="col-6">Price</label>
+          <input type="checkbox" name="sort-price" checked data-bootstrap-switch data-on-text="DESC" data-off-text="ASC">
+        </div>
+      </div>
+    </section>
   </div>
-  <!-- /.card -->
 </body>
 
 </html>

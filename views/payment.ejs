@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
+    <meta name="generator" content="Jekyll v4.1.1">
+    <title>Payment</title>
+
+    <link rel="canonical" href="https://getbootstrap.com/docs/4.5/examples/checkout/">
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="/assets/dist/css/bootstrap.min.css" >
+    <!-- Custom styles for this template -->
+    <link href="/css/form-validation.css" rel="stylesheet">
+  </head>
+
+  <body class="bg-light">
+    <%- include('./partials/nav_bar.ejs') %>
+    <div class="container">
+  <div class="py-5 text-center">
+    <h2>Payment</h2>
+  </div>
+
+  <div class="row">
+    <div class="col-md-4 order-md-2 mb-4">
+      <h4 class="d-flex justify-content-between align-items-center mb-3">
+        <span class="text-muted">Your cart</span>
+        <span class="badge badge-secondary badge-pill"></span>
+      </h4>
+      <ul class="list-group mb-3">
+        <li class="list-group-item d-flex justify-content-between lh-condensed">
+          <div>
+            <h6 class="my-0">Caretaker</h6>
+          </div>
+          <span class="text-muted"><%= ctName %></span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between lh-condensed">
+          <div>
+            <h6 class="my-0">Start Date</h6>
+          </div>
+          <span class="text-muted"><%= convertDate(data.start_date) %></span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between lh-condensed">
+          <div>
+            <h6 class="my-0">End Date</h6>
+          </div>
+          <span class="text-muted"><%= convertDate(data.end_date) %></span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between lh-condensed">
+          <div>
+            <h6 class="my-0">Cost per day</h6>
+          </div>
+          <span class="text-muted">$<%= costPerDay %></span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between">
+          <span>Total (SGD)</span>
+          <strong>$<%= totalCost %> </strong>
+        </li>
+      </ul>
+    </div>
+
+    
+    <!--Form-->
+    <div class="col-md-8 order-md-1">
+      <form action="/submit_payment" class="needs-validation" novalidate method="POST">
+          <!--Pass rest of details back-->
+        <input type="hidden" name="ct_email" value="<%=data.ct_email%>">
+        <input type="hidden" name="start_date" value="<%=data.start_date%>">
+        <input type="hidden" name="end_date" value="<%=data.end_date%>">
+        <input type="hidden" name="pet_name" value="<%=data.pet_name%>">
+        
+        <hr class="mb-4">
+        <div class="d-block my-3">
+            <b>Select payment method:</b>
+            <div class="custom-control custom-radio">
+              <input id="credit" name="paymentMethod" type="radio" class="custom-control-input" value="cash" checked required>
+              <label class="custom-control-label" for="credit">Cash</label>
+            </div>
+            <div class="custom-control custom-radio">
+              <input id="debit" name="paymentMethod" type="radio" class="custom-control-input" value="creditcard" required>
+              <label class="custom-control-label" for="debit">Credit card</label>
+            </div>
+          </div>
+          <div id="creditCardFields">
+            <hr class="mb-4">
+            <% if (hasCC) { %>
+              <div class="card">
+                <div class="card-body">
+                  <input type="hidden" value="<%= hasCC %>" name="hasCC">
+                  <h6 class="card-subtitle mb-2 text-muted">You may change your credit card in your profile.</h6>
+                  <p class="card-text"><b>Credit card ending:</b><%= ccLast4 %></p>
+                </div>
+              </div>
+            <% } else { %> 
+              <div class="alert alert-warning" role="alert">
+                <h4 class="alert-heading">No credit card registered.</h4>
+                <hr>
+                <p class="mb-0">Please add a credit card in your profile page to pay by credit card.</p>
+              </div>
+            <% } %>
+          </div>
+        <hr class="mb-4">
+        <button class="btn btn-success btn-lg btn-block" type="submit" style="float:right" id="submitBtn">Make Payment</button>
+      </form>
+      <!--End Form-->
+    </div>
+  </div>
+
+  <footer class="my-5 pt-5 text-muted text-center text-small">
+  </footer>
+</div>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script>window.jQuery || document.write('<script src="/assets/js/vendor/jquery.slim.min.js"><\/script>')</script>
+<script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/plugins/bootstrap/js/form-validation.js"></script>
+<script>
+  var hasCC = "<%= hasCC %>" === "true";
+  $(document).on('click', 'input[name="paymentMethod"]', function(){
+    console.log("hey", this.value);
+    $("#creditCardFields").toggle(this.value ==="creditcard");
+
+    if (!hasCC && this.value === "creditcard") {
+      console.log('boo')
+      $('#submitBtn').prop('disabled', true);
+    } else {
+      console.log('bam')
+      $('#submitBtn').prop('disabled', false);
+    }
+  });
+
+  $(document).ready(() => {
+    $("#creditCardFields").toggle(false);
+  });
+
+</script>
+</body>
+</html>

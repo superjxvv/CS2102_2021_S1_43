@@ -8,36 +8,45 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col col-6">
+                <div class="col col-5">
                     <p><b>Date:</b> From <%= stringToDate(String(all.start_date)) %> to <%= stringToDate(String(all.end_date)) %></p>
                     <p><b>Pet:</b> <%= all.pet_name %></p>
                     <p><b>Caretaker:</b> <a href="/profile/<%= all.ct_email %>"><%= all.ct_name %></a></p>
                 </div>
-                <div class="col col-6">
+                <div class="col col-4">
                     <p><b>Status:</b> 
                     <% if (all.hire_status == 'completed') { %>
-                        <span class="badge badge-success"><%= all.hire_status %></span><br>
+                        <span class="badge badge-success"><%= statusToHuman(all.hire_status) %></span><br>
                     <% } else if (all.hire_status == 'cancelled' || all.hire_status == 'rejected') { %>
-                        <span class="badge badge-danger"><%= all.hire_status %></span><br>
+                        <span class="badge badge-danger"><%= statusToHuman(all.hire_status) %></span><br>
                     <% } else if (all.hire_status == 'pendingPayment') { %>
-                        <span class="badge badge-warning"><%= all.hire_status %></span><br>
+                        <span class="badge badge-warning"><%= statusToHuman(all.hire_status) %></span><br>
                     <% } else { %>
-                        <span class="badge badge-info"><%= all.hire_status %></span><br>
+                        <span class="badge badge-info"><%= statusToHuman(all.hire_status) %></span><br>
                     <% } %></p>
-                    <p><b>Total Cost:</b> <%= all.total_cost %></p>
+                    <p><b>Total Cost:</b> $<%= (Math.round(all.total_cost * 100) / 100).toFixed(2) %></p>
                 </div>
-                    <% if (all.button == 1) { %>
-                        <div class="col col-4">
+                    <% if (all.button == 1 || all.hire_status == 'pendingPayment') { %>
+                        <div class="col col-3">
+                            <% if (all.button == 1) { %>
                             <form method="POST" action="/edit_bid">
-                                <input type="hidden" name="owner_email" value=<%=all.owner_email %>>
-                                <input type="hidden" name="ct_email" value=<%=all.ct_email %>>
-                                <input type="hidden" name="start_date" value=<%=moment(all.start_date).format() %>>
-                                <input type="hidden" name="end_date" value=<%=moment(all.end_date).format() %>>
-                                <input type="hidden" name="pet_name" value=<%=all.pet_name %>>
-                                <button type="submit" class="btn btn-secondary btn-lg">Change care details</input>
+                            <% } else { %>
+                            <form method ="POST" action="/payment">
+                            <% } %>
+                              <input type="hidden" name="owner_email" value=<%=all.owner_email %>>
+                              <input type="hidden" name="ct_email" value=<%=all.ct_email %>>
+                              <input type="hidden" name="start_date" value=<%=moment(all.start_date).format() %>>
+                              <input type="hidden" name="end_date" value=<%=moment(all.end_date).format() %>>
+                              <input type="hidden" name="pet_name" value=<%=all.pet_name %>>
+                              <% if (all.button == 1) { %>
+                              <button type="submit" class="btn btn-secondary">Change care details</input>
+                              <% } else { %>
+                              <button type="submit" class="btn btn-success">Make payment</input>
+                              <% } %>
                             </form>
                         </div>
                     <% } %>
+
             </div>
         </div>
     </div>

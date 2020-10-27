@@ -162,13 +162,18 @@
                   </div>
                 </div>
                 <div class="card-footer">
-                  <div class="text-center footer-buttons">
+                  <div class="footer-buttons row d-flex justify-content-around">
                     <a href="/profile/<%=careTakers[i].email%>" class="btn btn-sm btn-primary">
                       <i class="fas fa-user"></i> View Profile
                     </a>
-                    <a href="/profile/bid/<%=careTakers[i].email%>" class="btn btn-sm btn-primary">
+                    <form method="POST" action="/pre-bid">
+                      <input type="hidden" name="ct_email" value=<%=careTakers[i].email%>>
+                      <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-user"></i> Bid for Care
+                        Taker</button>
+                    </form>
+                    <!-- <a href="/profile/bid/<%=careTakers[i].email%>" class="btn btn-sm btn-primary">
                       <i class="fas fa-user"></i> Bid for Care Taker
-                    </a>
+                    </a> -->
                   </div>
                 </div>
               </div>

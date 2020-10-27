@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bid for Care Taker</title>
+  <script src="/plugins/jquery/jquery.min.js"></script>
+  <script src="/plugins/moment/moment.min.js"></script>
+  <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/plugins/datatables/jquery.dataTables.min.js"></script>
+  <script src="/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+  <script src="/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+  <script src="/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+  <script src="/plugins/daterangepicker/daterangepicker.js"></script>
+  <script src="/plugins/select2/js/select2.full.min.js"></script>
+  <script src="/plugins/bootstrap-switch/js/bootstrap-switch.min.js"></script>
+  <script src="/dist/js/adminlte.min.js"></script>
+  <link rel="stylesheet" href="/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/dist/css/adminlte.min.css">
+  <link rel="stylesheet" href="/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+  <link rel="stylesheet" href="/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+  <link rel="stylesheet" href="/plugins/daterangepicker/daterangepicker.css">
+  <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+  <link rel="stylesheet" href="/plugins/select2/css/select2.min.css">
+  <link rel="stylesheet" href="/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">
+  <script>
+    $(function () {
+      const allMyPets = JSON.parse('<%- JSON.stringify(allMyPets) %>');
+      $('.select2').select2({
+        data: allMyPets.map((item) => {
+          return item.pet_name;
+        }),
+        allowClear: true,
+        maximumSelectionLength: 1
+      })
+
+      var today = new Date("<%= today %>");
+      var latestDate = new Date("<%= latestDate %>");
+      var isPartTimer = "<%= isPartTimer %>" == "true";
+      var blockedDates = JSON.parse('<%- JSON.stringify(blockedDates) %>');
+      blockedDates = new Set(blockedDates);
+      var availableDates = JSON.parse('<%- JSON.stringify(availableDates) %>');
+      availableDates = new Set(availableDates);
+      $('input[name="dates"]').daterangepicker({
+        minDate: today,
+        maxDate: latestDate,
+        autoUpdateInput: false,
+        autoApply: true,
+        locale: {
+          format: 'DD/MM/YYYY'
+        },
+        isInvalidDate: (aDate) => {
+          const date = aDate.format('YYYY-MM-DD');
+          if (isPartTimer) {
+            return !(availableDates.has(date) || blockedDates.has(date));
+          } else {
+            return blockedDates.has(date);
+          }
+        }
+      });
+
+      $('.select2').on('change', function (e) {
+        console.log($('.select2').val());
+        document.getElementById("pet_name").value = $('.select2').val();
+        console.log(document.getElementById("pet_name").value);
+      });
+
+      $('input[name="dates"]').on('apply.daterangepicker', function (ev, picker) {
+        document.getElementById("start_date").value = picker.startDate.format('MM/DD/YYYY');
+        document.getElementById("end_date").value = picker.endDate.format('MM/DD/YYYY');
+        $(this).val(picker.startDate.format('MM/DD/YYYY') + ' - ' + picker.endDate.format('MM/DD/YYYY'));
+      });
+    })
+  </script>
+</head>
+
+<body class="sidebar-mini layout-fixed sidebar-closed sidebar-collapse">
+  <%- include('./partials/top-nav-bar.ejs') %>
+  <%- include('./partials/side-nav-bar.ejs', {loggedInUser: loggedInUser}) %>
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1 class="m-0 text-dark">Bid for Care Taker</h1>
+          </div><!-- /.col -->
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+              <li class="breadcrumb-item"><a href="/search">Search</a></li>
+              <li class="breadcrumb-item active">Bid for Care Taker</li>
+            </ol>
+          </div><!-- /.col -->
+        </div><!-- /.row -->
+      </div><!-- /.container-fluid -->
+    </div>
+    <section class="content row p-3 d-flex justify-content-center">
+      <div class="card card-primary col-8 px-0">
+        <div class="card-header">
+          <h3 class="card-title">Bid for Care Taker</h3>
+        </div>
+        <!-- /.card-header -->
+        <!-- form start -->
+        <form method="POST" action="/bid" role="form">
+          <div class="card-body">
+            <div class="form-group">
+              <label for="ct_email">Care Taker Email address</label>
+              <input type="email" class="form-control" id="ct_email" value="<%=careTakerToBid.email%>" disabled>
+            </div>
+            <div class="form-group">
+              <label for="ct_name">Care Taker Name</label>
+              <input type="text" class="form-control" id="ct_name" value="<%=careTakerToBid.name%>" disabled>
+            </div>
+            <div class="form-group">
+              <label for="ct_location">Care Taker Location</label>
+              <input type="text" class="form-control" id="ct_location" value="<%=careTakerToBid.location%>" disabled>
+            </div>
+            <div class="form-group">
+              <label for="ct_job">Care Taker Type</label>
+              <input type="text" class="form-control" id="ct_job" value="<%=careTakerToBid.job%>" disabled>
+            </div>
+            <div class="form-group select2-dark">
+              <label for="pet">Choose pet to take care of</label>
+              <select class="form-control select2" multiple="multiple" data-placeholder="Choose pet to take care of"
+                id="pet" data-dropdown-css-class="select2-dark" style="width: 100%;">
+              </select>
+            </div>
+            <div class="form-group">
+              <h5>Select Dates:</h5>
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text">
+                    <i class="far fa-calendar-alt"></i>
+                  </span>
+                </div>
+                <input type="text" class="form-control float-right" id="dates" name="dates" value="">
+                <input type="hidden" id="start_date" name="start_date" value="">
+                <input type="hidden" id="end_date" name="end_date" value="">
+              </div>
+              <!-- /.input group -->
+            </div>
+            <input type="hidden" name="ct_email" value=<%=careTakerToBid.email%>>
+            <input type="hidden" name="owner_email" value=<%=loggedInUserEmail%>>
+            <input type="hidden" id="pet_name" name="pet_name">
+            <!--change to loggedInUser.email when ready-->
+          </div>
+          <!-- /.card-body -->
+
+          <div class="card-footer">
+            <button type="submit" class="btn btn-primary float-right">Bid</button>
+          </div>
+        </form>
+      </div>
+      <!-- /.card -->
+    </section>
+  </div>
+</body>
+
+</html>

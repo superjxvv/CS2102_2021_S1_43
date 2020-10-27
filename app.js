@@ -208,14 +208,14 @@ app.get('/dashboard', async (req, res) => {
           account_type == 1
             ? sql_query.query.get_po_info
             : sql_query.query.get_ct_info;
-        const values = ['ahymans0@printfriendly.com']; // hardcoded
+        const values = [req.user.email]; // hardcoded
         const my_location = await pool.query(query, values);
         values[0] = my_location.rows[0].location;
         const caretaker_top_ratings = await pool.query(
           sql_query.query.caretaker_top_ratings,
           values
         );
-        values[0] = 'ahymans0@printfriendly.com';
+        values[0] = req.user.email;
         const recent_transactions = await pool.query(
           sql_query.query.recent_trxn_po,
           values
@@ -228,7 +228,6 @@ app.get('/dashboard', async (req, res) => {
           my_pets: my_pets.rows,
           my_email: req.user.email,
           my_name: req.user.name,
-          hardcode_email: 'ahymans0@printfriendly.com'
         });
       } else {
         // if is PCSadmin
@@ -245,12 +244,56 @@ app.get('/my_pets', async (req, res) => {
   if (!req.user) {
     res.redirect('/login');
   } else {
-    const values = ['ahymans0@printfriendly.com']; // hardcoded
+    const values = [req.user.email]; // hardcoded
     const query = await pool.query(sql_query.query.all_my_pets, values);
     res.render('./my_pets', {
       title: "My Pets",
       all_pets: query.rows
     });
+  }
+});
+
+app.get('/edit_particulars', async (req, res) => {
+  if (!req.user) {
+    res.redirect('/login');
+  } else {
+    const values = [req.body.email]; // hardcoded
+    const po_info = await pool.query(sql_query.query.get_po_info, values);
+    // console.log(po_info);
+    res.render('./edit_particulars', {
+      title: "Edit Particulars",
+      po_info: po_info.rows
+    });
+  }
+});
+
+app.post('/edit_particulars', async (req, res) => {
+  if (!req.user) {
+    res.redirect('/login');
+  } else {
+    const pw1 = req.body.pw1;
+    const pw2 = req.body.pw2;
+    if (pw1 && pw2 && pw1 == pw2) {
+      const name = req.body.po_name;
+      const email = req.body.po_email;
+      const location = req.body.location;
+      const address = "sengkang";
+      const cc_num = "798";
+      const cc_date = "99";
+      const password = await bcrypt.hash(req.body.pw1, 10);
+      console.log(name);
+      const values = [email, name, password, location, address, cc_num, cc_date];
+      await pool.query(sql_query.query.update_po_info, values, (err, data) => {
+        if (err) {
+          console.log(err);
+          res.redirect('/edit_particulars?add=fail');
+        } else {
+          res.redirect('/edit_particulars?add=pass');
+        }
+      });
+    } else if (password != confirm_pw) {
+      res.redirect('/edit_particulars?add=fail');
+    }
   }
 });
 
@@ -273,7 +316,7 @@ app.post('/add_pet', async (req, res) => {
     const pet_name = req.body.pet_name;
     const special_req = req.body.special_req;
     const pet_type = req.body.pet_type;
-    const values = [pet_name, special_req, 'ahymans0@printfriendly.com', pet_type]; // hardcoded
+    const values = [pet_name, special_req, req.user.email, pet_type]; // hardcoded
     await pool.query(sql_query.query.add_pet, values, (err, data) => {
       if (err) {
         console.log(err);
@@ -481,7 +524,7 @@ app.post('/edit_bid', async (req, res) => {
 
 app.get('/transactions', (req, res) => {
   if (req.user) {
-    const userEmail = ['ahymans0@printfriendly.com']; // hardcoded
+    const userEmail = [req.user.email]; // hardcoded
     const allTransactions = sql_query.query.get_my_trxn;
 
     pool

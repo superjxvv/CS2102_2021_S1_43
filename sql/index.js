@@ -35,7 +35,8 @@ sql.query = {
   part_timer_availability: "SELECT start_date, end_date FROM indicates_availability WHERE email = $1",
   full_timer_leave: "SELECT start_date, end_date FROM has_leave WHERE email = $1",
   all_pet_types: "SELECT name FROM pet_type",
-  add_pet: 'CALL "add_pet"($1, $2, $3, $4)'
+  add_pet: 'CALL "add_pet"($1, $2, $3, $4)',
+  update_po_info: 'CALL "edit_po_info"($1, $2, $3, $4, $5, $6, $7)',
 };
 
 module.exports = sql;

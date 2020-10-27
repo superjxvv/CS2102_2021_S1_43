@@ -25,17 +25,17 @@
                         <div class="form-group row">
                             <label for="special_req" class="col-sm-3 col-form-label">Special Requirements: </label>
                             <div class="col-sm-9">
-                                <input type="text" required="required" class="form-control" id="special_req"
+                                <input type="text" class="form-control" id="special_req"
                                     placeholder="Special Requirements" name="special_req" value="">
                             </div>
                         </div>
                         <div class="form-group row">
                             <label for="pet_type" class="col-sm-3 col-form-label">Pet Type: </label>
                             <div class="col-sm-9">
-                                <select id="pet_type" name="pet_type">
-                                    <!-- <% console.log(pet_types); %> -->
+                                <select id="pet_type" name="pet_type" required="required">
+                                    <option selected value="">Select a pet type</option>
                                     <% pet_types.forEach(type => { %>
-                                        <option value=<%= type.name %>><%= type.name %></option>
+                                        <option value="<%= type.name %>"><%= type.name %></option>
                                     <% }) %>
                                 </select>
                             </div>

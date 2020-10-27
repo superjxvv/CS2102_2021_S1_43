@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <%- include('./partials/head.ejs') %>
+</head>
+
+<body>
+    <%- include('./partials/nav_bar.ejs') %>
+    <div id="content-wrapper">
+        <div class="container-fluid">
+            <div class="card" style="width: 60%; margin: auto; margin-top: 5%">
+                <div class="card-header">
+                    <i class="fas fa-dice-d20"></i> &nbsp; <b> Edit Particulars </b>
+                </div>
+                <form method="post" action="/edit_particulars">
+                    <div class="card-body">
+                        <div class="form-group row">
+                            <label for="po_name" class="col-sm-3 col-form-label">Name: </label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control" id="po_name"
+                                    name="po_name" value="<%= po_info[0].name %>">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="po_email" class="col-sm-3 col-form-label">Email: </label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control" id="po_email"
+                                    name="po_email" value="<%= po_info[0].email %>">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="location" class="col-sm-3 col-form-label">Location: </label>
+                            <div class="col-sm-9">
+                                <select name="location" class="form-control" id="location">
+                                    <% const my_loc = po_info[0].location; %> 
+                                    <% const all_loc = ["Central", "East", "North", "North-East", "West"]; %>
+                                    <% all_loc.forEach(loc => { %>
+                                        <% if (loc != my_loc) { %>
+                                            <option value="<%= loc %>"><%= loc %></option>
+                                        <% } else { %>
+                                            <option selected value="<%= my_loc %>"><%= my_loc %></option>
+                                        <% } %> 
+                                    <% }); %>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="address" class="col-sm-3 col-form-label">Address: </label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control" id="address"
+                                    name="address" value="<%= po_info[0].address %>">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="pw1" class="col-sm-3 col-form-label">Password: </label>
+                            <div class="col-sm-9">
+                                <input type="password" class="form-control" id="pw1"
+                                    name="pw1" value="">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="pw2" class="col-sm-3 col-form-label">Confirm New Password: </label>
+                            <div class="col-sm-9">
+                                <input type="password" required="required" class="form-control" id="pw2"
+                                    name="pw2" value="">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="cc_num" class="col-sm-3 col-form-label">Credit Card Number: </label>
+                            <div class="col-sm-9">
+                                <input type="text" required="required" class="form-control" id="cc_num"
+                                    name="cc_num" value="">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="cc_date" class="col-sm-3 col-form-label">Credit Card Expiry Date: </label>
+                            <div class="col-sm-9">
+                                <input type="text" required="required" class="form-control" id="cc_date"
+                                    name="cc_date" value="">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer small text-muted">
+                        <button type="submit" class="btn btn-secondary">Finalise Particulars</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

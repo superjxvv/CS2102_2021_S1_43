@@ -499,6 +499,49 @@ app.get('/dashboard', async (req, res) => {
   }
 });
 
+app.get('/dashboard-caretaker-ft', async (req, res) => {
+  try {
+    if (!req.user) {
+      res.redirect('/login');
+    } else {
+      const account_type = req.user.type;
+      if (account_type != 0) {
+        const values = [req.user.email];
+        console.log(values);
+        const my_details = await pool.query(
+          sql_query.query.get_po_info,
+          values
+        );
+        console.log(my_details.rows);
+        const caretaker_top_ratings = await pool.query(
+          sql_query.query.caretaker_top_ratings,
+          [my_details.rows[0].location]
+        );
+        const recent_transactions = await pool.query(
+          sql_query.query.recent_trxn_po,
+          values
+        );
+        const my_pets = await pool.query(sql_query.query.my_pets, values);
+
+        res.render('./dashboard-caretaker-ft', {
+          title: 'Dashboard',
+          top_ratings: caretaker_top_ratings.rows,
+          recent_trxn: recent_transactions.rows,
+          my_pets: my_pets.rows,
+          my_details: my_details.rows,
+          statusToHuman: statusToHuman
+        });
+      } else {
+        // if is PCSadmin
+        // have not tried this out
+        res.redirect('/caretaker-summary-info');
+      }
+    }
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
 app.get('/my_pets', async (req, res) => {
   if (!req.user) {
     res.redirect('/login');

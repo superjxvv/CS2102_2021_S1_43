@@ -229,7 +229,8 @@ app.get('/dashboard', async (req, res) => {
           my_pets: my_pets.rows,
           my_email: req.user.email,
           my_name: req.user.name,
-          hardcode_email: 'ahymans0@printfriendly.com'
+          hardcode_email: 'ahymans0@printfriendly.com',
+          statusToHuman : statusToHuman
         });
       } else {
         // if is PCSadmin
@@ -527,6 +528,8 @@ app.post('/edit_bid', async (req, res) => {
     const originalHireQuery = await pool.query(sql_query.query.get_a_hire, originalQueryValues);
     const originalHire = originalHireQuery.rows[0]
     const ct_email = originalHire.ct_email;
+    const ct_nameQuery = await pool.query("SELECT name FROM care_taker WHERE email = $1", [ct_email]);
+    const ct_name = ct_nameQuery.rows[0].name;
     //Whether ct is full time or part time
     const jobTypeQuery = await pool.query(sql_query.query.get_ct_type, [ct_email]);
     const jobType = jobTypeQuery.rows[0].job;
@@ -567,7 +570,7 @@ app.post('/edit_bid', async (req, res) => {
 
     //Must remove the original chosen dates from blocked dates so that can still choose back original date.
     removeDatesFromRange(new Date(req.body.start_date), new Date(req.body.end_date), datesToDelete);
-    res.render("edit_bid2", {
+    res.render("edit_bid", {
       originalStartDate : originalHire.start_date,
       originalEndDate : originalHire.end_date,
       convertDate : convertDate,
@@ -583,7 +586,8 @@ app.post('/edit_bid', async (req, res) => {
       costPerDay : costPerDay,
       numDays : diffDays(originalHire.start_date, originalHire.end_date),
       petName : originalHire.pet_name,
-      petType : petType
+      petType : petType,
+      ctName : ct_name
     });
 });
 
@@ -615,6 +619,64 @@ app.post('/submit_edit', async (req, res) => {
   res.redirect('transactions');
 });
 
+app.post('/payment', async (req, res) => {
+  //req.body contains the primary key for that particular hire to be edited, passed in by a form from /transactions.
+  const hireQueryValues = Object.values(req.body);
+  const hireQuery = await pool.query(sql_query.query.get_a_hire, hireQueryValues);
+  const hire = hireQuery.rows[0];
+  const petTypeQuery = await pool.query(sql_query.query.petTypeFromOwnerAndName, [hire.owner_email, hire.pet_name]);
+  const petType = petTypeQuery.rows[0].pet_type;
+  const ct_nameQuery = await pool.query("SELECT name FROM care_taker WHERE email = $1", [hire.ct_email]);
+  const ct_name = ct_nameQuery.rows[0].name;
+  //Cost per day for that pet type
+  const costPerDayQuery = await pool.query(sql_query.query.dailyPriceGivenTypeAndCT, [req.body.ct_email, petType]);
+  const costPerDay = costPerDayQuery.rows[0].daily_price;
+
+  const creditCardQuery = await pool.query("SELECT number FROM has_credit_card WHERE email = $1", [hire.ct_email]);
+  const hasCC = creditCardQuery.rows.length === 1;
+  res.render('payment', {
+    startDate : hire.start_date,
+    endDate : hire.end_date,
+    transferConvert : transferConvert, 
+    convertDate : convertDate,
+    data : hire,
+    costPerDay : costPerDay,
+    totalCost : costPerDay * diffDays(hire.start_date, hire.end_date),
+    petName : hire.pet_name,
+    petType : petType,
+    ctName : ct_name,
+    hasCC : hasCC,
+    ccLast4 : hasCC ? creditCardQuery.rows[0].number.slice(-4) : ""
+  });
+});
+
+app.post('/submit_payment', async (req, res) => {
+  const owner_email = 'ahymans0@printfriendly.com'; //Change to req.user.email when ready
+  //Update hire_status to inProgress
+  await pool.query(sql_query.query.payForBid, [req.body.paymentMethod, owner_email, req.body.pet_name,
+                                               req.body.ct_email, new Date(req.body.start_date), new Date(req.body.end_date)]);
+  req.flash("success_msg", "Payment successfully made!");
+  res.redirect("/transactions");
+  
+});
+
+const statusToHuman = (status => {
+  if (status === "inProgress") {
+    return "In Progress";
+  } else if (status === "pendingAccept") {
+    return "Pending Accept";
+  } else if (status === "rejected") {
+    return "Rejected";
+  } else if (status === "completed") {
+    return "Completed";
+  } else if (status === "cancelled") {
+    return "Cancelled";
+  } else {
+    return "Pending Payment";
+  }
+})
+
+
 app.get('/transactions', (req, res) => {
   if (req.user) {
     const userEmail = ['ahymans0@printfriendly.com']; // hardcoded
@@ -633,7 +695,8 @@ app.get('/transactions', (req, res) => {
             (x) => x.hire_status == 'completed' || x.hire_status == 'rejected' || x.hire_status == 'cancelled'
           ),
           moment: moment,
-          title: "Transactions"
+          title: "Transactions",
+          statusToHuman : statusToHuman
         });
       })
       .catch((err) => console.error(err.stack));

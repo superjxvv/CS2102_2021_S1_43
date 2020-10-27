@@ -39,8 +39,8 @@ sql.query = {
   add_bid: "INSERT INTO hire(owner_email, pet_name, ct_email, num_pet_days, total_cost, hire_status, method_of_pet_transfer, start_date, end_date, transaction_date) VALUES ($1, $2, $3, $4, $5, 'pendingAccept', $6, $7, $8, $9)",
   dailyPriceGivenTypeAndCT : "SELECT daily_price FROM can_take_care_of WHERE email = $1 AND pet_type = $2",
   ownerAddress: "SELECT address FROM pet_owner WHERE email = $1",
-  petTypeFromOwnerAndName: "SELECT pet_type FROM is_of WHERE owner_email = $1 and pet_name = $2",
-  
+  petTypeFromOwnerAndName: "SELECT pet_type FROM is_of WHERE owner_email = $1 AND pet_name = $2",
+  payForBid : "UPDATE hire SET method_of_payment = $1, hire_status= 'inProgress' WHERE owner_email = $2 AND pet_name = $3 AND ct_email = $4 AND start_date = $5 AND end_date = $6",
   all_pet_types: "SELECT name FROM pet_type",
   add_pet: 'CALL "add_pet"($1, $2, $3, $4)'
 };

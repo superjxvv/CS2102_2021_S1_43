@@ -474,8 +474,8 @@ const diffDays = (firstDate, secondDate) => Math.round(Math.abs((firstDate.getTi
 app.get('/bid', async (req, res) => {
   const ct_email = "bjoesbury4d@yahoo.co.jp";
   const owner_email = 'ahymans0@printfriendly.com'
-  const start_date = "06-25-2021";
-  const end_date = "06-27-2021";
+  const start_date = "06-22-2021";
+  const end_date = "06-30-2021";
   const pet_type = "Rabbit";
   const ct_name = "Joe";
   const num_days = diffDays(new Date(start_date), new Date(end_date));
@@ -499,6 +499,7 @@ app.get('/bid', async (req, res) => {
   })
 
 });
+const testAddress = (address) => /[a-zA-Z]/g.test(address);
 
 app.post('/submit_bid', async (req, res) => {
   //Change to req.user.email when available.
@@ -506,6 +507,7 @@ app.post('/submit_bid', async (req, res) => {
   console.log(req.body);
   //Convert DD/MM/YYYY to js Date then get difference between dates as numdays
   const num_days = diffDays(moment(req.body.start_date, "DD/MM/YYYY").toDate(), moment(req.body.end_date, "DD/MM/YYYY").toDate());
+  //Confirm daily price
   const dailyPriceQuery = await pool.query(sql_query.query.dailyPriceGivenTypeAndCT, [req.body.ct_email, req.body.pet_type]);
   console.log(num_days);
   queryValues = [owner_email, req.body.pet_name, req.body.ct_email, 
@@ -516,6 +518,10 @@ app.post('/submit_bid', async (req, res) => {
   await pool.query("INSERT INTO date_range VALUES($1, $2) ON CONFLICT DO NOTHING", [req.body.start_date, req.body.end_date]);
   //Add bid to hire table
   await pool.query(sql_query.query.add_bid, queryValues);
+  //Add address if indicated
+  if (req.body.saveAddress) {
+    await pool.query("UPDATE pet_owner SET address=$1 WHERE email =$2", [req.body.address , owner_email]);
+  }
   req.flash("success_msg", "Bid was successful");
   res.redirect("/dashboard");
 })
@@ -543,6 +549,10 @@ app.post('/edit_bid', async (req, res) => {
 
     //Dates that this ct is already booked.
     const datesCaring = await pool.query(sql_query.query.dates_caring, [ct_email]);
+
+    //Address of pet_owner if any
+    const addrQuery = await pool.query(sql_query.query.ownerAddress, [originalHire.owner_email]);
+
     var datesToDelete = new Set();
     for (var i = 0; i < datesCaring.rows.length; i ++) {
       const usedDate = datesCaring.rows[i];
@@ -587,7 +597,8 @@ app.post('/edit_bid', async (req, res) => {
       numDays : diffDays(originalHire.start_date, originalHire.end_date),
       petName : originalHire.pet_name,
       petType : petType,
-      ctName : ct_name
+      ctName : ct_name,
+      addr : addrQuery.rows[0].address
     });
 });
 
@@ -615,6 +626,10 @@ app.post('/submit_edit', async (req, res) => {
                  numDays, totalCost, req.body.transferMethod,
                  startDate, endDate, new Date()];
   await pool.query(sql_query.query.add_bid, queryValues)
+  //Add address if indicated
+  if (req.body.saveAddress) {
+    await pool.query("UPDATE pet_owner SET address=$1 WHERE email =$2", [req.body.address , owner_email]);
+}
   req.flash("success_msg", "Bid successfully updated.");
   res.redirect('transactions');
 });

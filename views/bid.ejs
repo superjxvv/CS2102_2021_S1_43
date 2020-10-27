@@ -23,6 +23,7 @@
   <body class="bg-light">
     <%- include('./partials/nav_bar.ejs') %>
     <div class="container">
+    <div 
   <div class="py-5 text-center">
     <h2>Bidding</h2>
   </div>
@@ -104,6 +105,7 @@
         <hr class="mb-4">
 
         <!--Address-->
+        <div id="addressBlock">
         <div class="mb-3">
           <label for="address"> Full Address</label>
           <% if (addr != null) { %>
@@ -115,18 +117,20 @@
             </div>
           </div>
           <% } else { %>
-          <input type="text" class="form-control" id="address" name="address" placeholder="e.g. Blk 154 Telok Blangah Singapore 123456" required>
+          <input type="text" class="form-control" name="address" placeholder="e.g. Blk 154 Telok Blangah Singapore 123456" required>
           <div class="invalid-feedback">
-            Please enter your address
+            Please enter your address.
           </div>
         </div>
 
         <div class="custom-control custom-checkbox">
-          <input type="checkbox" class="custom-control-input" id="save-info" name="saveAddress" value="off">
+          <input type="checkbox" class="custom-control-input" id="save-info" name="saveAddress">
           <label class="custom-control-label" for="save-info">Save this address for use next time</label>
         </div>
         <% } %>
         <hr class="mb-4">
+      </div>
+      <!--Address end-->
         <button class="btn btn-primary btn-lg btn-block" type="submit" style="float:right">Bid For Care</button>
       </form>
       <!--End Form-->
@@ -137,6 +141,14 @@
   </footer>
 </div>
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-      <script>window.jQuery || document.write('<script src="/assets/js/vendor/jquery.slim.min.js"><\/script>')</script><script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-        <script src="/plugins/bootstrap/js/form-validation.js"></script></body>
+<script>window.jQuery || document.write('<script src="/assets/js/vendor/jquery.slim.min.js"><\/script>')</script>
+<script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/plugins/bootstrap/js/form-validation.js"></script>
+<script>
+  $(document).on('change', 'select[name="transferMethod"]', function(){
+    $("#addressBlock").toggle(this.value ==="cPickup");
+  });
+
+</script>
+</body>
 </html>

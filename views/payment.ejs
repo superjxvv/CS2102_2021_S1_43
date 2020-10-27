@@ -122,10 +122,8 @@
     $("#creditCardFields").toggle(this.value ==="creditcard");
 
     if (!hasCC && this.value === "creditcard") {
-      console.log('boo')
       $('#submitBtn').prop('disabled', true);
     } else {
-      console.log('bam')
       $('#submitBtn').prop('disabled', false);
     }
   });

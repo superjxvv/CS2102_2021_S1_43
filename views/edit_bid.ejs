@@ -82,12 +82,38 @@
               <div class="card-body">
                 <h6 class="card-subtitle mb-2 text-muted">Please cancel and re-bid if you wish to select another one of your pets.</h6>
                 <p class="card-text">Current pet: <%=petName%> <b>(<%=petType%>)</b></p>
-                <input type="hidden" name="address" value=>
               </div>
             </div>
           </div>
         </div>
         <hr class="mb-4">
+        <!--Address-->
+        <div id="addressBlock">
+          <div class="mb-3">
+            <label for="address"> Full Address</label>
+            <% if (addr != null) { %>
+            <div class="card">
+              <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">Change this address in your profile settings.</h6>
+                <p class="card-text"><%= addr %></p>
+                <input type="hidden" name="address" value="<%= addr %>">
+              </div>
+            </div>
+            <% } else { %>
+            <input type="text" class="form-control" name="address" placeholder="e.g. Blk 154 Telok Blangah Singapore 123456" required>
+            <div class="invalid-feedback">
+              Please enter your address.
+            </div>
+          </div>
+  
+          <div class="custom-control custom-checkbox">
+            <input type="checkbox" class="custom-control-input" id="save-info" name="saveAddress">
+            <label class="custom-control-label" for="save-info">Save this address for use next time</label>
+          </div>
+          <% } %>
+          <hr class="mb-4">
+        </div>
+        <!--Address end-->
         <h4 class="mb-3">Change Dates</h4>
         <div class="row justify-content-between">
 					<div class="col-md-5 mb-3 float-left">
@@ -161,8 +187,10 @@
       document.getElementById("totalCost").innerHTML = picker.endDate.diff(picker.startDate, "days") * costPerDay
 
 		});
-
-
+    $(document).on('change', 'select[name="transferMethod"]', function(){
+      $("#addressBlock").toggle(this.value ==="cPickup");
+    });
+  
 	</script>
 </body>
 </html>

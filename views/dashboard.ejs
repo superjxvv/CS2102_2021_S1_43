@@ -73,13 +73,13 @@
             <div class="card col-sm col-md" id="square-card" style="margin-bottom: 30px;">
                 <p><b>Status:</b> 
                     <% if (trxn.hire_status == 'completed') { %>
-                        <span class="badge badge-success"><%= trxn.hire_status %></span><br>
+                        <span class="badge badge-success"><%= statusToHuman(trxn.hire_status) %></span><br>
                     <% } else if (trxn.hire_status == 'cancelled' || trxn.hire_status == 'rejected') { %>
-                        <span class="badge badge-danger"><%= trxn.hire_status %></span><br>
+                        <span class="badge badge-danger"><%= statusToHuman(trxn.hire_status) %></span><br>
                     <% } else if (trxn.hire_status == 'pendingPayment') { %>
-                        <span class="badge badge-warning"><%= trxn.hire_status %></span><br>
+                        <span class="badge badge-warning"><%= statusToHuman(trxn.hire_status) %></span><br>
                     <% } else { %>
-                        <span class="badge badge-info"><%= trxn.hire_status %></span><br>
+                        <span class="badge badge-info"><%= statusToHuman(trxn.hire_status) %></span><br>
                     <% } %>
                     <b>Date:</b> <%= stringToDate(String(trxn.start_date)) %> to
                     <%= stringToDate(String(trxn.end_date)) %><br>

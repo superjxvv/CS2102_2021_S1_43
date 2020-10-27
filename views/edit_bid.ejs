@@ -7,16 +7,11 @@
     <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
     <meta name="generator" content="Jekyll v4.1.1">
     <title>Edit Bid</title>
-
     <link rel="canonical" href="https://getbootstrap.com/docs/4.5/examples/checkout/">
-
     <!-- Bootstrap core CSS -->
-    <link rel="stylesheet" href="/assets/dist/css/bootstrap.min.css" >
-    <link rel="stylesheet" href="/plugins/bootstrap-datepicker-1.9.0-dist/css/bootstrap-datepicker.css">
-    <style>
-    </style>
+		<link rel="stylesheet" href="/assets/dist/css/bootstrap.min.css" >
     <!-- Custom styles for this template -->
-    <link href="/css/form-validation.css" rel="stylesheet">
+		<link href="/css/form-validation.css" rel="stylesheet">
   </head>
   <body class="bg-light">
     <%- include('./partials/nav_bar.ejs') %>
@@ -25,6 +20,7 @@
     <h2>Edit Bid</h2>
   </div>
 
+	<!--Summary on the right-->
   <div class="row">
     <div class="col-md-4 order-md-2 mb-4">
       <h4 class="d-flex justify-content-between align-items-center mb-3">
@@ -36,40 +32,41 @@
           <div>
             <h6 class="my-0">Caretaker</h6>
           </div>
-          <span class="text-muted">Jennie</span>
+          <span class="text-muted"><%= ctName %></span>
         </li>
         <li class="list-group-item d-flex justify-content-between lh-condensed">
           <div>
             <h6 class="my-0">Start Date</h6>
           </div>
-          <span class="text-muted">12/5/2020</span>
+					<span class="text-muted" id="side_start_date"><%= convertDate(originalStartDate) %></span>
         </li>
         <li class="list-group-item d-flex justify-content-between lh-condensed">
           <div>
             <h6 class="my-0">End Date</h6>
           </div>
-          <span class="text-muted">15/5/2020</span>
+          <span class="text-muted" id="side_end_date"><%= convertDate(originalEndDate) %></span>
         </li>
         <li class="list-group-item d-flex justify-content-between lh-condensed">
           <div>
             <h6 class="my-0">Cost per day</h6>
           </div>
-          <span class="text-muted">$30</span>
+          <span class="text-muted" id="costPerDay">$<%= costPerDay %></span>
         </li>
         <li class="list-group-item d-flex justify-content-between">
           <span>Total (SGD)</span>
-          <strong>$20</strong>
+          <strong id="totalCost">$<%= costPerDay * numDays %></strong>
         </li>
       </ul>
-    </div>
+		</div>
+		<!--Summary end-->
     <div class="col-md-8 order-md-1">
-      <form action="/bid" class="needs-validation" novalidate method="POST">
+      <form action="/submit_edit" class="needs-validation" novalidate method="POST">
         <div class="row">
           <div class="col-md-7 mb-3">
             <h4 class="mb-3">Change Pet Transfer Method</h4>
             <p>Current method: <%= transferConvert(trans.method_of_pet_transfer) %></p>
             <div class="float-left">
-              <select class="custom-select d-block" id="transferMethod" required> 
+              <select class="custom-select d-block" name="transferMethod" required> 
                 <option value = "cPickup">Caretaker pickup</option>
                 <option value = "oDeliver">Dropoff at caretaker</option>
                 <option value = "office">Dropoff at Pet Care office.</option>
@@ -79,79 +76,41 @@
               Please select a valid pet transfer method.
             </div>
           </div>
-          
+          <div class="col-5">
+            <h4 class="mb-3"></h4>
+            <div class="card">
+              <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">Please cancel and re-bid if you wish to select another one of your pets.</h6>
+                <p class="card-text">Current pet: <%=petName%> <b>(<%=petType%>)</b></p>
+                <input type="hidden" name="address" value=>
+              </div>
+            </div>
+          </div>
         </div>
         <hr class="mb-4">
         <h4 class="mb-3">Change Dates</h4>
         <div class="row justify-content-between">
-          <div class="input-daterange input-group">
-            <div class="col-3">
-              <input type="text" class="form-control" style="text-align:left" id="start_date">
-            </div>
-            <div class="input-group-addon">to</div>
-            <div class="col-3">
-              <input type="text" class="form-control" id="end_date" style="text-align:left;">
-            </div>
-          </div>
+					<div class="col-md-5 mb-3 float-left">
+						<input type="text" class="form-control float-right" name="dates">
+						<input type="hidden" id="start_date" name="start_date" value="">
+						<input type="hidden" id="end_date" name="end_date" value="">
+					</div>
         </div>
         <hr class="mb-4">
 
-        <h4 class="mb-3">Change Payment Method</h4>
         <div class="row">
-          <div class="col-md-4 mb-3">
-            <label for="payment">Payment Method</label>
-            <select class="custom-select d-block w-100" id="paymentMethod" required >
-              <option value="cash">Cash</option>
-              <option value="creditcard">Credit card ending 4256</option>
-              <option value="creditcard">New credit card</opion>
-            </select>
-            <div class="invalid-feedback">
-              Please provide a valid payment method..
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-md-6 mb-3">
-            <label for="cc-name">Name on card</label>
-            <input type="text" class="form-control" id="cc-name" placeholder="" required>
-            <small class="text-muted">Full name as displayed on card</small>
-            <div class="invalid-feedback">
-              Name on card is required
-            </div>
-          </div>
-          <div class="col-md-6 mb-3">
-            <label for="cc-number">Credit card number</label>
-            <input type="text" class="form-control" id="cc-number" placeholder="" required>
-            <div class="invalid-feedback">
-              Credit card number is required
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-md-3 mb-3">
-            <label for="cc-expiration">Expiration</label>
-            <input type="text" class="form-control" id="cc-expiration" placeholder="MM/YY" maxlength="7" required>
-            <div class="invalid-feedback">
-              Expiration date required
-            </div>
-          </div>
-          <div class="col-md-3 mb-3">
-            <label for="cc-cvv">CVV</label>
-            <input type="password" class="form-control" id="cc-cvv" placeholder="" required>
-            <div class="invalid-feedback">
-              Security code required
-            </div>
-          </div>
-        </div>
-        <hr class="mb-4">
-        <div class="row">
-            <div class="col-md-4 mb-3">
-                <button class="btn btn-primary btn-lg btn-block" type="submit" style="float:right">Confirm Changes</button>
-            </div>
-            <div class="col-md-4 mb-3">
-                <button class="btn btn-danger btn-lg btn-block" type="submit" style="float:right">Cancel Bid</button>
-            </div>
-        </div>
+					<div class="col-md-4 mb-3">
+						<button class="btn btn-primary btn-lg btn-block" type="submit" style="float:right">Confirm Changes</button>
+					</div>
+					<div class="col-md-4 mb-3">
+						<button class="btn btn-danger btn-lg btn-block" type="submit" style="float:right">Cancel Bid</button>
+					</div>
+				</div>
+				<!--Pass back original hire data.-->
+				<input type="hidden" name="ct_email" value=<%= trans.ct_email %>>
+				<input type="hidden" name="ori_start_date" value=<%= moment(trans.start_date).format() %>>
+				<input type="hidden" name="ori_end_date" value=<%= moment(trans.end_date).format() %>>
+        <input type="hidden" name="pet_name" value=<%= trans.pet_name %>>
       </form>
     </div>
   </div>
@@ -159,37 +118,51 @@
   <footer class="my-5 pt-5 text-muted text-center text-small">
   </footer>
 </div>
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-  <script>window.jQuery || document.write('<script src="/assets/js/vendor/jquery.slim.min.js"><\/script>')</script>
+	<script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
   <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
   <script src="/plugins/bootstrap/js/form-validation.js"></script>
-  <script src="/plugins/bootstrap-datepicker-1.9.0-dist/js/bootstrap-datepicker.js"></script>
-  <script type="text/javascript">
-    $('.input-daterange').each(function() {
-      $(this).datepicker('clearDates');
-    });
-    function set_parameters() {
-      var date_start_input = $('#start_date');
-      var date_end_input = $('#end_date');
-      
-      var options = {
-        format: 'dd/mm/yyyy',
-        todayHighlight: true,
-        autoclose: true,
-        orientation: 'top left'
-      };
+	<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+	<script>
+		var today = new Date("<%= today %>");
+		var latestDate = new Date("<%= latestDate %>");
+		var isPartTimer = "<%= isPartTimer %>" == "true"
+		var blockedDates = <%- JSON.stringify(blockedDates) %>;
+		blockedDates = new Set(blockedDates);
+		var availableDates = <%- JSON.stringify(availableDates) %>;
+		availableDates = new Set(availableDates);
+		var originalStartDate = new Date("<%= originalStartDate %>");
+    var originalEndDate = new Date("<%= originalEndDate %>");
+    var costPerDay = parseInt("<%= costPerDay %>");
 
-      date_start_input.datepicker(options).on('changeDate', function(e){
-        date_end_input.datepicker("setStartDate", e.date);
-      });
-      date_end_input.datepicker(options).on('changeDate', function(e){
-        date_start_input.datepicker("setEndDate", e.date);
-      });
-    };
+		$('input[name="dates"]').daterangepicker({
+			minDate: today,
+			maxDate: latestDate,
+			startDate: originalStartDate,
+			endDate : originalEndDate,
+			locale: {
+    		format: 'DD/MM/YYYY'
+  		},
+			isInvalidDate : (aDate) => {
+				const date = aDate.format('YYYY-MM-DD');
+				if (isPartTimer) {
+					return !(availableDates.has(date) && !blockedDates.has(date));
+				} else {
+					return blockedDates.has(date);
+				}
+			}
+		});
+		$('input[name="dates"]').on('apply.daterangepicker', function(ev, picker) {
+			document.getElementById("start_date").value = picker.startDate;
+      document.getElementById("end_date").value = picker.endDate;
+      document.getElementById("side_start_date").innerHTML = picker.startDate.format("DD/MM/YYYY");
+      document.getElementById("side_end_date").innerHTML = picker.endDate.format("DD/MM/YYYY");
+      document.getElementById("totalCost").innerHTML = picker.endDate.diff(picker.startDate, "days") * costPerDay
 
-    $(document).ready(function() {
-      set_parameters();
-    });
-  </script>
+		});
+
+
+	</script>
 </body>
 </html>

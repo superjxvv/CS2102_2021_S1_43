@@ -13,6 +13,7 @@ const passport = require('passport');
 const initializePassport = require('./passportConfig');
 const { exception } = require('console');
 const e = require('express');
+const { send } = require('process');
 initializePassport(passport);
 // -------------------------------------
 
@@ -418,7 +419,8 @@ app.get('/dashboard', async (req, res) => {
           my_pets: my_pets.rows,
           my_email: req.user.email,
           my_name: req.user.name,
-          hardcode_email: 'ahymans0@printfriendly.com'
+          hardcode_email: 'ahymans0@printfriendly.com',
+          statusToHuman : statusToHuman
         });
       } else {
         // if is PCSadmin
@@ -512,7 +514,7 @@ app.get('/register', (req, res) => {
 
 app.post('/register', async (req, res) => {
   console.log(req.body);
-  let { name, email, region, password1, type } = req.body;
+  let { name, email, region, password1, type , address} = req.body;
 
   if (!name || !email || region === '') {
     req.flash('error', 'Please enter all fields');
@@ -523,35 +525,41 @@ app.post('/register', async (req, res) => {
     const queryText = 'SELECT 1 FROM accounts WHERE email = $1';
     const queryValue = [email];
     //First check if user already exists
-    pool
-      .query(queryText, queryValue)
-      .then((queryRes) => {
-        if (queryRes.rows.length > 0) {
-          req.flash('error', 'User already exists.');
-          res.render('register');
-        } else {
-          console.log('register user');
-          //Not exist yet. Insert into db.
-          const insertText =
-            type == 'pet_owner'
-              ? `INSERT INTO pet_owner VALUES ($1, $2, $3, $4)`
-              : `INSERT INTO care_taker(email, name, password, location, job) VALUES($1, $2, $3, $4, 'part_timer')`;
-
-          pool
-            .query(insertText, [email, name, hashedPw, region])
-            .then((result) => {
-              console.log('Registered');
-              req.flash('success_msg', 'You are now registered, please login.');
-              res.redirect('/login');
-            })
-            .catch((err) => {
-              console.error(err);
-            });
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    pool.query(queryText, queryValue)
+        .then(queryRes => {
+          if (queryRes.rows.length > 0) {
+            req.flash("error", "User already exists.");
+            res.render("register");
+          } else {
+            console.log("register user");
+            //Not exist yet. Insert into db.
+            //Check if address field consists of any alphabet. If not, treat as no address.
+            const hasAddress = /[a-zA-Z]/g.test(address);
+            const insertText = type == 'pet_owner'
+              ? hasAddress
+                ? `INSERT INTO pet_owner VALUES ($1, $2, $3, $4, $5)`
+                : `INSERT INTO pet_owner(email, name, password, location) VALUES ($1, $2, $3, $4)`
+              : hasAddress
+                ? `INSERT INTO care_taker(email, name, password, location, job, address) VALUES($1, $2, $3, $4, 'part_timer', $5)`
+                : `INSERT INTO care_taker(email, name, password, location, job) VALUES($1, $2, $3, $4, 'part_timer')`;
+            createAccountQueryValues = hasAddress ? [email, name, hashedPw, region, address] : [email, name, hashedPw, region]
+            pool.query(insertText, createAccountQueryValues)
+                .then((result) => {
+                  console.log('Registered');
+                  req.flash(
+                    'success_msg',
+                    'You are now registered, please login.'
+                  );
+                  res.redirect('/login');
+                })
+                .catch((err) => {
+                  console.error(err);
+                });
+          }
+          })
+          .catch((err) => {
+            console.log(err);
+          });
   }
 });
 
@@ -626,70 +634,248 @@ function datesFromRange(startDate, endDate, outputSet) {
   while (strDate < endDate) {
     var strDate = dateMove.toISOString().slice(0, 10);
     if (arguments[3]) {
-      if (!argumemts[3].has(strDate)) {
+      if (!arguments[3].has(strDate)) {
         arguments[2].add(strDate);
       }
     } else {
       arguments[2].add(strDate);
     }
-    dateMove.setDate(dateMove.getDate() + 1);
-  }
+    dateMove.setDate(dateMove.getDate()+1);
+  };
 }
 
-app.post('/edit_bid', async (req, res) => {
-  console.log(req.body);
-  //req.body contains the primary key for that particular hire to be edited, passed in by a form from /transactions.
-  const originalQueryValues = Object.values(req.body);
-  const originalHire = await pool.query(
-    sql_query.query.get_a_hire,
-    originalQueryValues
-  );
-  const ct_email = [originalHire.rows[0].ct_email];
-  //Whether ct is full time or part time
-  const jobType = await pool.query(sql_query.query.get_ct_type, ct_email);
-  //Dates that this ct is already booked.
-  const datesCaring = await pool.query(sql_query.query.dates_caring, ct_email);
-  var datesToDelete = new Set();
-  for (var i = 0; i < datesCaring.rows.length; i++) {
-    const usedDate = datesCaring.rows[i];
-    datesFromRange(usedDate.start_date, usedDate.end_date, datesToDelete);
-  }
-  console.log(datesToDelete);
-  var datesToAllow = new Set();
+/*
+Removes dates within a particular range from the set.
+*/
+function removeDatesFromRange(startDate, endDate, outputSet) {
+  var startDate = arguments[0].toISOString();
+  var endDate = arguments[1].toISOString();
+  var dateMove = new Date(startDate);
+  var strDate = startDate;
 
-  //Part timer only show available dates
-  if (jobType.rows[0].job == 'part_timer') {
-    const availability = await pool.query(
-      sql_query.query.part_timer_availability,
-      ct_email
-    );
-    for (var i = 0; i < availability.rows.length; i++) {
-      const canDate = availability.rows[i];
-      datesFromRange(
-        canDate.start_date,
-        canDate.end_date,
-        datesToAllow,
-        datesToDelete
-      );
-    }
-    res.render('edit_bid', {
-      transferCover: transferConvert,
-      trans: originalHire.rows[0]
-    });
+  while (strDate < endDate){
+    var strDate = dateMove.toISOString().slice(0,10);
+    arguments[2].delete(strDate);
+    dateMove.setDate(dateMove.getDate()+1);
+  };
+}
 
-    //Full timer will disable some dates
-  } else {
-    const leave = await pool.query(sql_query.query.full_timer_leave, ct_email);
-    for (var i = 0; i < leave.rows.length; i++) {
-      const leaveDate = leave.rows[i];
-      datesFromRange(leaveDate.start_date, leaveDate.end_date, datesToDelete);
-    }
-    res.render('edit_bid', {
-      transferConvert: transferConvert,
-      trans: originalHire.rows[0]
-    });
-  }
+//Converts date format to DD/MM/YYYY
+function convertDate(inputFormat) {
+  function pad(s) { return (s < 10) ? '0' + s : s; }
+  var d = new Date(inputFormat)
+  return [pad(d.getDate()), pad(d.getMonth()+1), d.getFullYear()].join('/')
+}
+
+//Number of days between 2 dates
+const diffDays = (firstDate, secondDate) => Math.round(Math.abs((firstDate.getTime() - secondDate.getTime()) / (24 * 60 * 60 * 1000)));
+
+//Jeremy (Chua) please pass in ct_name, ct_email, start_date, end_date, pet type. I will change method to post once that is done.
+app.get('/bid', async (req, res) => {
+  const ct_email = "bjoesbury4d@yahoo.co.jp";
+  const owner_email = 'ahymans0@printfriendly.com'
+  const start_date = "06-25-2021";
+  const end_date = "06-27-2021";
+  const pet_type = "Rabbit";
+  const ct_name = "Joe";
+  const num_days = diffDays(new Date(start_date), new Date(end_date));
+
+  //Query all pet names with this type.
+  const petQuery = await pool.query(sql_query.query.petFromType, [owner_email, pet_type]);
+  const dailyPriceQuery = await pool.query(sql_query.query.dailyPriceGivenTypeAndCT, [ct_email, pet_type]);
+  const addrQuery = await pool.query(sql_query.query.ownerAddress, [owner_email]);
+  const pets = petQuery.rows;
+  const daily_price = dailyPriceQuery.rows[0].daily_price
+  res.render('bid', {
+    ct_name : ct_name,
+    pets : pets,
+    ct_email : ct_email,
+    start_date : convertDate(start_date),
+    end_date : convertDate(end_date),
+    pet_type : pet_type,
+    daily_price : daily_price,
+    num_days : num_days,
+    addr : addrQuery.rows[0].address
+  })
+
 });
+
+app.post('/submit_bid', async (req, res) => {
+  //Change to req.user.email when available.
+  const owner_email = 'ahymans0@printfriendly.com'
+  console.log(req.body);
+  //Convert DD/MM/YYYY to js Date then get difference between dates as numdays
+  const num_days = diffDays(moment(req.body.start_date, "DD/MM/YYYY").toDate(), moment(req.body.end_date, "DD/MM/YYYY").toDate());
+  const dailyPriceQuery = await pool.query(sql_query.query.dailyPriceGivenTypeAndCT, [req.body.ct_email, req.body.pet_type]);
+  console.log(num_days);
+  queryValues = [owner_email, req.body.pet_name, req.body.ct_email, 
+                 num_days, num_days * dailyPriceQuery.rows[0].daily_price , req.body.transferMethod,
+                 req.body.start_date, req.body.end_date, new Date()];
+
+  //Add date range to date range table if not exists
+  await pool.query("INSERT INTO date_range VALUES($1, $2) ON CONFLICT DO NOTHING", [req.body.start_date, req.body.end_date]);
+  //Add bid to hire table
+  await pool.query(sql_query.query.add_bid, queryValues);
+  req.flash("success_msg", "Bid was successful");
+  res.redirect("/dashboard");
+})
+
+
+app.post('/edit_bid', async (req, res) => {
+    console.log(req.body);
+    //req.body contains the primary key for that particular hire to be edited, passed in by a form from /transactions.
+    const originalQueryValues = Object.values(req.body);
+    const originalHireQuery = await pool.query(sql_query.query.get_a_hire, originalQueryValues);
+    const originalHire = originalHireQuery.rows[0]
+    const ct_email = originalHire.ct_email;
+    const ct_nameQuery = await pool.query("SELECT name FROM care_taker WHERE email = $1", [ct_email]);
+    const ct_name = ct_nameQuery.rows[0].name;
+    //Whether ct is full time or part time
+    const jobTypeQuery = await pool.query(sql_query.query.get_ct_type, [ct_email]);
+    const jobType = jobTypeQuery.rows[0].job;
+
+    const petTypeQuery = await pool.query(sql_query.query.petTypeFromOwnerAndName, [originalHire.owner_email, originalHire.pet_name]);
+    const petType = petTypeQuery.rows[0].pet_type;
+
+    //Cost per day for that pet type
+    const costPerDayQuery = await pool.query(sql_query.query.dailyPriceGivenTypeAndCT, [ct_email, petType]);
+    const costPerDay = costPerDayQuery.rows[0].daily_price;
+
+    //Dates that this ct is already booked.
+    const datesCaring = await pool.query(sql_query.query.dates_caring, [ct_email]);
+    var datesToDelete = new Set();
+    for (var i = 0; i < datesCaring.rows.length; i ++) {
+      const usedDate = datesCaring.rows[i];
+      datesFromRange(usedDate.start_date, usedDate.end_date, datesToDelete);
+    }
+    var datesToAllow = new Set();
+    var isPartTimer = false;
+    //Part timer only show available dates
+    if (jobType == 'part_timer') {
+      const availability = await pool.query(sql_query.query.part_timer_availability, [ct_email]);
+      isPartTimer = true;
+      for (var i = 0; i < availability.rows.length; i ++) {
+        const canDate = availability.rows[i];
+        datesFromRange(canDate.start_date, canDate.end_date, datesToAllow, datesToDelete);
+      }
+    
+    //Full timer will disable some dates
+    } else {
+      const leave = await pool.query(sql_query.query.full_timer_leave, [ct_email]); 
+      for (var i = 0; i < leave.rows.length; i++) {
+        const leaveDate = leave.rows[i];
+        datesFromRange(leaveDate.start_date, leaveDate.end_date, datesToDelete);
+      }
+    }
+
+    //Must remove the original chosen dates from blocked dates so that can still choose back original date.
+    removeDatesFromRange(new Date(req.body.start_date), new Date(req.body.end_date), datesToDelete);
+    res.render("edit_bid", {
+      originalStartDate : originalHire.start_date,
+      originalEndDate : originalHire.end_date,
+      convertDate : convertDate,
+      moment : moment,
+      transferConvert : transferConvert, 
+      trans : originalHire,
+      today : new Date().toISOString().slice(0, 10),
+      isPartTimer : isPartTimer,
+      //latestDate is 1 year from now for a fulltimer
+      latestDate : new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().slice(0, 10),
+      blockedDates : Array.from(datesToDelete),
+      availableDates : Array.from(datesToAllow),
+      costPerDay : costPerDay,
+      numDays : diffDays(originalHire.start_date, originalHire.end_date),
+      petName : originalHire.pet_name,
+      petType : petType,
+      ctName : ct_name
+    });
+});
+
+app.post('/submit_edit', async (req, res) => {
+  //Need to delete old bid
+  console.log(req.body);
+  const owner_email = 'ahymans0@printfriendly.com'; //Change to req.user.email when ready
+  await pool.query(sql_query.query.delete_bid, [owner_email, req.body.ct_email, 
+                                                req.body.ori_start_date, req.body.ori_end_date, 
+                                                req.body.pet_name]);
+  const startDate = req.body.start_date === "" ? new Date(req.body.ori_start_date) : new Date(req.body.start_date);
+  const endDate = req.body.end_date === "" ? new Date(req.body.ori_end_date) : new Date(req.body.end_date);
+  const numDays = diffDays(startDate, endDate);
+  //Use pet type to server query cost per day to be sure
+  const petTypeQuery = await pool.query(sql_query.query.petTypeFromOwnerAndName, [owner_email, req.body.pet_name]);
+  const petType = petTypeQuery.rows[0].pet_type;
+  //Cost per day for that pet type
+  const costPerDayQuery = await pool.query(sql_query.query.dailyPriceGivenTypeAndCT, [req.body.ct_email, petType]);
+  const costPerDay = costPerDayQuery.rows[0].daily_price;
+  const totalCost = numDays * costPerDay;
+  //Add date range to date range table if not exists
+  await pool.query("INSERT INTO date_range VALUES($1, $2) ON CONFLICT DO NOTHING", [startDate, endDate]);                                             
+  //Put in replacement bid.
+  queryValues = [owner_email, req.body.pet_name, req.body.ct_email, 
+                 numDays, totalCost, req.body.transferMethod,
+                 startDate, endDate, new Date()];
+  await pool.query(sql_query.query.add_bid, queryValues)
+  req.flash("success_msg", "Bid successfully updated.");
+  res.redirect('transactions');
+});
+
+app.post('/payment', async (req, res) => {
+  //req.body contains the primary key for that particular hire to be edited, passed in by a form from /transactions.
+  const hireQueryValues = Object.values(req.body);
+  const hireQuery = await pool.query(sql_query.query.get_a_hire, hireQueryValues);
+  const hire = hireQuery.rows[0];
+  const petTypeQuery = await pool.query(sql_query.query.petTypeFromOwnerAndName, [hire.owner_email, hire.pet_name]);
+  const petType = petTypeQuery.rows[0].pet_type;
+  const ct_nameQuery = await pool.query("SELECT name FROM care_taker WHERE email = $1", [hire.ct_email]);
+  const ct_name = ct_nameQuery.rows[0].name;
+  //Cost per day for that pet type
+  const costPerDayQuery = await pool.query(sql_query.query.dailyPriceGivenTypeAndCT, [req.body.ct_email, petType]);
+  const costPerDay = costPerDayQuery.rows[0].daily_price;
+
+  const creditCardQuery = await pool.query("SELECT number FROM has_credit_card WHERE email = $1", [hire.ct_email]);
+  const hasCC = creditCardQuery.rows.length === 1;
+  res.render('payment', {
+    startDate : hire.start_date,
+    endDate : hire.end_date,
+    transferConvert : transferConvert, 
+    convertDate : convertDate,
+    data : hire,
+    costPerDay : costPerDay,
+    totalCost : costPerDay * diffDays(hire.start_date, hire.end_date),
+    petName : hire.pet_name,
+    petType : petType,
+    ctName : ct_name,
+    hasCC : hasCC,
+    ccLast4 : hasCC ? creditCardQuery.rows[0].number.slice(-4) : ""
+  });
+});
+
+app.post('/submit_payment', async (req, res) => {
+  const owner_email = 'ahymans0@printfriendly.com'; //Change to req.user.email when ready
+  //Update hire_status to inProgress
+  await pool.query(sql_query.query.payForBid, [req.body.paymentMethod, owner_email, req.body.pet_name,
+                                               req.body.ct_email, new Date(req.body.start_date), new Date(req.body.end_date)]);
+  req.flash("success_msg", "Payment successfully made!");
+  res.redirect("/transactions");
+  
+});
+
+const statusToHuman = (status => {
+  if (status === "inProgress") {
+    return "In Progress";
+  } else if (status === "pendingAccept") {
+    return "Pending Accept";
+  } else if (status === "rejected") {
+    return "Rejected";
+  } else if (status === "completed") {
+    return "Completed";
+  } else if (status === "cancelled") {
+    return "Cancelled";
+  } else {
+    return "Pending Payment";
+  }
+})
+
 
 app.get('/transactions', (req, res) => {
   if (req.user) {
@@ -715,7 +901,8 @@ app.get('/transactions', (req, res) => {
               x.hire_status == 'cancelled'
           ),
           moment: moment,
-          title: 'Transactions'
+          title: "Transactions",
+          statusToHuman : statusToHuman
         });
       })
       .catch((err) => console.error(err.stack));

@@ -17,9 +17,9 @@ CREATE TABLE pet_owner(
 
 CREATE TABLE has_credit_card(
   number VARCHAR NOT NULL,
-  email VARCHAR REFERENCES pet_owner(email),
+  name VARCHAR NOT NULL,
+  email VARCHAR PRIMARY KEY REFERENCES pet_owner(email),
   expiry VARCHAR NOT NULL,
-  PRIMARY KEY(number, email)
 );
 
 CREATE TYPE job_type AS ENUM ('part_timer', 'full_timer');

@@ -38,38 +38,48 @@
           <div>
             <h6 class="my-0">Caretaker</h6>
           </div>
-          <span class="text-muted">Jennie</span>
+          <span class="text-muted"><%= ct_name %></span>
         </li>
         <li class="list-group-item d-flex justify-content-between lh-condensed">
           <div>
             <h6 class="my-0">Start Date</h6>
           </div>
-          <span class="text-muted">12/5/2020</span>
+          <span class="text-muted"><%= start_date %></span>
         </li>
         <li class="list-group-item d-flex justify-content-between lh-condensed">
           <div>
             <h6 class="my-0">End Date</h6>
           </div>
-          <span class="text-muted">15/5/2020</span>
+          <span class="text-muted"><%= end_date %></span>
         </li>
         <li class="list-group-item d-flex justify-content-between lh-condensed">
           <div>
             <h6 class="my-0">Cost per day</h6>
           </div>
-          <span class="text-muted">$30</span>
+          <span class="text-muted">$<%= daily_price %></span>
         </li>
         <li class="list-group-item d-flex justify-content-between">
           <span>Total (SGD)</span>
-          <strong>$20</strong>
+          <strong>$<%= num_days * daily_price %> </strong>
         </li>
       </ul>
     </div>
+
+    
+    <!--Form-->
     <div class="col-md-8 order-md-1">
-      <form action="/bid" class="needs-validation" novalidate method="POST">
+      <form action="/submit_bid" class="needs-validation" novalidate method="POST">
+          <!--Pass rest of details back-->
+        <input type="hidden" name="ct_email" value="<%=ct_email%>">
+        <input type="hidden" name="start_date" value="<%=start_date%>">
+        <input type="hidden" name="end_date" value="<%=end_date%>">
+        <input type="hidden" name="pet_type" value="<%=pet_type%>">
+        
         <div class="row">
+          <!--Pet Transfer Method-->
           <div class="col-md-5 mb-3">
             <label for="transfer">Pet Transfer Method</label>
-            <select class="custom-select d-block w-100" id="transferMethod" required> 
+            <select class="custom-select d-block w-100" id="transferMethod" name ="transferMethod" required> 
               <option value = "cPickup">Caretaker pickup</option>
               <option value = "oDeliver">Dropoff at caretaker</option>
               <option value = "office">Dropoff at Pet Care office.</option>
@@ -78,69 +88,48 @@
               Please select a valid pet transfer method.
             </div>
           </div>
-          
-        </div>
-        <hr class="mb-4">
-        <div class="custom-control custom-checkbox">
-          <input type="checkbox" class="custom-control-input" id="same-address">
-          <label class="custom-control-label" for="same-address">Shipping address is the same as my billing address</label>
-        </div>
-        <div class="custom-control custom-checkbox">
-          <input type="checkbox" class="custom-control-input" id="save-info">
-          <label class="custom-control-label" for="save-info">Save this information for next time</label>
+          <!--Pet Name-->
+          <div class="col-md-5 mb-3">
+            <label for="transfer">Select Pet Type: <%= pet_type %></label>
+            <select class="custom-select d-block w-100" id="pet_name" name="pet_name" required> 
+              <% pets.forEach(pet => { %>
+                <option value = <%= pet.pet_name %>><%= pet.pet_name %></option>
+              <% }) %>
+            </select>
+            <div class="invalid-feedback">
+              Please select a valid pet transfer method.
+            </div>
+          </div>
         </div>
         <hr class="mb-4">
 
-        <h4 class="mb-3">Payment</h4>
-        <div class="row">
-          <div class="col-md-4 mb-3">
-            <label for="payment">Payment Method</label>
-            <select class="custom-select d-block w-100" id="paymentMethod" required >
-              <option value="cash">Cash</option>
-              <option value="creditcard">Credit card ending 4256</option>
-              <option value="creditcard">New credit card</opion>
-            </select>
-            <div class="invalid-feedback">
-              Please provide a valid payment method..
+        <!--Address-->
+        <div class="mb-3">
+          <label for="address"> Full Address</label>
+          <% if (addr != null) { %>
+          <div class="card">
+            <div class="card-body">
+              <h6 class="card-subtitle mb-2 text-muted">Change this address in your profile settings.</h6>
+              <p class="card-text"><%= addr %></p>
+              <input type="hidden" name="address" value="<%= addr %>">
             </div>
+          </div>
+          <% } else { %>
+          <input type="text" class="form-control" id="address" name="address" placeholder="e.g. Blk 154 Telok Blangah Singapore 123456" required>
+          <div class="invalid-feedback">
+            Please enter your address
           </div>
         </div>
-        <div class="row">
-          <div class="col-md-6 mb-3">
-            <label for="cc-name">Name on card</label>
-            <input type="text" class="form-control" id="cc-name" placeholder="" required>
-            <small class="text-muted">Full name as displayed on card</small>
-            <div class="invalid-feedback">
-              Name on card is required
-            </div>
-          </div>
-          <div class="col-md-6 mb-3">
-            <label for="cc-number">Credit card number</label>
-            <input type="text" class="form-control" id="cc-number" placeholder="" required>
-            <div class="invalid-feedback">
-              Credit card number is required
-            </div>
-          </div>
+
+        <div class="custom-control custom-checkbox">
+          <input type="checkbox" class="custom-control-input" id="save-info" name="saveAddress" value="off">
+          <label class="custom-control-label" for="save-info">Save this address for use next time</label>
         </div>
-        <div class="row">
-          <div class="col-md-3 mb-3">
-            <label for="cc-expiration">Expiration</label>
-            <input type="text" class="form-control" id="cc-expiration" placeholder="MM/YY" maxlength="7" required>
-            <div class="invalid-feedback">
-              Expiration date required
-            </div>
-          </div>
-          <div class="col-md-3 mb-3">
-            <label for="cc-cvv">CVV</label>
-            <input type="password" class="form-control" id="cc-cvv" placeholder="" required>
-            <div class="invalid-feedback">
-              Security code required
-            </div>
-          </div>
-        </div>
+        <% } %>
         <hr class="mb-4">
-        <button class="btn btn-primary btn-lg btn-block" type="submit" style="float:right">Continue to checkout</button>
+        <button class="btn btn-primary btn-lg btn-block" type="submit" style="float:right">Bid For Care</button>
       </form>
+      <!--End Form-->
     </div>
   </div>
 

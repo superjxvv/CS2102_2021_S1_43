@@ -14,7 +14,7 @@
 		<link href="/css/form-validation.css" rel="stylesheet">
   </head>
   <body class="bg-light">
-    <%- include('./partials/nav_bar.ejs') %>
+    <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn}) %>
     <div class="container">
   <div class="py-5 text-center">
     <h2>Edit Bid</h2>

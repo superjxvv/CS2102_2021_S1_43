@@ -8,9 +8,9 @@
             <div class="col">
                 <a href="/add_pet/<%= pet.email %>/<%= pet.pet_name %>" class="btn btn-tool btn-sm">Edit</a>
             </div>
-            <div class="col">
-                <a href="/delete_pet/<%= pet.email %>/<%= pet.pet_name %>" class="btn btn-tool btn-sm">Delete</a>
-            </div>
+            <form class="col" method="post" action="/my_pet/<%= pet.email %>/<%= pet.pet_name %>">
+                <button type="submit" class="btn btn-tool btn-sm">Delete</button>
+            </form>
         </div>
         <div class="row">
             <div class="col">

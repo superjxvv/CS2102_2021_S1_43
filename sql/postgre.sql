@@ -57,6 +57,7 @@ CREATE TABLE own_pet (
   pet_name VARCHAR NOT NULL,
   special_requirement VARCHAR NOT NULL,
   email VARCHAR REFERENCES pet_owner(email),
+  deleted BOOLEAN NOT NULL DEFAULT false,
   PRIMARY KEY(pet_name, email)
 );
 

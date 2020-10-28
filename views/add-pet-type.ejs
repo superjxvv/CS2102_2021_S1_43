@@ -11,7 +11,7 @@
 </head>
 
 <body style="background-color: lightgrey;">
-    <%- include('./partials/nav_bar.ejs') %>
+    <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn}) %>
     <div id="content-wrapper">
         <div class="container-fluid">
             <div class="card" style="width: 60%; margin: auto; margin-top: 5%">

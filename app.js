@@ -67,11 +67,7 @@ app.listen(process.env.PORT || 3000, () => {
 });
 
 app.get('/', async (req, res) => {
-  if (!req.user) {
-    res.redirect('/login');
-  } else {
-    res.redirect('/dashboard');
-  }
+  res.redirect('/dashboard');
 });
 
 app.get('/search', async (req, res) => {
@@ -95,7 +91,8 @@ app.get('/search', async (req, res) => {
       petTypes: allPetTypes.rows,
       selectedPetTypes,
       rating,
-      price
+      price,
+      loggedIn: req.user
     });
   } catch (err) {
     console.error(err.message);
@@ -293,7 +290,8 @@ app.get(
         petTypes: allPetTypes.rows,
         selectedPetTypes,
         rating,
-        price
+        price,
+        loggedIn: req.user
       });
     } catch (err) {
       console.error(err.message);
@@ -361,7 +359,8 @@ app.post('/pre-bid', async (req, res) => {
       .toISOString()
       .slice(0, 10),
     blockedDates: Array.from(datesToDelete),
-    availableDates: Array.from(datesToAllow)
+    availableDates: Array.from(datesToAllow),
+    loggedIn: req.user
   });
   // } else {
   //   req.flash('error', 'Please login before accessing your transactions.');
@@ -377,7 +376,8 @@ app.get('/caretaker-summary-info', async (req, res) => {
     );
     res.render('caretaker-summary-info', {
       caretakerSummaryInfo: summaryInfo.rows,
-      months: moment.months()
+      months: moment.months(),
+      loggedIn: req.user
     });
   } catch (err) {
     console.error(err.message);
@@ -392,7 +392,8 @@ app.get('/pet-types', async (req, res) => {
     console.log(launchToast);
     res.render('pet-types', {
       allPetTypes: allPetTypes.rows,
-      showSuccessToast: launchToast
+      showSuccessToast: launchToast,
+      loggedIn: req.user
     });
   } catch (err) {
     console.error(err.message);
@@ -404,7 +405,8 @@ app.get('/add-pet-type', async (req, res) => {
     //todo: check that user is admin
     const allPetTypes = await pool.query(sql_query.query.all_pet_types);
     res.render('add-pet-type', {
-      allPetTypes: allPetTypes.rows
+      allPetTypes: allPetTypes.rows,
+      loggedIn: req.user
     });
   } catch (err) {
     console.error(err.message);
@@ -434,7 +436,8 @@ app.get('/edit-pet-type', async (req, res) => {
     //todo: check that user is admin
     const allPetTypes = await pool.query(sql_query.query.all_pet_types);
     res.render('add-pet-type', {
-      allPetTypes: allPetTypes.rows
+      allPetTypes: allPetTypes.rows,
+      loggedIn: req.user
     });
   } catch (err) {
     console.error(err.message);
@@ -450,7 +453,8 @@ app.get('/pcs-admin-dashboard', async (req, res) => {
     );
     res.render('pcs-admin-dashboard', {
       first4PetTypes: first4PetTypes.rows,
-      first4Caretakers: first4Caretakers.rows
+      first4Caretakers: first4Caretakers.rows,
+      loggedIn: req.user
     });
   } catch (err) {
     console.error(err.message);
@@ -460,7 +464,15 @@ app.get('/pcs-admin-dashboard', async (req, res) => {
 app.get('/dashboard', async (req, res) => {
   try {
     if (!req.user) {
-      res.redirect('/login');
+      const top_ct_general = await pool.query(sql_query.query.best_ct);
+      const recent_trxn_completed = await pool.query(sql_query.query.recent_trxn_general_completed);
+      res.render('./dashboard', {
+        title: 'Dashboard',
+        top_ratings: top_ct_general.rows,
+        recent_trxn: recent_trxn_completed.rows,
+        statusToHuman: statusToHuman,
+        loggedIn: req.user
+      });
     } else {
       const account_type = req.user.type;
       if (account_type != 0) {
@@ -487,7 +499,8 @@ app.get('/dashboard', async (req, res) => {
           recent_trxn: recent_transactions.rows,
           my_pets: my_pets.rows,
           my_details: my_details.rows,
-          statusToHuman: statusToHuman
+          statusToHuman: statusToHuman,
+          loggedIn: true
         });
       } else {
         // if is PCSadmin
@@ -530,7 +543,8 @@ app.get('/dashboard-caretaker-ft', async (req, res) => {
           recent_trxn: recent_transactions.rows,
           my_pets: my_pets.rows,
           my_details: my_details.rows,
-          statusToHuman: statusToHuman
+          statusToHuman: statusToHuman,
+          loggedIn: req.user
         });
       } else {
         // if is PCSadmin
@@ -552,7 +566,8 @@ app.get('/apply_leave', async (req, res) => {
       if (account_type != 0) {
         res.render('./apply_leave', {
           title: 'Apply Leave',
-          statusToHuman: statusToHuman
+          statusToHuman: statusToHuman,
+          loggedIn: req.user
         });
       } else {
         // if is PCSadmin
@@ -569,11 +584,12 @@ app.get('/my_pets', async (req, res) => {
   if (!req.user) {
     res.redirect('/login');
   } else {
-    const values = [req.user.email]; // hardcoded
+    const values = [req.user.email]; 
     const query = await pool.query(sql_query.query.all_my_pets, values);
     res.render('./my_pets', {
       title: 'My Pets',
-      all_pets: query.rows
+      all_pets: query.rows,
+      loggedIn: req.user
     });
   }
 });
@@ -586,7 +602,8 @@ app.get('/edit_particulars', async (req, res) => {
     const po_info = await pool.query(sql_query.query.get_po_info, values);
     res.render('./edit_particulars', {
       title: 'Edit Particulars',
-      po_info: po_info.rows
+      po_info: po_info.rows,
+      loggedIn: req.user
     });
   }
 });
@@ -658,7 +675,8 @@ app.get('/add_pet', async (req, res) => {
     res.render('./add_pet', {
       title: 'Add Pets',
       pet_types: pet_types.rows,
-      query: null
+      query: null,
+      loggedIn: req.user
     });
   }
 });
@@ -678,7 +696,8 @@ app.get('/add_pet/:po_email/:pet_name', async (req, res) => {
     res.render('./add_pet', {
       title: 'Edit Pet Details',
       pet_types: pet_types.rows,
-      query: query.rows
+      query: query.rows,
+      loggedIn: req.user
     });
   }
 });
@@ -716,7 +735,8 @@ app.get('/profile/:iden', async (req, res) => {
 
       res.render('./caretaker_profile', {
         title: 'Profile of ' + get_ct_trxns.rows[0].ct_name,
-        get_ct_trxns: get_ct_trxns.rows
+        get_ct_trxns: get_ct_trxns.rows,
+        loggedIn: req.user
       });
     }
   } catch (err) {
@@ -738,11 +758,30 @@ app.get('/my_pet/:po_email/:pet_name', async (req, res) => {
       );
       res.render('./my_pet_profile', {
         title: 'My Pet ' + query.rows[0].pet_name,
-        query: query.rows
+        query: query.rows,
+        loggedIn: req.user
       });
     }
   } catch (err) {
     console.error(err.message);
+  }
+});
+
+app.post('/my_pet/:po_email/:pet_name', async (req, res) => {
+  if (!req.user) {
+    res.redirect('/login');
+  } else {
+    const values = [req.params.pet_name, req.params.po_email];
+    await pool.query(sql_query.query.delete_pet, values, (err, data) => {
+      if (err) {
+        console.log(err);
+        res.redirect('/my_pets?delete=fail');
+      } else {
+        // should show some kind of success message
+        // req.flash('success_msg', 'Particulars updated.');
+        res.redirect('/my_pets');
+      }
+    });
   }
 });
 
@@ -963,7 +1002,8 @@ app.post('/bid', async (req, res) => {
       pet_type: pet_type,
       daily_price: daily_price,
       num_days: num_days,
-      addr: addrQuery.rows[0].address
+      addr: addrQuery.rows[0].address,
+      loggedIn: req.user
     });
   } else {
     req.flash("error_msg", "Please login to submit a bid for a care.")
@@ -1096,7 +1136,8 @@ app.post('/edit_bid', async (req, res) => {
       petName : originalHire.pet_name,
       petType : petType,
       ctName : ct_name,
-      addr : addrQuery.rows[0].address
+      addr : addrQuery.rows[0].address,
+      loggedIn: req.user
     });
   } else {
     req.flash("error_msg", "Error: User is not authenticated");
@@ -1202,7 +1243,8 @@ app.post('/payment', async (req, res) => {
       petType: petType,
       ctName: ct_name,
       hasCC: hasCC,
-      ccLast4: hasCC ? creditCardQuery.rows[0].number.slice(-4) : ''
+      ccLast4: hasCC ? creditCardQuery.rows[0].number.slice(-4) : '',
+      loggedIn: req.user
     });
   } else {
     req.flash("error_msg", "Error: User is not authenticated");
@@ -1257,7 +1299,6 @@ app.get('/transactions', (req, res) => {
     pool
       .query(allTransactions, userEmail)
       .then((queryRes) => {
-        console.log(queryRes.rows)
         res.render('transactions', {
           name: req.user.name,
           resAllTrans: queryRes.rows,
@@ -1276,7 +1317,8 @@ app.get('/transactions', (req, res) => {
           ),
           moment: moment,
           title: 'Transactions',
-          statusToHuman: statusToHuman
+          statusToHuman: statusToHuman,
+          loggedIn: req.user
         });
       })
       .catch((err) => console.error(err.stack));

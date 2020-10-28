@@ -19,7 +19,7 @@
 </head>
 
 <body style="background-color: lightgrey;">
-    <%- include('./partials/nav_bar.ejs') %>
+    <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn}) %>
     <section class="content">
         <div class="container-fluid">
             <div style="display: flex; flex-direction: row; justify-content: space-between; margin-left: auto; margin-right: auto;  margin-top: 5%; width: 85%; align-content: flex-start;">

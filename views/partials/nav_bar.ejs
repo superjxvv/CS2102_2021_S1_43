@@ -11,7 +11,11 @@
                 <li class="nav-item active"><a class="nav-link" href="/transactions">Transactions</a></li>
                 <li class="nav-item active"><a class="nav-link" href="#">Create/Update Bid</a></li>
                 <li class="nav-item active"><a class="nav-link" href="/my_pets">My Pets</a></li>
-                <li class="nav-item active"><a class="nav-link" href="/logout">Logout</a></li>
+                <% if (!loggedIn) { %>
+                    <li class="nav-item active"><a class="nav-link" href="/login">Login</a></li>
+                <% } else { %>
+                    <li class="nav-item active"><a class="nav-link" href="/logout">Logout</a></li>
+                <% } %>
                 <!-- add other pages here -->
             </ul>
         </div>    

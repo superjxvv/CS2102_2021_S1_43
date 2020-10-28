@@ -58,7 +58,7 @@
 </head>
 
 <body style="background-color: lightgrey;">
-    <%- include('./partials/nav_bar.ejs') %>
+    <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn}) %>
     <div style="display:none;" id="caretakerSummaryInfo"><%=caretakerSummaryInfo%></div>
     <div class="card">
         <div class="card-header">

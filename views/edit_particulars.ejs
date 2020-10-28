@@ -6,7 +6,7 @@
 </head>
 
 <body>
-    <%- include('./partials/nav_bar.ejs') %>
+    <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn}) %>
     <div id="content-wrapper">
         <div class="container-fluid">
             <div class="card" style="width: 60%; margin: auto; margin-top: 5%">
@@ -26,7 +26,7 @@
                             <label for="po_email" class="col-sm-3 col-form-label">Email: </label>
                             <div class="col-sm-9">
                                 <input type="text" class="form-control" id="po_email"
-                                    name="po_email" value="<%= po_info[0].email %>">
+                                    name="po_email" value="<%= po_info[0].email %>" disabled>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -70,7 +70,7 @@
                             <label for="cc_num" class="col-sm-3 col-form-label">Credit Card Number: </label>
                             <div class="col-sm-9">
                                 <input type="text" class="form-control" id="cc_num"
-                                    name="cc_num" value="<%= po_info[0].number %>">
+                                    name="cc_num" value="<%= po_info[0].number %>" minlength="8">
                             </div>
                         </div>
                         <div class="form-group row">

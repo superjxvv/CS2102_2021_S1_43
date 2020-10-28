@@ -32,7 +32,7 @@
 </head>
 
 <body style="background-color: lightgrey;">
-    <%- include('./partials/nav_bar.ejs') %>
+    <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn}) %>
     <div class="card" style="margin-left: auto; margin-right: auto; margin-top: 5%; width: 80%; align-content: center;">
         <div class="card-header border-0" style="flex-direction: row; display: flex; justify-content: space-between;">
             <h3 class="card-title">Pet Types</h3>

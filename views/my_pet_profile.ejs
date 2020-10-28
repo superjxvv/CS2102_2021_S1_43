@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <%- include('./partials/head.ejs') %>
+</head>
+
+<body>
+    <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn}) %>
+
+    <div class="container vert-gap-container">
+        <div class="row">
+            <h2 class="vert-gap-contents">My Pet: <%= query[0].pet_name %></h2>
+        </div>
+
+        <div class="row text-left">
+            <div class="card col-sm col-md" id="square-card" style="margin-bottom: 15px;">
+                <p><b>Pet Name:</b> <%= query[0].pet_name %><br>
+                   <b>Pet Type:</b> <%= query[0].pet_type %><br>
+                   <b>Special Requirements:</b> <%= query[0].special_requirement %><br>
+                </p>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

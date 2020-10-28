@@ -1,16 +1,22 @@
 <%- include('../functions') %>
-    <div class="card" style="background-color: whitesmoke;">
-        <div class="card-body col-12" style="padding-bottom: 0px; padding-top: 10px;">
-            <div class="row" id="transaction-header">
-                <div class="col-12">
-                    <h4>Pet: <%= pet.pet_name %></h4>
-                </div>
+<div class="card col-12" style="background-color: whitesmoke; text-align: left;">
+    <div class="card-body" style="padding-bottom: 0px; padding-top: 10px;">
+        <div class="row" id="transaction-header">
+            <div class="col-3">
+                <a href="/my_pet/<%= pet.email %>/<%= pet.pet_name %>"><h4>Pet: <%= pet.pet_name %></h4></a>
             </div>
-            <div class="row">
-                <div class="col-12 w-100">
-                    <p><b>Pet Type:</b> <%= pet.pet_type %></p>
-                    <p><b>Special Requirements:</b> <%= pet.special_requirement %></p>
-                </div>
+            <div class="col">
+                <a href="/add_pet/<%= pet.email %>/<%= pet.pet_name %>" class="btn btn-tool btn-sm">Edit</a>
+            </div>
+            <form class="col" method="post" action="/my_pet/<%= pet.email %>/<%= pet.pet_name %>">
+                <button type="submit" class="btn btn-tool btn-sm">Delete</button>
+            </form>
+        </div>
+        <div class="row">
+            <div class="col">
+                <p><b>Pet Type:</b> <%= pet.pet_type %></p>
+                <p><b>Special Requirements:</b> <%= pet.special_requirement %></p>
             </div>
         </div>
     </div>
+</div>

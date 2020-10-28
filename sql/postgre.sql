@@ -57,6 +57,7 @@ CREATE TABLE own_pet (
   pet_name VARCHAR NOT NULL,
   special_requirement VARCHAR NOT NULL,
   email VARCHAR REFERENCES pet_owner(email),
+  deleted BOOLEAN NOT NULL DEFAULT false,
   PRIMARY KEY(pet_name, email)
 );
 
@@ -3521,11 +3522,11 @@ insert into indicates_availability (email, start_date, end_date) values ('lgrino
 insert into indicates_availability (email, start_date, end_date) values ('jgeffinger1s@blog.com', '2020-11-13', '2022-10-15');
 
 CREATE OR REPLACE PROCEDURE 
-add_pet(pet_name VARCHAR, special_requirement VARCHAR, email VARCHAR, pet_type VARCHAR) AS
+add_pet(p_name VARCHAR, special_req VARCHAR, po_email VARCHAR, type VARCHAR) AS
 '
 BEGIN 
-INSERT INTO own_pet (pet_name, special_requirement, email) VALUES (pet_name, special_requirement, email);
-INSERT INTO is_of (pet_type, pet_name, owner_email) VALUES (pet_type, pet_name, email);
+INSERT INTO own_pet (pet_name, special_requirement, email) VALUES (p_name, special_req, po_email) ON CONFLICT (pet_name, email) DO UPDATE SET special_requirement = special_req;
+INSERT INTO is_of (pet_type, pet_name, owner_email) VALUES (type, p_name, po_email) ON CONFLICT (pet_type, pet_name, owner_email) DO NOTHING;
 END;
 '
 LANGUAGE plpgsql;

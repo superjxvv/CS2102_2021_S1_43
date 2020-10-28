@@ -67,8 +67,8 @@
       });
 
       $('input[name="dates"]').on('apply.daterangepicker', function (ev, picker) {
-        document.getElementById("start_date").value = picker.startDate.format('DD/MM/YYYY');
-        document.getElementById("end_date").value = picker.endDate.format('DD/MM/YYYY');
+        document.getElementById("start_date").value = picker.startDate
+        document.getElementById("end_date").value = picker.endDate
         $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
       });
     })

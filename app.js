@@ -14,6 +14,7 @@ const initializePassport = require('./passportConfig');
 const { exception } = require('console');
 const e = require('express');
 const { send } = require('process');
+const sql = require('./sql');
 initializePassport(passport);
 // -------------------------------------
 
@@ -707,7 +708,7 @@ app.get('/profile/:iden', async (req, res) => {
  ** TODO: Change all msg to flash messages.
  */
 app.get('/register', (req, res) => {
-  res.render('register', { msg: '' });
+  res.render('register');
 });
 
 app.post('/register', async (req, res) => {
@@ -767,31 +768,48 @@ app.get('/login', (req, res) => {
   if (req.user) {
     //TODO: Add a hidden div in profile page to display this alert.
     req.flash(
-      'error',
+      'error_msg',
       'You are already logged in, please log out to login to another account.'
     );
-    res.redirect('/dashboard');
+    res.redirect('/login_redirect');
   } else {
     res.render('login');
   }
 });
 
+app.get('/login_redirect', (req, res) => {
+  if (req.user) {
+    if (req.user.type === 0) {
+      res.redirect('/pcs-admin-dashboard');
+    } else if (req.user.type === 1) {
+      res.redirect('/dashboard');
+    } else {
+      console.log("CT");
+      res.redirect('/dashboard-caretaker-ft');
+    }
+  } else {
+    res.redirect("/login");
+  }
+})
+
 //If authenticate successful, redirect to profile, it not,
 //go to login page and show failure messages (in passportConfig.js)
-app.post(
-  '/login',
-  passport.authenticate('local', {
-    successRedirect: '/dashboard',
+app.post('/login', passport.authenticate('local', {
+    successRedirect: '/login_redirect',
     failureRedirect: '/login',
     failureFlash: true
   })
 );
 
 app.get('/logout', (req, res) => {
-  const userName = req.user.name;
-  req.logout();
-  req.flash('success_msg', 'Successfully logged out.');
-  res.redirect('/login');
+  if (req.user) {
+    const userName = req.user.name;
+    req.logout();
+    req.flash('success_msg', 'Successfully logged out.');
+    res.redirect('/login');
+  } else {
+    res.redirect('/login');
+  }
 });
 
 //Use to test if a user is logged in.
@@ -805,10 +823,6 @@ app.get('/user', (req, res) => {
   }
 });
 
-app.get('/checkout', (req, res) => {
-  res.render('bid');
-});
-
 const transferConvert = (method) => {
   if (method == 'oDeliver') {
     return 'Dropoff at caretaker';
@@ -820,7 +834,7 @@ const transferConvert = (method) => {
 };
 
 /*
-Pushes all dates within given range into outputArr.
+Pushes all dates within given range into outputSet.
 Function takes in 3 arguments with 1 optional argument, criteriaSet. 
 If a date is in criteria set it won't be added to output set.
 function(startDate, endDate, outputSet, criteriaSet)
@@ -879,74 +893,86 @@ const diffDays = (firstDate, secondDate) =>
 
 //Jeremy (Chua) please pass in ct_name, ct_email, start_date, end_date, pet type. I will change method to post once that is done.
 app.post('/bid', async (req, res) => {
-  const ct_email = req.body.ct_email;
-  const owner_email = req.user.email;
-  //May need to add additional processing if date format changed to DD/MM/YYYY
-  const start_date = req.body.start_date;
-  const end_date = req.body.start_date;
-  console.log(start_date, end_date);
-  const pet_name = req.body.pet_name;
-  const num_days = diffDays(new Date(start_date), new Date(end_date));
+  if (req.user) {
+    const ct_email = req.body.ct_email;
+    const owner_email = req.user.email;
+    //May need to add additional processing if date format changed to DD/MM/YYYY
+    const start_date = req.body.start_date;
+    const end_date = req.body.start_date;
+    console.log(req.body);
+    const pet_name = req.body.pet_name;
+    const num_days = diffDays(new Date(start_date), new Date(end_date));
 
-  const ctNameQuery = await pool.query("SELECT name FROM care_taker WHERE email = $1", [ct_email]);
-  const ct_name = ctNameQuery.rows[0].name;
-  const petTypeQuery = await pool.query(sql_query.query.petTypeFromOwnerAndName, [owner_email, pet_name]);
-  const pet_type = petTypeQuery.rows[0].pet_type;
-  const dailyPriceQuery = await pool.query(sql_query.query.dailyPriceGivenTypeAndCT,[ct_email, pet_type]);
-  const daily_price = dailyPriceQuery.rows[0].daily_price;
-  const addrQuery = await pool.query(sql_query.query.ownerAddress, [owner_email]);
+    const ctNameQuery = await pool.query("SELECT name FROM care_taker WHERE email = $1", [ct_email]);
+    const ct_name = ctNameQuery.rows[0].name;
+    const petTypeQuery = await pool.query(sql_query.query.petTypeFromOwnerAndName, [owner_email, pet_name]);
+    const pet_type = petTypeQuery.rows[0].pet_type;
+    const dailyPriceQuery = await pool.query(sql_query.query.dailyPriceGivenTypeAndCT,[ct_email, pet_type]);
+    const daily_price = dailyPriceQuery.rows[0].daily_price;
+    const addrQuery = await pool.query(sql_query.query.ownerAddress, [owner_email]);
 
-  res.render('bid', {
-    ct_name: ct_name,
-    ct_email: ct_email,
-    start_date: convertDate(start_date),
-    end_date: convertDate(end_date),
-    pet_name : pet_name,
-    pet_type: pet_type,
-    daily_price: daily_price,
-    num_days: num_days,
-    addr: addrQuery.rows[0].address
-  });
+    res.render('bid', {
+      ct_name: ct_name,
+      ct_email: ct_email,
+      start_date: convertDate(start_date),
+      end_date: convertDate(end_date),
+      pet_name : pet_name,
+      pet_type: pet_type,
+      daily_price: daily_price,
+      num_days: num_days,
+      addr: addrQuery.rows[0].address
+    });
+  } else {
+    req.flash("error_msg", "Please login to submit a bid for a care.")
+    req.redirect("/login");
+  }
 });
+
 const testAddress = (address) => /[a-zA-Z]/g.test(address);
 
 app.post('/submit_bid', async (req, res) => {
-  const owner_email = req.user.email;
-  console.log(req.body);
-  //Convert DD/MM/YYYY to js Date then get difference between dates as numdays
-  const num_days = diffDays(moment(req.body.start_date, "DD/MM/YYYY").toDate(), moment(req.body.end_date, "DD/MM/YYYY").toDate());
-  //Confirm daily price
-  const dailyPriceQuery = await pool.query(sql_query.query.dailyPriceGivenTypeAndCT, [req.body.ct_email, req.body.pet_type]);
-  console.log(num_days);
-  queryValues = [
-    owner_email,
-    req.body.pet_name,
-    req.body.ct_email,
-    num_days,
-    num_days * dailyPriceQuery.rows[0].daily_price,
-    req.body.transferMethod,
-    req.body.start_date,
-    req.body.end_date,
-    new Date()
-  ];
+  if (req.user) {
+    const owner_email = req.user.email;
+    console.log(req.body);
+    //Convert DD/MM/YYYY to js Date then get difference between dates as numdays
+    const num_days = diffDays(moment(req.body.start_date, "DD/MM/YYYY").toDate(), moment(req.body.end_date, "DD/MM/YYYY").toDate());
+    //Confirm daily price
+    const dailyPriceQuery = await pool.query(sql_query.query.dailyPriceGivenTypeAndCT, [req.body.ct_email, req.body.pet_type]);
+    console.log(num_days);
+    queryValues = [
+      owner_email,
+      req.body.pet_name,
+      req.body.ct_email,
+      num_days,
+      num_days * dailyPriceQuery.rows[0].daily_price,
+      req.body.transferMethod,
+      req.body.start_date,
+      req.body.end_date,
+      new Date()
+    ];
 
-  //Add date range to date range table if not exists
-  await pool.query(
-    'INSERT INTO date_range VALUES($1, $2) ON CONFLICT DO NOTHING',
-    [req.body.start_date, req.body.end_date]
-  );
-  //Add bid to hire table
-  await pool.query(sql_query.query.add_bid, queryValues);
-  //Add address if indicated
-  if (req.body.saveAddress) {
-    await pool.query("UPDATE pet_owner SET address=$1 WHERE email =$2", [req.body.address , owner_email]);
+    //Add date range to date range table if not exists
+    await pool.query(
+      'INSERT INTO date_range VALUES($1, $2) ON CONFLICT DO NOTHING',
+      [req.body.start_date, req.body.end_date]
+    );
+    //Add bid to hire table
+    await pool.query(sql_query.query.add_bid, queryValues);
+    //Add address if indicated
+    if (req.body.saveAddress) {
+      await pool.query("UPDATE pet_owner SET address=$1 WHERE email =$2", [req.body.address , owner_email]);
+    }
+    req.flash("success_msg", "Bid was successful");
+    res.redirect("/dashboard");
+  } else {
+    req.flash("error_msg", "Error: User is not authenticated");
+    req.redirect("/login");
   }
-  req.flash("success_msg", "Bid was successful");
-  res.redirect("/dashboard");
 })
 
 
 app.post('/edit_bid', async (req, res) => {
+  if (req.user) {
     console.log(req.body);
     //req.body contains the primary key for that particular hire to be edited, passed in by a form from /transactions.
     const originalQueryValues = Object.values(req.body);
@@ -1029,117 +1055,136 @@ app.post('/edit_bid', async (req, res) => {
       ctName : ct_name,
       addr : addrQuery.rows[0].address
     });
+  } else {
+    req.flash("error_msg", "Error: User is not authenticated");
+    req.redirect("/login");
+  }
 });
 
 app.post('/submit_edit', async (req, res) => {
-  const owner_email = req.user.email;
-  //Delete old bid
-  await pool.query(sql_query.query.delete_bid, [
-    owner_email,
-    req.body.ct_email,
-    req.body.ori_start_date,
-    req.body.ori_end_date,
-    req.body.pet_name
-  ]);
-  const startDate =
-    req.body.start_date === ''
-      ? new Date(req.body.ori_start_date)
-      : new Date(req.body.start_date);
-  const endDate =
-    req.body.end_date === ''
-      ? new Date(req.body.ori_end_date)
-      : new Date(req.body.end_date);
-  const numDays = diffDays(startDate, endDate);
-  //Use pet type to server query cost per day to be sure
-  const petTypeQuery = await pool.query(
-    sql_query.query.petTypeFromOwnerAndName,
-    [owner_email, req.body.pet_name]
-  );
-  const petType = petTypeQuery.rows[0].pet_type;
-  //Cost per day for that pet type
-  const costPerDayQuery = await pool.query(
-    sql_query.query.dailyPriceGivenTypeAndCT,
-    [req.body.ct_email, petType]
-  );
-  const costPerDay = costPerDayQuery.rows[0].daily_price;
-  const totalCost = numDays * costPerDay;
-  //Add date range to date range table if not exists
-  await pool.query(
-    'INSERT INTO date_range VALUES($1, $2) ON CONFLICT DO NOTHING',
-    [startDate, endDate]
-  );
-  //Put in replacement bid.
-  queryValues = [owner_email, req.body.pet_name, req.body.ct_email, 
-                 numDays, totalCost, req.body.transferMethod,
-                 startDate, endDate, new Date()];
-  await pool.query(sql_query.query.add_bid, queryValues)
-  //Add address if indicated
-  if (req.body.saveAddress) {
-    await pool.query("UPDATE pet_owner SET address=$1 WHERE email =$2", [req.body.address , owner_email]);
-}
-  req.flash("success_msg", "Bid successfully updated.");
-  res.redirect('transactions');
+  if (req.user) {
+    const owner_email = req.user.email;
+    //Delete old bid
+    await pool.query(sql_query.query.delete_bid, [
+      owner_email,
+      req.body.ct_email,
+      req.body.ori_start_date,
+      req.body.ori_end_date,
+      req.body.pet_name
+    ]);
+    const startDate =
+      req.body.start_date === ''
+        ? new Date(req.body.ori_start_date)
+        : new Date(req.body.start_date);
+    const endDate =
+      req.body.end_date === ''
+        ? new Date(req.body.ori_end_date)
+        : new Date(req.body.end_date);
+    const numDays = diffDays(startDate, endDate);
+    //Use pet type to server query cost per day to be sure
+    const petTypeQuery = await pool.query(
+      sql_query.query.petTypeFromOwnerAndName,
+      [owner_email, req.body.pet_name]
+    );
+    const petType = petTypeQuery.rows[0].pet_type;
+    //Cost per day for that pet type
+    const costPerDayQuery = await pool.query(
+      sql_query.query.dailyPriceGivenTypeAndCT,
+      [req.body.ct_email, petType]
+    );
+    const costPerDay = costPerDayQuery.rows[0].daily_price;
+    const totalCost = numDays * costPerDay;
+    //Add date range to date range table if not exists
+    await pool.query(
+      'INSERT INTO date_range VALUES($1, $2) ON CONFLICT DO NOTHING',
+      [startDate, endDate]
+    );
+    //Put in replacement bid.
+    queryValues = [owner_email, req.body.pet_name, req.body.ct_email, 
+                  numDays, totalCost, req.body.transferMethod,
+                  startDate, endDate, new Date()];
+    await pool.query(sql_query.query.add_bid, queryValues)
+    //Add address if indicated
+    if (req.body.saveAddress) {
+      await pool.query("UPDATE pet_owner SET address=$1 WHERE email =$2", [req.body.address , owner_email]);
+    }
+    req.flash("success_msg", "Bid successfully updated.");
+    res.redirect('transactions');
+  } else {
+    req.flash("error_msg", "Error: User is not authenticated");
+    req.redirect("/login");
+  }
 });
 
 app.post('/payment', async (req, res) => {
-  //req.body contains the primary key for that particular hire to be edited, passed in by a form from /transactions.
-  const hireQueryValues = Object.values(req.body);
-  const hireQuery = await pool.query(
-    sql_query.query.get_a_hire,
-    hireQueryValues
-  );
-  const hire = hireQuery.rows[0];
-  const petTypeQuery = await pool.query(
-    sql_query.query.petTypeFromOwnerAndName,
-    [hire.owner_email, hire.pet_name]
-  );
-  const petType = petTypeQuery.rows[0].pet_type;
-  const ct_nameQuery = await pool.query(
-    'SELECT name FROM care_taker WHERE email = $1',
-    [hire.ct_email]
-  );
-  const ct_name = ct_nameQuery.rows[0].name;
-  //Cost per day for that pet type
-  const costPerDayQuery = await pool.query(
-    sql_query.query.dailyPriceGivenTypeAndCT,
-    [req.body.ct_email, petType]
-  );
-  const costPerDay = costPerDayQuery.rows[0].daily_price;
+  if (req.user) {
+    //req.body contains the primary key for that particular hire to be edited, passed in by a form from /transactions.
+    const hireQueryValues = Object.values(req.body);
+    const hireQuery = await pool.query(
+      sql_query.query.get_a_hire,
+      hireQueryValues
+    );
+    const hire = hireQuery.rows[0];
+    const petTypeQuery = await pool.query(
+      sql_query.query.petTypeFromOwnerAndName,
+      [hire.owner_email, hire.pet_name]
+    );
+    const petType = petTypeQuery.rows[0].pet_type;
+    const ct_nameQuery = await pool.query(
+      'SELECT name FROM care_taker WHERE email = $1',
+      [hire.ct_email]
+    );
+    const ct_name = ct_nameQuery.rows[0].name;
+    //Cost per day for that pet type
+    const costPerDayQuery = await pool.query(
+      sql_query.query.dailyPriceGivenTypeAndCT,
+      [req.body.ct_email, petType]
+    );
+    const costPerDay = costPerDayQuery.rows[0].daily_price;
 
-  const creditCardQuery = await pool.query(
-    'SELECT number FROM has_credit_card WHERE email = $1',
-    [hire.owner_email]
-  );
-  const hasCC = creditCardQuery.rows.length === 1;
-  res.render('payment', {
-    startDate: hire.start_date,
-    endDate: hire.end_date,
-    transferConvert: transferConvert,
-    convertDate: convertDate,
-    data: hire,
-    costPerDay: costPerDay,
-    totalCost: costPerDay * diffDays(hire.start_date, hire.end_date),
-    petName: hire.pet_name,
-    petType: petType,
-    ctName: ct_name,
-    hasCC: hasCC,
-    ccLast4: hasCC ? creditCardQuery.rows[0].number.slice(-4) : ''
-  });
+    const creditCardQuery = await pool.query(
+      'SELECT number FROM has_credit_card WHERE email = $1',
+      [hire.owner_email]
+    );
+    const hasCC = creditCardQuery.rows.length === 1;
+    res.render('payment', {
+      startDate: hire.start_date,
+      endDate: hire.end_date,
+      transferConvert: transferConvert,
+      convertDate: convertDate,
+      data: hire,
+      costPerDay: costPerDay,
+      totalCost: costPerDay * diffDays(hire.start_date, hire.end_date),
+      petName: hire.pet_name,
+      petType: petType,
+      ctName: ct_name,
+      hasCC: hasCC,
+      ccLast4: hasCC ? creditCardQuery.rows[0].number.slice(-4) : ''
+    });
+  } else {
+    req.flash("error_msg", "Error: User is not authenticated");
+    req.redirect("/login");
+  }
 });
 
 app.post('/submit_payment', async (req, res) => {
-  const owner_email = req.user.email;
-  //Update hire_status to inProgress
-  await pool.query(sql_query.query.payForBid, [
-    req.body.paymentMethod,
-    owner_email,
-    req.body.pet_name,
-    req.body.ct_email,
-    new Date(req.body.start_date),
-    new Date(req.body.end_date)
-  ]);
-  req.flash('success_msg', 'Payment successfully made!');
-  res.redirect('/transactions');
+  if (req.user) {
+    const owner_email = req.user.email;
+    //Update hire_status to inProgress
+    await pool.query(sql_query.query.payForBid, [
+      req.body.paymentMethod,
+      owner_email,
+      req.body.pet_name,
+      req.body.ct_email,
+      new Date(req.body.start_date),
+      new Date(req.body.end_date)
+    ]);
+    req.flash('success_msg', 'Payment successfully made!');
+    res.redirect('/transactions');
+  } else {
+    req.flash("error_msg", "Error: User is not authenticated");
+    req.redirect("/login");
+  }
 });
 
 const statusToHuman = (status) => {
@@ -1161,14 +1206,19 @@ const statusToHuman = (status) => {
 app.get('/transactions', (req, res) => {
   if (req.user) {
     const userEmail = [req.user.email]; // hardcoded
-    const allTransactions = sql_query.query.get_my_trxn;
+    //To accomodate for caretakers
+    const allTransactions = req.user.type === 1
+      ? sql_query.query.get_my_trxn
+      : sql_query.query.get_ct_trxn
 
     pool
       .query(allTransactions, userEmail)
       .then((queryRes) => {
+        console.log(queryRes.rows)
         res.render('transactions', {
           name: req.user.name,
           resAllTrans: queryRes.rows,
+          accType : req.user.type,
           resOngoingTrans: queryRes.rows.filter(
             (x) =>
               x.hire_status != 'completed' &&

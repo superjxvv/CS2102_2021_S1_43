@@ -67,9 +67,9 @@
       });
 
       $('input[name="dates"]').on('apply.daterangepicker', function (ev, picker) {
-        document.getElementById("start_date").value = picker.startDate.format('MM/DD/YYYY');
-        document.getElementById("end_date").value = picker.endDate.format('MM/DD/YYYY');
-        $(this).val(picker.startDate.format('MM/DD/YYYY') + ' - ' + picker.endDate.format('MM/DD/YYYY'));
+        document.getElementById("start_date").value = picker.startDate.format('DD/MM/YYYY');
+        document.getElementById("end_date").value = picker.endDate.format('DD/MM/YYYY');
+        $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
       });
     })
   </script>

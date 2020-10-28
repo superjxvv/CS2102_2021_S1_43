@@ -89,20 +89,30 @@
               Please select a valid pet transfer method.
             </div>
           </div>
-          <!--Pet Name-->
+          <!-- Pet Name-->
           <div class="col-md-5 mb-3">
-            <label for="transfer">Select Pet Type: <%= pet_type %></label>
+              <div class="card w-60 h-70">
+                <div class="card-body">
+                  <h6 class="card-subtitle mb-2 text-muted">Your selected pet:</h6>
+                  <p class="card-text"><%=pet_name%> <b>(<%=pet_type%>)</b></p>
+                  <input type="hidden" name="pet_name" value="<%=pet_name%>">
+                </div>
+              </div>
+          </div>
+        </div>
+          <!-- <div class="col-md-5 mb-3">
+            <label for="transfer">Select Pet Type: <%#= pet_type %></label>
             <select class="custom-select d-block w-100" id="pet_name" name="pet_name" required> 
-              <% pets.forEach(pet => { %>
-                <option value = <%= pet.pet_name %>><%= pet.pet_name %></option>
-              <% }) %>
+              <%# pets.forEach(pet => { %>
+                <option value = <%#= pet.pet_name %>><%#= pet.pet_name %></option>
+              <%# }) %>
             </select>
             <div class="invalid-feedback">
               Please select a valid pet transfer method.
             </div>
           </div>
         </div>
-        <hr class="mb-4">
+        <hr class="mb-4"> -->
 
         <!--Address-->
         <div id="addressBlock">

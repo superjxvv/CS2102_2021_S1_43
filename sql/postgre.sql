@@ -3535,7 +3535,17 @@ edit_po_info(po_email VARCHAR, po_name VARCHAR, po_pw VARCHAR, po_loc VARCHAR, p
 '
 BEGIN 
 UPDATE pet_owner SET name = po_name, password = po_pw, location = po_loc, address = po_addr WHERE email = po_email;
-UPDATE has_credit_card SET number = cc_num, expiry = cc_exp WHERE email = po_email;
+INSERT INTO has_credit_card (number, email, expiry) VALUES (cc_num, po_email, cc_exp) ON CONFLICT (email) DO UPDATE SET number = cc_num, expiry = cc_exp;
+END;
+'
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE PROCEDURE 
+edit_po_info_no_pw(po_email VARCHAR, po_name VARCHAR, po_loc VARCHAR, po_addr VARCHAR, cc_num VARCHAR, cc_exp VARCHAR) AS
+'
+BEGIN 
+UPDATE pet_owner SET name = po_name,  location = po_loc, address = po_addr WHERE email = po_email;
+INSERT INTO has_credit_card (number, email, expiry) VALUES (cc_num, po_email, cc_exp) ON CONFLICT (email) DO UPDATE SET number = cc_num, expiry = cc_exp;
 END;
 '
 LANGUAGE plpgsql;

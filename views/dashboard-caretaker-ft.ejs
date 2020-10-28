@@ -25,43 +25,36 @@
                    <b>My Email:</b> <%= my_details[0].email %><br>
                    <b>My Location:</b> <%= my_details[0].location %><br>
                    <b>My Address:</b> <%= my_details[0].address %><br>
-                   <b>My Credit Card:</b> <%= my_details[0].number %><br>
-                   <b>My Credit Card Expiry Date:</b> <%= my_details[0].expiry %><br>
+                   <b>My Bank Account Number: </b> Placeholder<br>
+                   <b>My Monthly Pet Days: </b> Placeholder<br>
+                   <b>My Monthly Salary: </b> Placeholder<br>
+                   <b>My Concurrent Pet Limit: </b> Placeholder<br>
+                   <b>My Rating:</b> Placeholder<br>
                 </p>
             </div>
-        </div>
-
-        <div class="row">
-            <h4 class="vert-gap-small-header" style="margin-top: 15px;">Pet Information</h4>
-            <% if (my_pets.length >= 1) { %>
-                <a href="/my_pets" style="padding-left: 13px; padding-top: 17px;">See more</a>
-            <% } %>
-        </div>
-        <div class="row text-left">
-            <% my_pets.forEach(pet => { %>
-            <div class="card col-sm col-md" id="square-card">
-                <p><b>Pet Name:</b> <%= pet.pet_name %><br>
-                   <b>Pet Type:</b> <%= pet.pet_type %><br>
-                   <b>Special Requirements:</b> <%= pet.special_requirement %><br>
-                </p>
-            </div>
-            <% }) %>
         </div>
     </div>
 
     <div class="container vert-gap-container">
         <div class="row">
-            <h2 class="vert-gap-contents">Top Caretakers Nearby</h2>
-            <a href="/search" style="padding: 13px">See more</a> <!-- link this to search for nearby caretakers-->
+            <h2 class="vert-gap-contents">My Leave Requests</h2>
+            <a href="/apply_leave" style="padding: 13px">Apply leave</a>
+        </div>
+
+        <div class="row text-left">
+            <p>
+                <b>Remaining leave days: </b> Placeholder
+            </p>
         </div>
         
         <div class="row text-left">
-            <% top_ratings.forEach(caretaker => { %>
-                <button class="card col-sm col-md" id="square-card" onclick="location.href='/profile/<%= caretaker.email %>'">
-                    <p><b>Name:</b> <%= caretaker.name %><br>
-                        <b>Rating:</b> <%= caretaker.rating == null ? "No Rating Yet" : caretaker.rating %><br>
-                        <b>Location:</b> <%= caretaker.location %><br>
-                        <b>Job:</b> <%= caretaker.job == "part_timer" ? "Part Time" : "Full Time" %><br>
+            <% top_ratings.forEach(caretaker => { %> <!-- to be changed-->
+                <button class="card col-sm col-md" id="square-card">
+                    <p><b>Start Date:</b> Placeholder<br>
+                        <b>End Date:</b> Placeholder<br>
+                        <b>Applied on:</b> Placeholder<br>
+                        <b>No. of Days:</b> Placeholder<br>
+                        <b>Status:</b> Approved (placeholder)<br>
                     </p>
                 </button>
             <% }) %>

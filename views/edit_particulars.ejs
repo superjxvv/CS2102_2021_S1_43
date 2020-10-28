@@ -62,22 +62,22 @@
                         <div class="form-group row">
                             <label for="pw2" class="col-sm-3 col-form-label">Confirm New Password: </label>
                             <div class="col-sm-9">
-                                <input type="password" required="required" class="form-control" id="pw2"
+                                <input type="password" class="form-control" id="pw2"
                                     name="pw2" value="">
                             </div>
                         </div>
                         <div class="form-group row">
                             <label for="cc_num" class="col-sm-3 col-form-label">Credit Card Number: </label>
                             <div class="col-sm-9">
-                                <input type="text" required="required" class="form-control" id="cc_num"
-                                    name="cc_num" value="">
+                                <input type="text" class="form-control" id="cc_num"
+                                    name="cc_num" value="<%= po_info[0].number %>">
                             </div>
                         </div>
                         <div class="form-group row">
                             <label for="cc_date" class="col-sm-3 col-form-label">Credit Card Expiry Date: </label>
                             <div class="col-sm-9">
-                                <input type="text" required="required" class="form-control" id="cc_date"
-                                    name="cc_date" value="">
+                                <input type="text" class="form-control" id="cc_date"
+                                    name="cc_date" value="<%= po_info[0].expiry %>">
                             </div>
                         </div>
                     </div>

@@ -11,38 +11,55 @@
         <div class="container-fluid">
             <div class="card" style="width: 60%; margin: auto; margin-top: 5%">
                 <div class="card-header">
-                    <i class="fas fa-dice-d20"></i> &nbsp; <b> Add Pet Type </b>
+                    <% const top = query == null ? "Add Pet" : "Edit Pet Details"; %>
+                    <% const pet_name = query == null ? "" : query[0].pet_name; %>
+                    <% const special_req = query == null ? "" : query[0].special_requirement; %>
+                    <% const pet_type = query == null ? "" : query[0].pet_type; %>
+                    <% const submit = query == null ? "Add Pet" : "Edit Pets"; %>
+                    <i class="fas fa-dice-d20"></i> &nbsp; <b><%= top %></b>
                 </div>
                 <form method="post" action="/add_pet">
                     <div class="card-body">
                         <div class="form-group row">
                             <label for="pet_name" class="col-sm-3 col-form-label">Pet Name: </label>
                             <div class="col-sm-9">
-                                <input type="text" required="required" class="form-control" placeholder="Name" id="pet_name"
-                                    name="pet_name" value="">
+                                <% if (pet_name == "") { %> 
+                                    <input type="text" required="required" class="form-control" placeholder="Name" id="pet_name"
+                                        name="pet_name" value="<%= pet_name %>">
+                                <% } else { %>
+                                    <input type="text" required="required" class="form-control" placeholder="Name" id="pet_name"
+                                        name="pet_name" value="<%= pet_name %>" readonly="true">
+                                <% } %>
                             </div>
                         </div>
                         <div class="form-group row">
                             <label for="special_req" class="col-sm-3 col-form-label">Special Requirements: </label>
                             <div class="col-sm-9">
                                 <input type="text" class="form-control" id="special_req"
-                                    placeholder="Special Requirements" name="special_req" value="">
+                                    placeholder="Special Requirements" name="special_req" value="<%= special_req %>">
                             </div>
                         </div>
                         <div class="form-group row">
                             <label for="pet_type" class="col-sm-3 col-form-label">Pet Type: </label>
                             <div class="col-sm-9">
-                                <select id="pet_type" name="pet_type" required="required">
-                                    <option selected value="">Select a pet type</option>
-                                    <% pet_types.forEach(type => { %>
-                                        <option value="<%= type.name %>"><%= type.name %></option>
-                                    <% }) %>
-                                </select>
+                                <% if (pet_type == "") { %> 
+                                    <select id="pet_type" name="pet_type" required="required">
+                                        <option selected value="">Select a pet type</option>
+                                        <% pet_types.forEach(type => { %>
+                                            <option value="<%= type.name %>"><%= type.name %></option>
+                                        <% }); %>
+                                    </select>
+                                <% } else { %>
+                                    <select id="pet_type" name="pet_type" required="required" readonly="true">
+                                        <option selected value="<%= pet_type %>"><%= pet_type %></option>
+                                    </select>
+                                <% } %>
+                                
                             </div>
                         </div>
                     </div>
                     <div class="card-footer small text-muted">
-                        <button type="submit" class="btn btn-secondary">Add Pet</button>
+                        <button type="submit" class="btn btn-secondary"><%= submit %></button>
                     </div>
                 </form>
             </div>

@@ -39,12 +39,12 @@
         </div>
         <div class="row text-left">
             <% my_pets.forEach(pet => { %>
-            <div class="card col-sm col-md" id="square-card">
+            <button class="card col-sm col-md" id="square-card" onclick="location.href='/my_pet/<%= pet.email %>/<%= pet.pet_name %>'">
                 <p><b>Pet Name:</b> <%= pet.pet_name %><br>
                    <b>Pet Type:</b> <%= pet.pet_type %><br>
                    <b>Special Requirements:</b> <%= pet.special_requirement %><br>
                 </p>
-            </div>
+            </button>
             <% }) %>
         </div>
     </div>

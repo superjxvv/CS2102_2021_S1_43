@@ -657,7 +657,28 @@ app.get('/add_pet', async (req, res) => {
     const pet_types = await pool.query(sql_query.query.all_pet_types);
     res.render('./add_pet', {
       title: 'Add Pets',
-      pet_types: pet_types.rows
+      pet_types: pet_types.rows,
+      query: null
+    });
+  }
+});
+
+app.get('/add_pet/:po_email/:pet_name', async (req, res) => {
+  if (!req.user) {
+    res.redirect('/login');
+  } else {
+    const po_email = req.params.po_email;
+    const pet_name = req.params.pet_name;
+    const values = [po_email, pet_name];
+    const pet_types = await pool.query(sql_query.query.all_pet_types);
+    const query = await pool.query(
+      sql_query.query.get_pet_info,
+      values
+    );
+    res.render('./add_pet', {
+      title: 'Edit Pet Details',
+      pet_types: pet_types.rows,
+      query: query.rows
     });
   }
 });
@@ -669,7 +690,7 @@ app.post('/add_pet', async (req, res) => {
     const pet_name = req.body.pet_name;
     const special_req = req.body.special_req;
     const pet_type = req.body.pet_type;
-    const values = [pet_name, special_req, req.user.email, pet_type]; // hardcoded
+    const values = [pet_name, special_req, req.user.email, pet_type];
     await pool.query(sql_query.query.add_pet, values, (err, data) => {
       if (err) {
         console.log(err);
@@ -696,6 +717,28 @@ app.get('/profile/:iden', async (req, res) => {
       res.render('./caretaker_profile', {
         title: 'Profile of ' + get_ct_trxns.rows[0].ct_name,
         get_ct_trxns: get_ct_trxns.rows
+      });
+    }
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
+app.get('/my_pet/:po_email/:pet_name', async (req, res) => {
+  try {
+    if (!req.user) {
+      res.redirect('/login');
+    } else {
+      const po_email = req.params.po_email;
+      const pet_name = req.params.pet_name;
+      const values = [po_email, pet_name];
+      const query = await pool.query(
+        sql_query.query.get_pet_info,
+        values
+      );
+      res.render('./my_pet_profile', {
+        title: 'My Pet ' + query.rows[0].pet_name,
+        query: query.rows
       });
     }
   } catch (err) {
@@ -1205,7 +1248,7 @@ const statusToHuman = (status) => {
 
 app.get('/transactions', (req, res) => {
   if (req.user) {
-    const userEmail = [req.user.email]; // hardcoded
+    const userEmail = [req.user.email];
     //To accomodate for caretakers
     const allTransactions = req.user.type === 1
       ? sql_query.query.get_my_trxn

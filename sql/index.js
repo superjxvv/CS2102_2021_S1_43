@@ -61,6 +61,8 @@ sql.query = {
     'SELECT * FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.email = $1 LIMIT 4',
   all_my_pets:
     'SELECT * FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.email = $1',
+  get_pet_info: 
+    'SELECT * FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.email = $1 AND O.pet_name = $2',
   get_po_info:
     'SELECT P.email, P.name, P.password, P.location, P.address, C.number, C.expiry FROM pet_owner P LEFT JOIN has_credit_card C ON P.email = C.email WHERE P.email = $1',
   get_ct_info: 'SELECT * FROM care_taker WHERE email = $1',

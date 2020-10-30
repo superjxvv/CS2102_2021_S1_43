@@ -49,8 +49,12 @@ sql.query = {
     "SELECT COUNT(DISTINCT pet_name) FROM hire WHERE date_part('month', start_date) = date_part('month', CURRENT_DATE) AND date_part('year', start_date) = date_part('year', CURRENT_DATE) AND hire_status = 'completed'",
   num_transactions_in_current_month:
   "SELECT COUNT(*) FROM hire WHERE date_part('month', transaction_date) = date_part('month', CURRENT_DATE) AND date_part('year', transaction_date) = date_part('year', CURRENT_DATE) AND hire_status != 'cancelled' AND hire_status != 'completed' AND hire_status != 'rejected'",
+  num_transactions_in_each_month_and_year_PT:
+  "SELECT concat(concat(month, '/'), year) as date, count FROM (SELECT date_part('month', transaction_date) AS month, date_part('year', transaction_date) AS year, COUNT(transaction_date) AS count FROM hire WHERE ct_email IN (SELECT PT.email FROM part_timer PT) GROUP BY date_part('month', transaction_date), date_part('year', transaction_date) ORDER BY year ASC, month) as derivedtable",
+  num_transactions_in_each_month_and_year_FT:
+  "SELECT concat(concat(month, '/'), year) as date, count FROM (SELECT date_part('month', transaction_date) AS month, date_part('year', transaction_date) AS year, COUNT(transaction_date) AS count FROM hire WHERE ct_email IN (SELECT FT.email FROM full_timer FT) GROUP BY date_part('month', transaction_date), date_part('year', transaction_date) ORDER BY year ASC, month) as derivedtable",
   num_transactions_in_each_month_and_year:
-  "SELECT concat(concat(month, '/'), year) as date, count FROM (SELECT date_part('month', transaction_date) AS month, date_part('year', transaction_date) AS year, COUNT(transaction_date) AS count FROM hire GROUP BY date_part('month', transaction_date), date_part('year', transaction_date) ORDER BY year ASC, month) as derivedtable",
+  "SELECT * FROM (SELECT concat(concat(month, '/'), year) as date, count_PT FROM (SELECT date_part('month', transaction_date) AS month, date_part('year', transaction_date) AS year, COUNT(transaction_date) AS count_PT FROM hire WHERE ct_email IN (SELECT PT.email FROM part_timer PT) GROUP BY date_part('month', transaction_date), date_part('year', transaction_date) ORDER BY year ASC, month) as derivedtable) as table1 FULL JOIN (SELECT concat(concat(month, '/'), year) as date, count_FT FROM (SELECT date_part('month', transaction_date) AS month, date_part('year', transaction_date) AS year, COUNT(transaction_date) AS count_FT FROM hire WHERE ct_email IN (SELECT FT.email FROM full_timer FT) GROUP BY date_part('month', transaction_date), date_part('year', transaction_date) ORDER BY year ASC, month) as derivedtable2) as table2 on table1.date = table2.date",
   // Insertion
   add_pet_type: 'INSERT INTO pet_type (name, base_daily_price) VALUES($1,$2)',
 

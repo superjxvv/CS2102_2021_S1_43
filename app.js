@@ -455,18 +455,19 @@ app.get('/pcs-admin-dashboard', async (req, res) => {
       sql_query.query.first_4_caretakers
     );
     const dates= [];
-    const counts = [];
+    const counts_PT = [];
+    const counts_FT = [];
     for(var i=0; i<numTransactionsInMonthYear.rowCount; i++){
       dates.push(numTransactionsInMonthYear.rows[i]['date']);
-      counts.push(numTransactionsInMonthYear.rows[i]['count']);
+      counts_PT.push(numTransactionsInMonthYear.rows[i]['count_pt']);
+      counts_FT.push(numTransactionsInMonthYear.rows[i]['count_ft']);
     }
-    console.log(dates);
-    console.log(counts);
     res.render('pcs-admin-dashboard', {
       numPetsTakenCareOf: numPetsTakenCareOf.rows[0]['count'],
       numTransaction: numTransaction.rows[0]['count'],
       transactionsDates: dates,
-      numTransactionPerDate: counts,
+      numTransactionPerDate_PT: counts_PT,
+      numTransactionPerDate_FT: counts_FT,
       first4PetTypes: first4PetTypes.rows,
       first4Caretakers: first4Caretakers.rows,
       loggedIn: req.user

@@ -20,7 +20,8 @@
     <script>
         $(function () {
             var dates = JSON.parse('<%- JSON.stringify(transactionsDates) %>') ? JSON.parse('<%- JSON.stringify(transactionsDates) %>') : [];
-            var counts = JSON.parse('<%- JSON.stringify(numTransactionPerDate) %>') ? JSON.parse('<%- JSON.stringify(numTransactionPerDate) %>') : [];
+            var counts_PT = JSON.parse('<%- JSON.stringify(numTransactionPerDate_PT) %>') ? JSON.parse('<%- JSON.stringify(numTransactionPerDate_PT) %>') : [];
+            var counts_FT = JSON.parse('<%- JSON.stringify(numTransactionPerDate_FT) %>') ? JSON.parse('<%- JSON.stringify(numTransactionPerDate_FT) %>') : [];
 
             var areaChartData = {
                 labels: dates,
@@ -34,7 +35,7 @@
                         pointStrokeColor: 'rgba(60,141,188,1)',
                         pointHighlightFill: '#fff',
                         pointHighlightStroke: 'rgba(60,141,188,1)',
-                        data: counts
+                        data: counts_PT
                     },
                     {
                         label: 'Full timer',
@@ -45,7 +46,7 @@
                         pointStrokeColor: '#c1c7d1',
                         pointHighlightFill: '#fff',
                         pointHighlightStroke: 'rgba(220,220,220,1)',
-                        data: counts
+                        data: counts_FT
                     },
                 ]
             }
@@ -204,7 +205,7 @@
                 style="display: flex; flex-direction: row; justify-content: space-evenly; margin-left: auto; margin-right: auto; width: 85%; align-content: center;">
                 <div class="card card-success">
                     <div class="card-header">
-                        <h3 class="card-title"> Transactions </h3>
+                        <h3 class="card-title"> Number of Transactions </h3>
                     </div>
                     <div class="card-body">
                         <div class="chart">

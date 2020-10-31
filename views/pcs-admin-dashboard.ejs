@@ -68,12 +68,43 @@
                 data: barChartData,
                 options: barChartOptions
             })
+
+            var counts_deliverymethods = JSON.parse('<%- JSON.stringify(counts_deliverymethods) %>') ? JSON.parse('<%- JSON.stringify(counts_deliverymethods) %>') : [];
+
+            var donutData = {
+                labels: [
+                    'Caretaker Pickup',
+                    'Pet Owner Deliver',
+                    'Office',
+                ],
+                datasets: [
+                    {
+                        data: counts_deliverymethods,
+                        backgroundColor: ['#f56954', '#00a65a', '#3c8dbc'],
+                    }
+                ]
+            }
+
+            var pieChartCanvas = $('#pieChart').get(0).getContext('2d')
+            var pieData = donutData;
+            var pieOptions = {
+                maintainAspectRatio: false,
+                responsive: true,
+            }
+            //Create pie or douhnut chart
+            // You can switch between pie and douhnut using the method below.
+            var pieChart = new Chart(pieChartCanvas, {
+                type: 'pie',
+                data: pieData,
+                options: pieOptions
+            })
         });
     </script>
 </head>
 
 <body style="background-color: lightgrey;">
     <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn}) %>
+
     <section class="content">
         <div class="container-fluid" style="display: flex; flex-direction: column;">
             <div
@@ -123,9 +154,56 @@
                     </div>
                 </div>
             </div>
+            <!-- BAR CHART -->
             <div
                 style="display: flex; flex-direction: row; justify-content: space-evenly; margin-left: auto; margin-right: auto; width: 85%; align-content: center;">
-                <div class="card">
+                <div class="card" style="display: flex;">
+                    <div class="card-header" style="background-color: indianred">
+                        <h3 class="card-title" style="color: white;"> Number of Transactions </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart">
+                            <canvas id="barChart"
+                                style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                        </div>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+                <!-- /.card -->
+                <div class="card" style="display: flex; align-self: center;">
+                    <div class="card-header" style="background-color: indianred">
+                        <h3 class="card-title" style="color: white;">Method of Pet Transfer</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="chart-responsive">
+                                    <canvas id="pieChart" height="250" width="250"></canvas>
+                                </div>
+                                <!-- ./chart-responsive -->
+                            </div>
+                            <!-- /.col -->
+                            <div class="col-md-4" style="display: flex; align-self: center;">
+                                <ul class="chart-legend clearfix">
+                                    <li style="font-size: small;"><i class="far fa-circle text-danger"></i> Caretaker
+                                        Pickup</li>
+                                    <li style="font-size: small;"><i class="far fa-circle text-success"></i> Pet Owner
+                                        Deliver</li>
+                                    <li style="font-size: small;"><i class="far fa-circle text-info"></i> Office</li>
+                                </ul>
+                            </div>
+                            <!-- /.col -->
+                        </div>
+                        <!-- /.row -->
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+                <!-- /.card -->
+            </div>
+            <div
+                style="display: flex; flex-direction: row; justify-content: space-evenly; margin-left: auto; margin-right: auto; width: 85%; align-content: center;">
+                <div class="card" style="display: flex;">
                     <div class="card-header">
                         <h3 class="card-title">Summary Caretaker Statistics</h3>
                         <div class="card-tools">
@@ -158,12 +236,12 @@
                     </div>
                     <!-- /.card-body -->
                 </div>
-                <div class="card">
+                <div class="card" style="display: flex;">
                     <div class="card-header">
                         <h3 class="card-title">Pet Types</h3>
 
                         <div class="card-tools">
-                            <a href="/add-pet-type" class="btn btn-tool btn-sm">
+                            <a data-toggle="modal" data-target="#modal-default" class="btn btn-tool btn-sm">
                                 Add
                             </a>
                             <a href="/pet-types" class="btn btn-tool btn-sm">
@@ -178,7 +256,6 @@
                                     <tr>
                                         <th>Name</th>
                                         <th>Base Daily Price ($)</th>
-                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -186,11 +263,6 @@
                                     <tr>
                                         <td><%= petType.name %></td>
                                         <td><%= petType.base_daily_price %></td>
-                                        <td>
-                                            <a href="/edit-pet-type?name=<%= petType.name%>" class="text-muted">
-                                                <i class="far fa-edit"></i>
-                                            </a>
-                                        </td>
                                     </tr>
                                     <% }) %>
                                 </tbody>
@@ -200,25 +272,48 @@
                     </div>
                 </div>
             </div>
-            <!-- BAR CHART -->
-            <div
-                style="display: flex; flex-direction: row; justify-content: space-evenly; margin-left: auto; margin-right: auto; width: 85%; align-content: center;">
-                <div class="card card-success">
-                    <div class="card-header">
-                        <h3 class="card-title"> Number of Transactions </h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="chart">
-                            <canvas id="barChart"
-                                style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
-                        </div>
-                    </div>
-                    <!-- /.card-body -->
-                </div>
-                <!-- /.card -->
-            </div>
         </div>
     </section>
 </body>
+
+<div class="modal fade" id="modal-default">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Pet Type</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="/add-pet-type">
+                    <div class="card-body">
+                        <div class="form-group row">
+                            <label for="name" class="col-sm-3 col-form-label">Name: </label>
+                            <div class="col-sm-9">
+                                <input type="text" required="required" class="form-control" placeholder="Name" id="name"
+                                    name="name" value="">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="basedailyprice" class="col-sm-3 col-form-label">Base Daily Price: </label>
+                            <div class="col-sm-9">
+                                <input type="number" required="required" class="form-control" id="basedailyprice"
+                                    placeholder="Base Daily Price" name="basedailyprice" value="" min="1">
+                            </div>
+                        </div>
+                    </div>
+            </div>
+            <div class="modal-footer justify-content-between small text-muted">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-secondary">Add Pet Type</button>
+            </div>
+            </form>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
 
 </html>

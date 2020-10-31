@@ -83,6 +83,7 @@ app.get('/search', async (req, res) => {
       sql_query.query.all_caretaker_rating_desc_price_desc,
       [startDate, endDate]
     );
+    console.log(allCareTaker.rows);
     const allPetTypes = await pool.query(sql_query.query.all_pet_types);
     res.render('search', {
       loggedInUser: req.user,
@@ -306,7 +307,7 @@ app.post('/pre-bid', async (req, res) => {
     ct_email
   ]);
   allMyPets = await pool.query(sql_query.query.my_pets_that_can_take_care_of, [
-    'kblythingt@prweb.com', //change to req.user.email when ready
+    req.user.email, //change to req.user.email when ready
     ct_email
   ]);
   //Dates that this ct is already booked.
@@ -350,7 +351,7 @@ app.post('/pre-bid', async (req, res) => {
 
   res.render('pre-bid', {
     loggedInUser: req.user,
-    loggedInUserEmail: 'kblythingt@prweb.com', //remove when req.user ready
+    loggedInUserEmail: req.user.email, //remove when req.user ready
     careTakerToBid: careTakerToBid.rows[0],
     allMyPets: allMyPets.rows,
     isPartTimer: isPartTimer,

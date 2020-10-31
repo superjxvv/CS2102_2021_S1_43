@@ -501,7 +501,7 @@ app.get('/dashboard', async (req, res) => {
       });
     } else {
       const account_type = req.user.type;
-      if (account_type != 0) {
+      if (account_type == 1) {
         const values = [req.user.email];
         console.log(values);
         const my_details = await pool.query(
@@ -529,6 +529,8 @@ app.get('/dashboard', async (req, res) => {
           loggedIn: true,
           today: new Date().toISOString().slice(0, 10)
         });
+      } else if (account_type == 2) {
+        res.redirect('/dashboard-caretaker-ft');
       } else {
         // if is PCSadmin
         // have not tried this out
@@ -604,13 +606,18 @@ app.get('/my_pets', async (req, res) => {
   if (!req.user) {
     res.redirect('/login');
   } else {
-    const values = [req.user.email];
-    const query = await pool.query(sql_query.query.all_my_pets, values);
-    res.render('./my_pets', {
-      title: 'My Pets',
-      all_pets: query.rows,
-      loggedIn: req.user
-    });
+    const account_type = req.user.type;
+    if (account_type == 2) {
+      res.redirect('/dashboard-caretaker-ft');
+    } else {
+      const values = [req.user.email];
+      const query = await pool.query(sql_query.query.all_my_pets, values);
+      res.render('./my_pets', {
+        title: 'My Pets',
+        all_pets: query.rows,
+        loggedIn: req.user
+      });
+    }
   }
 });
 

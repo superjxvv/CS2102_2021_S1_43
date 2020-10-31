@@ -38,7 +38,6 @@ sql.query = {
   caretaker_to_bid: 'SELECT * FROM care_taker WHERE email = $1',
   my_pets_that_can_take_care_of:
     "SELECT * FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.email = $1 AND I.pet_type IN (SELECT C.pet_type FROM can_take_care_of C WHERE C.email=$2 INTERSECT SELECT I.pet_type FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.email = $1)",
-  // Insertion
   all_pet_types: 'SELECT * FROM pet_type ORDER BY name',
   selected_pet_type: 'SELECT * FROM pet_type WHERE name=$1',
   first_4_pet_types: 'SELECT * FROM pet_type ORDER BY name LIMIT 4',
@@ -46,7 +45,16 @@ sql.query = {
     "SELECT C.name, C.email, SUM(H.num_pet_days) AS num_pet_days FROM care_taker C, hire H WHERE C.email = H.ct_email AND H.hire_status = 'completed' GROUP BY C.email ORDER BY C.name LIMIT 4",
   caretaker_summary_info:
     "SELECT C.name, C.email, SUM(H.num_pet_days) AS num_pet_days, SUM(H.total_cost) AS total_cost, EXTRACT(MONTH FROM H.transaction_date) AS month FROM care_taker C, hire H WHERE C.email = H.ct_email AND H.hire_status = 'completed' GROUP BY C.email, EXTRACT(MONTH FROM H.transaction_date)",
-
+  num_pets_taken_care_of_in_current_month:
+    "SELECT COUNT(DISTINCT pet_name) FROM hire WHERE date_part('month', start_date) = date_part('month', CURRENT_DATE) AND date_part('year', start_date) = date_part('year', CURRENT_DATE) AND hire_status = 'completed'",
+  num_transactions_in_current_month:
+  "SELECT COUNT(*) FROM hire WHERE date_part('month', transaction_date) = date_part('month', CURRENT_DATE) AND date_part('year', transaction_date) = date_part('year', CURRENT_DATE) AND hire_status != 'cancelled' AND hire_status != 'completed' AND hire_status != 'rejected'",
+  num_transactions_in_each_month_and_year_PT:
+  "SELECT concat(concat(month, '/'), year) as date, count FROM (SELECT date_part('month', transaction_date) AS month, date_part('year', transaction_date) AS year, COUNT(transaction_date) AS count FROM hire WHERE ct_email IN (SELECT PT.email FROM part_timer PT) GROUP BY date_part('month', transaction_date), date_part('year', transaction_date) ORDER BY year ASC, month) as derivedtable",
+  num_transactions_in_each_month_and_year_FT:
+  "SELECT concat(concat(month, '/'), year) as date, count FROM (SELECT date_part('month', transaction_date) AS month, date_part('year', transaction_date) AS year, COUNT(transaction_date) AS count FROM hire WHERE ct_email IN (SELECT FT.email FROM full_timer FT) GROUP BY date_part('month', transaction_date), date_part('year', transaction_date) ORDER BY year ASC, month) as derivedtable",
+  num_transactions_in_each_month_and_year:
+  "SELECT * FROM (SELECT concat(concat(month, '/'), year) as date, count_PT FROM (SELECT date_part('month', transaction_date) AS month, date_part('year', transaction_date) AS year, COUNT(transaction_date) AS count_PT FROM hire WHERE ct_email IN (SELECT PT.email FROM part_timer PT) GROUP BY date_part('month', transaction_date), date_part('year', transaction_date) ORDER BY year ASC, month) as derivedtable) as table1 FULL JOIN (SELECT concat(concat(month, '/'), year) as date, count_FT FROM (SELECT date_part('month', transaction_date) AS month, date_part('year', transaction_date) AS year, COUNT(transaction_date) AS count_FT FROM hire WHERE ct_email IN (SELECT FT.email FROM full_timer FT) GROUP BY date_part('month', transaction_date), date_part('year', transaction_date) ORDER BY year ASC, month) as derivedtable2) as table2 on table1.date = table2.date",
   // Insertion
   add_pet_type: 'INSERT INTO pet_type (name, base_daily_price) VALUES($1,$2)',
 
@@ -61,7 +69,7 @@ sql.query = {
     'SELECT * FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.email = $1 AND deleted = false LIMIT 4',
   all_my_pets:
     'SELECT * FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.email = $1  AND deleted = false',
-  get_pet_info: 
+  get_pet_info:
     'SELECT * FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.email = $1 AND O.pet_name = $2',
   get_po_info:
     'SELECT P.email, P.name, P.password, P.location, P.address, C.number, C.expiry FROM pet_owner P LEFT JOIN has_credit_card C ON P.email = C.email WHERE P.email = $1',

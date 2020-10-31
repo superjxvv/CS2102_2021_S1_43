@@ -447,11 +447,27 @@ app.get('/edit-pet-type', async (req, res) => {
 app.get('/pcs-admin-dashboard', async (req, res) => {
   try {
     //todo: check that user is admin
+    const numPetsTakenCareOf = await pool.query(sql_query.query.num_pets_taken_care_of_in_current_month);
+    const numTransaction = await pool.query(sql_query.query.num_transactions_in_current_month);
+    const numTransactionsInMonthYear = await pool.query(sql_query.query.num_transactions_in_each_month_and_year);
     const first4PetTypes = await pool.query(sql_query.query.first_4_pet_types);
     const first4Caretakers = await pool.query(
       sql_query.query.first_4_caretakers
     );
+    const dates= [];
+    const counts_PT = [];
+    const counts_FT = [];
+    for(var i=0; i<numTransactionsInMonthYear.rowCount; i++){
+      dates.push(numTransactionsInMonthYear.rows[i]['date']);
+      counts_PT.push(numTransactionsInMonthYear.rows[i]['count_pt']);
+      counts_FT.push(numTransactionsInMonthYear.rows[i]['count_ft']);
+    }
     res.render('pcs-admin-dashboard', {
+      numPetsTakenCareOf: numPetsTakenCareOf.rows[0]['count'],
+      numTransaction: numTransaction.rows[0]['count'],
+      transactionsDates: dates,
+      numTransactionPerDate_PT: counts_PT,
+      numTransactionPerDate_FT: counts_FT,
       first4PetTypes: first4PetTypes.rows,
       first4Caretakers: first4Caretakers.rows,
       loggedIn: req.user

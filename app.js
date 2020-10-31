@@ -1045,10 +1045,9 @@ app.post('/bid', async (req, res) => {
   if (req.user) {
     const ct_email = req.body.ct_email;
     const owner_email = req.user.email;
-    //May need to add additional processing if date format changed to DD/MM/YYYY
     const start_date = req.body.start_date;
-    const end_date = req.body.start_date;
-    console.log(req.body);
+    const end_date = req.body.end_date;
+    console.log("bid req", req.body);
     const pet_name = req.body.pet_name;
     const num_days = diffDays(new Date(start_date), new Date(end_date));
 

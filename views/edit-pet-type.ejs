@@ -12,33 +12,34 @@
 </head>
 
 <body style="background-color: lightgrey;">
-    <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn, accountType: accountType}) %>
+    <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn}) %>
     <div id="content-wrapper">
         <div class="container-fluid">
             <div class="card" style="width: 60%; margin: auto; margin-top: 5%">
                 <div class="card-header">
-                    <i class="fas fa-dice-d20"></i> &nbsp; <b> Add Pet Type </b>
+                    <i class="fas fa-dice-d20"></i> &nbsp; <b> Edit Pet Type </b>
                 </div>
-                <form method="post" action="/add-pet-type">
+                <form method="post" action="/edit-pet-type">
                     <div class="card-body">
                         <div class="form-group row">
                             <label for="name" class="col-sm-3 col-form-label">Name: </label>
                             <div class="col-sm-9">
-                                <input type="text" required="required" class="form-control" placeholder="Name" id="name"
-                                    name="name" value="">
+                                <input type="text" required="required" class="form-control" readonly id="name"
+                                    name="name" value="<%=name%>">
                             </div>
                         </div>
                         <div class="form-group row">
                             <label for="basedailyprice" class="col-sm-3 col-form-label">Base Daily Price: </label>
                             <div class="col-sm-9">
                                 <input type="number" required="required" class="form-control" id="basedailyprice"
-                                    placeholder="Base Daily Price" name="basedailyprice" value="" min="1">
+                                    name="basedailyprice" value="<%=baseDailyPrice%>"
+                                    min="1">
                             </div>
                         </div>
                     </div>
                     <div class="card-footer small text-muted">
                         <button type="submit" class="btn btn-secondary">
-                            Add Pet type
+                            Edit Pet type
                         </button>
                     </div>
                 </form>

@@ -14,10 +14,10 @@
         <div class="row">
             <h2 class="vert-gap-contents">User Information</h2>
         </div>
-        
+
         <div class="row">
-            <h4 class="vert-gap-small-header">My Information</h4>
-            <a href="/edit_caretaker_particulars" class="btn btn-tool btn-sm">Edit</a>
+            <h4 class="vert-gap-small-header">My Information&nbsp;</h4>
+            <a href="/edit_caretaker_particulars" class="btn btn-tool btn-sm" style="margin-left: 0px"><ion-icon name="create-outline" style="font-size: 24px; padding-bottom: 0px;"></ion-icon></a>
         </div>
         <div class="row text-left">
             <div class="card col-sm col-md" id="square-card">
@@ -33,84 +33,82 @@
                 </p>
             </div>
         </div>
-    </div>
 
-    <div class="container vert-gap-container">
         <div class="row">
-            <h2 class="vert-gap-contents">My Leave Requests</h2>
-            <a href="/apply_leave" style="padding: 13px">Apply leave</a>
+            <h4 class="vert-gap-small-header" style="margin-top: 15px;">My Leave Requests&nbsp;</h4>
+            <a href="/apply_leave" class="btn btn-tool btn-sm" style="margin-left: 0px; margin-top: 13px;"><ion-icon name="add-outline" style="font-size: 24px; margin-top: 0px; padding: 0px; align-items: center;"></ion-icon></a>
         </div>
-
         <div class="row text-left">
             <p>
                 <b>Remaining leave days: </b> Placeholder
             </p>
         </div>
-        
         <div class="row text-left">
-                <button class="card col-sm col-md" id="square-card">
-                    <p><b>Start Date:</b> Placeholder<br>
-                        <b>End Date:</b> Placeholder<br>
-                        <b>Applied on:</b> Placeholder<br>
-                        <b>No. of Days:</b> Placeholder<br>
-                        <b>Status:</b> Approved (placeholder)<br>
-                    </p>
-                </button>
-
-                <button class="card col-sm col-md" id="square-card">
-                    <p><b>Start Date:</b> Placeholder<br>
-                        <b>End Date:</b> Placeholder<br>
-                        <b>Applied on:</b> Placeholder<br>
-                        <b>No. of Days:</b> Placeholder<br>
-                        <b>Status:</b> Approved (placeholder)<br>
-                    </p>
-                </button>
-
-                <button class="card col-sm col-md" id="square-card">
-                    <p><b>Start Date:</b> Placeholder<br>
-                        <b>End Date:</b> Placeholder<br>
-                        <b>Applied on:</b> Placeholder<br>
-                        <b>No. of Days:</b> Placeholder<br>
-                        <b>Status:</b> Approved (placeholder)<br>
-                    </p>
-                </button>
-
-                <button class="card col-sm col-md" id="square-card">
-                    <p><b>Start Date:</b> Placeholder<br>
-                        <b>End Date:</b> Placeholder<br>
-                        <b>Applied on:</b> Placeholder<br>
-                        <b>No. of Days:</b> Placeholder<br>
-                        <b>Status:</b> Approved (placeholder)<br>
-                    </p>
-                </button>
+            <button class="card col-sm col-md" id="square-card">
+                <p><b>Start Date:</b> Placeholder<br>
+                    <b>End Date:</b> Placeholder<br>
+                    <b>Applied on:</b> Placeholder<br>
+                    <b>No. of Days:</b> Placeholder<br>
+                    <b>Status:</b> Approved (placeholder)<br>
+                </p>
+            </button>
+        
+            <button class="card col-sm col-md" id="square-card">
+                <p><b>Start Date:</b> Placeholder<br>
+                    <b>End Date:</b> Placeholder<br>
+                    <b>Applied on:</b> Placeholder<br>
+                    <b>No. of Days:</b> Placeholder<br>
+                    <b>Status:</b> Approved (placeholder)<br>
+                </p>
+            </button>
+        
+            <button class="card col-sm col-md" id="square-card">
+                <p><b>Start Date:</b> Placeholder<br>
+                    <b>End Date:</b> Placeholder<br>
+                    <b>Applied on:</b> Placeholder<br>
+                    <b>No. of Days:</b> Placeholder<br>
+                    <b>Status:</b> Approved (placeholder)<br>
+                </p>
+            </button>
+        
+            <button class="card col-sm col-md" id="square-card">
+                <p><b>Start Date:</b> Placeholder<br>
+                    <b>End Date:</b> Placeholder<br>
+                    <b>Applied on:</b> Placeholder<br>
+                    <b>No. of Days:</b> Placeholder<br>
+                    <b>Status:</b> Approved (placeholder)<br>
+                </p>
+            </button>
         </div>
     </div>
 
     <div class="container vert-gap-container">
         <div class="row">
-            <h2 class="vert-gap-contents">Transactions</h2>
-            <a href="/transactions" style="padding: 13px">See more</a>
+            <h2 class="vert-gap-contents">Transactions&nbsp;</h2>
+            <% if (loggedIn) { %>
+            <a href="/transactions" style="padding: 11px">See more</a>
+            <% } %>
         </div>
         <div class="row text-left">
             <% recent_trxn.forEach(trxn => { %>
             <div class="card col-sm col-md" id="square-card" style="margin-bottom: 30px;">
-                <p><b>Status:</b> 
+                <p><b>Status:</b>
                     <% if (trxn.hire_status == 'completed') { %>
-                        <span class="badge badge-success"><%= statusToHuman(trxn.hire_status) %></span><br>
+                    <span class="badge badge-success"><%= statusToHuman(trxn.hire_status) %></span><br>
                     <% } else if (trxn.hire_status == 'cancelled' || trxn.hire_status == 'rejected') { %>
-                        <span class="badge badge-danger"><%= statusToHuman(trxn.hire_status) %></span><br>
+                    <span class="badge badge-danger"><%= statusToHuman(trxn.hire_status) %></span><br>
                     <% } else if (trxn.hire_status == 'pendingPayment') { %>
-                        <span class="badge badge-warning"><%= statusToHuman(trxn.hire_status) %></span><br>
+                    <span class="badge badge-warning"><%= statusToHuman(trxn.hire_status) %></span><br>
                     <% } else { %>
-                        <span class="badge badge-info"><%= statusToHuman(trxn.hire_status) %></span><br>
+                    <span class="badge badge-info"><%= statusToHuman(trxn.hire_status) %></span><br>
                     <% } %>
                     <b>Date:</b> <%= stringToDate(String(trxn.start_date)) %> to
                     <%= stringToDate(String(trxn.end_date)) %><br>
                     <b>Caretaker:</b> <a href="/profile/<%= trxn.ct_email %>"><%= trxn.ct_name %></a><br>
                     <b>Pet Name:</b> <%= trxn.pet_name %><br>
                     <% if (trxn.hire_status == 'completed') { %>
-                        <b>Rating:</b> <%= trxn.hire_status == null ? 'NA' : trxn.rating %><br>
-                        <b>Review:</b> <%= trxn.review_text == null ? 'NA' : trxn.review_text %><br>
+                    <b>Rating:</b> <%= trxn.hire_status == null ? 'NA' : trxn.rating %><br>
+                    <b>Review:</b> <%= trxn.review_text == null ? 'NA' : trxn.review_text %><br>
                     <% } %>
                 </p>
             </div>
@@ -123,6 +121,7 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/ionicons@5.2.3/dist/ionicons.js"></script>
 
 </body>
 

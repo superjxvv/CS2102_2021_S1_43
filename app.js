@@ -769,9 +769,8 @@ app.post('/edit_caretaker_particulars', async (req, res) => {
           console.log(err);
           res.redirect('/edit_caretaker_particulars?add=fail');
         } else {
-          // should show some kind of success message
-          // req.flash('success_msg', 'Particulars updated.');
-          res.redirect('/dashboard-caretaker-ft');
+          req.flash('success_msg', 'Particulars updated!');
+          res.redirect('/edit_caretaker_particulars');
         }
       });
     } else if (pw1 && pw2 && pw1 != pw2) {
@@ -791,7 +790,8 @@ app.post('/edit_caretaker_particulars', async (req, res) => {
             console.log(err);
             res.redirect('/edit_caretaker_particulars?add=fail');
           } else {
-            res.redirect('/dashboard-caretaker-ft');
+            req.flash('success_msg', 'Particulars updated!');
+            res.redirect('/edit_caretaker_particulars');
           }
         }
       );

@@ -3551,7 +3551,7 @@ END;
 '
 LANGUAGE plpgsql;
 
---Add into dates to date_range if not exists to prevent foreign key error.
+--Add dates into date_range if not exists to prevent foreign key error.
 CREATE OR REPLACE FUNCTION add_date() RETURNS TRIGGER AS 
 $$ 
 BEGIN 

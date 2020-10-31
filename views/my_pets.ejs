@@ -4,14 +4,17 @@
     <%- include('./partials/head.ejs') %>
 </head>
 <body>
-    <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn}) %>
+    <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn, accountType: accountType}) %>
 
     <div class="container vert-gap-container">
         <div class="row">
-            <h2 class="vert-gap-contents">My Pets</h2>
-            <div class="card-tools">
-                <a href="/add_pet" class="btn btn-tool btn-sm">Add</a>
-            </div>
+            <h2 class="vert-gap-contents">My Pets&nbsp;</h2>
+            <a href="/add_pet" class="btn btn-tool btn-sm" style="margin-left: 0px; margin-top: 7px;"><ion-icon name="add-outline" style="font-size: 24px; margin-top: 0px; padding: 0px; align-items: center;"></ion-icon></a>
+        </div>
+        <div class="container">
+            <% if (messages.success_msg) { %>
+                <i class="fas fa-dice-d20"><%= messages.success_msg %></i>
+            <% } %>
         </div>
         <% all_pets.forEach(pet => { %>
             <div class="container" style="padding-bottom: 30px;">
@@ -19,7 +22,7 @@
             </div>
         <% }) %>
     </div>
-
+    <script src="https://unpkg.com/ionicons@5.2.3/dist/ionicons.js"></script>
 </body>
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>

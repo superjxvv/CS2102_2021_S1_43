@@ -7,18 +7,21 @@
         <div class="collapse navbar-collapse" id="Navbar">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item active"><a class="nav-link" href="/dashboard">Dashboard</a></li>
-                <li class="nav-item active"><a class="nav-link" href="/pcs-admin-dashboard">PCS Admin Dashboard</a></li>
+                <% if (accountType == 0) { %>
+                    <li class="nav-item active"><a class="nav-link" href="/pcs-admin-dashboard">PCS Admin Dashboard</a></li>
+                <% } %>
+                <% if (loggedIn) { %>
                 <li class="nav-item active"><a class="nav-link" href="/transactions">Transactions</a></li>
-                <li class="nav-item active"><a class="nav-link" href="#">Create/Update Bid</a></li>
+                <% } %>
+                <% if (accountType == 1) { %>
                 <li class="nav-item active"><a class="nav-link" href="/my_pets">My Pets</a></li>
+                <% } %>
                 <% if (!loggedIn) { %>
                     <li class="nav-item active"><a class="nav-link" href="/login">Login</a></li>
                 <% } else { %>
                     <li class="nav-item active"><a class="nav-link" href="/logout">Logout</a></li>
                 <% } %>
-                <!-- add other pages here -->
             </ul>
         </div>    
-        <li class="navbar-brand mr-auto"><input type="text" placeholder="Search.."></li> <!-- shift search to the middle/right? -->
     </div>
 </nav>

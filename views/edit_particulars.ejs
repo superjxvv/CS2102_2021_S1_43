@@ -6,12 +6,17 @@
 </head>
 
 <body>
-    <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn}) %>
+    <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn, accountType: accountType}) %>
+    
     <div id="content-wrapper">
         <div class="container-fluid">
-            <div class="card" style="width: 60%; margin: auto; margin-top: 5%">
+            
+            <div class="card" style="width: 60%; margin: auto; margin-top: 5%;">
                 <div class="card-header">
-                    <i class="fas fa-dice-d20"></i> &nbsp; <b> Edit Particulars </b>
+                    <b> Edit Particulars</b>
+                    <% if (messages.success_msg) { %>
+                        <i class="fas fa-dice-d20">&nbsp;- <%= messages.success_msg %></i>
+                    <% } %>
                 </div>
                 <form method="post" action="/edit_particulars">
                     <div class="card-body">

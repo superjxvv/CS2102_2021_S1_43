@@ -13,27 +13,27 @@
                 <div class="card-header">
                     <i class="fas fa-dice-d20"></i> &nbsp; <b> Edit Particulars </b>
                 </div>
-                <form method="post" action="/edit_particulars">
+                <form method="post" action="/edit_caretaker_particulars">
                     <div class="card-body">
                         <div class="form-group row">
-                            <label for="po_name" class="col-sm-3 col-form-label">Name: </label>
+                            <label for="ct_name" class="col-sm-3 col-form-label">Name: </label>
                             <div class="col-sm-9">
-                                <input type="text" class="form-control" id="po_name"
-                                    name="po_name" value="<%= po_info[0].name %>">
+                                <input type="text" class="form-control" id="ct_name"
+                                    name="ct_name" value="<%= ct_info[0].name %>">
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label for="po_email" class="col-sm-3 col-form-label">Email: </label>
+                            <label for="ct_email" class="col-sm-3 col-form-label">Email: </label>
                             <div class="col-sm-9">
-                                <input type="text" class="form-control" id="po_email"
-                                    name="po_email" value="<%= po_info[0].email %>" disabled>
+                                <input type="text" class="form-control" id="ct_email"
+                                    name="ct_email" value="<%= ct_info[0].email %>" disabled>
                             </div>
                         </div>
                         <div class="form-group row">
                             <label for="location" class="col-sm-3 col-form-label">Location: </label>
                             <div class="col-sm-9">
                                 <select name="location" class="form-control" id="location">
-                                    <% const my_loc = po_info[0].location; %> 
+                                    <% const my_loc = ct_info[0].location; %> 
                                     <% const all_loc = ["Central", "East", "North", "North-East", "West"]; %>
                                     <% all_loc.forEach(loc => { %>
                                         <% if (loc != my_loc) { %>
@@ -49,7 +49,14 @@
                             <label for="address" class="col-sm-3 col-form-label">Address: </label>
                             <div class="col-sm-9">
                                 <input type="text" class="form-control" id="address"
-                                    name="address" value="<%= po_info[0].address %>">
+                                    name="address" value="<%= ct_info[0].address %>">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="bank_account" class="col-sm-3 col-form-label">Bank Account Number: </label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control" id="bank_account" name="bank_account"
+                                    value="<%= ct_info[0].bank_account %>">
                             </div>
                         </div>
                         <div class="form-group row">
@@ -64,20 +71,6 @@
                             <div class="col-sm-9">
                                 <input type="password" class="form-control" id="pw2"
                                     name="pw2" value="">
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="cc_num" class="col-sm-3 col-form-label">Credit Card Number: </label>
-                            <div class="col-sm-9">
-                                <input type="text" class="form-control" id="cc_num"
-                                    name="cc_num" value="<%= po_info[0].number %>" minlength="8">
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="cc_date" class="col-sm-3 col-form-label">Credit Card Expiry Date: </label>
-                            <div class="col-sm-9">
-                                <input type="text" class="form-control" id="cc_date"
-                                    name="cc_date" value="<%= po_info[0].expiry %>">
                             </div>
                         </div>
                     </div>

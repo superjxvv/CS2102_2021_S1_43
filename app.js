@@ -554,21 +554,14 @@ app.get('/dashboard-caretaker-ft', async (req, res) => {
           values
         );
         console.log(my_details.rows);
-        const caretaker_top_ratings = await pool.query(
-          sql_query.query.caretaker_top_ratings,
-          [my_details.rows[0].location]
-        );
         const recent_transactions = await pool.query(
           sql_query.query.recent_trxn_po,
           values
         );
-        const my_pets = await pool.query(sql_query.query.my_pets, values);
 
         res.render('./dashboard-caretaker-ft', {
           title: 'Dashboard',
-          top_ratings: caretaker_top_ratings.rows,
           recent_trxn: recent_transactions.rows,
-          my_pets: my_pets.rows,
           my_details: my_details.rows,
           statusToHuman: statusToHuman,
           loggedIn: req.user
@@ -635,6 +628,20 @@ app.get('/edit_particulars', async (req, res) => {
   }
 });
 
+app.get('/edit_caretaker_particulars', async (req, res) => {
+  if (!req.user) {
+    res.redirect('/login');
+  } else {
+    const values = [req.user.email]; // hardcoded
+    const ct_info = await pool.query(sql_query.query.get_ct_info, values);
+    res.render('./edit_caretaker_particulars', {
+      title: 'Edit Particulars',
+      ct_info: ct_info.rows,
+      loggedIn: req.user
+    });
+  }
+});
+
 app.post('/edit_particulars', async (req, res) => {
   if (!req.user) {
     res.redirect('/login');
@@ -687,6 +694,62 @@ app.post('/edit_particulars', async (req, res) => {
             res.redirect('/edit_particulars?add=fail');
           } else {
             res.redirect('/dashboard');
+          }
+        }
+      );
+    }
+  }
+});
+
+app.post('/edit_caretaker_particulars', async (req, res) => {
+  if (!req.user) {
+    res.redirect('/login');
+  } else {
+    const pw1 = req.body.pw1;
+    const pw2 = req.body.pw2;
+    if (pw1 && pw2 && pw1 == pw2) {
+      const name = req.body.ct_name;
+      const email = req.user.email;
+      const location = req.body.location;
+      const address = req.body.address;
+      const bank_account = req.body.bank_account;
+      const password = await bcrypt.hash(pw1, 10);
+      const values = [
+        email,
+        name,
+        password,
+        location,
+        address,
+        bank_account
+      ];
+      await pool.query(sql_query.query.update_ct_info, values, (err, data) => {
+        if (err) {
+          console.log(err);
+          res.redirect('/edit_caretaker_particulars?add=fail');
+        } else {
+          // should show some kind of success message
+          // req.flash('success_msg', 'Particulars updated.');
+          res.redirect('/dashboard-caretaker-ft');
+        }
+      });
+    } else if (pw1 && pw2 && pw1 != pw2) {
+      res.redirect('/edit_caretaker_particulars?add=fail');
+    } else if (!pw1 && !pw2) {
+      const name = req.body.ct_name;
+      const email = req.user.email;
+      const location = req.body.location;
+      const address = req.body.address;
+      const bank_account = req.body.bank_account;
+      const values = [email, name, location, address, bank_account];
+      await pool.query(
+        sql_query.query.update_ct_info_no_pw,
+        values,
+        (err, data) => {
+          if (err) {
+            console.log(err);
+            res.redirect('/edit_caretaker_particulars?add=fail');
+          } else {
+            res.redirect('/dashboard-caretaker-ft');
           }
         }
       );

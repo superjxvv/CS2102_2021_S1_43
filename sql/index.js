@@ -103,6 +103,8 @@ sql.query = {
   add_pet: 'CALL "add_pet"($1, $2, $3, $4)',
   update_po_info: 'CALL "edit_po_info"($1, $2, $3, $4, $5, $6, $7)',
   update_po_info_no_pw: 'CALL "edit_po_info_no_pw"($1, $2, $3, $4, $5, $6)',
+  update_ct_info: 'CALL "edit_ct_info"($1, $2, $3, $4, $5, $6)',
+  update_ct_info_no_pw: 'CALL "edit_ct_info_no_pw"($1, $2, $3, $4, $5)',
   delete_pet:
     'UPDATE own_pet SET deleted = true WHERE pet_name = $1 AND email = $2;',
   recent_trxn_general_completed:

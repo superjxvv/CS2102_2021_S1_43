@@ -101,7 +101,7 @@
   </script>
 </head>
 
-<body class="sidebar-mini layout-fixed sidebar-closed sidebar-collapse">
+<body class="hold-transition sidebar-mini layout-fixed">
   <%- include('./partials/top-nav-bar.ejs') %>
   <%- include('./partials/side-nav-bar.ejs', {loggedInUser: loggedInUser}) %>
   <div class="content-wrapper">
@@ -132,34 +132,32 @@
           <div class="row">
             <% for(let i = 0; i < careTakers.length; i++) { %>
             <div class="col-4">
-              <div class="card bg-light">
+              <div class="card bg-light h-100">
                 <div class="card-header text-muted border-bottom-0">
                   <small class="badge badge-secondary"> <%=careTakers[i].job%> </small>
                 </div>
                 <div class="card-body pt-0">
-                  <div class="row">
-                    <div class="col-7 ">
-                      <h2 class="lead">
-                        <b><%=careTakers[i].name%></b></h2>
-                      <p class="text-muted text-sm">
-                        <b>location: <%=careTakers[i].location%></b>
-                      </p>
-                      <p class="text-muted text-sm">
-                        <b>rating: <%=Number(careTakers[i].rating).toFixed(2)%></b>
-                      </p>
-                      <p class="text-muted text-sm">
-                        <span class="d-flex flex-wrap">
-                          <% for(let j = 0; j < careTakers[i].pet_types.length; j++) {%>
-                          <p>
-                            <small class="badge badge-dark">
-                              <%=careTakers[i].pet_types[j]%>
-                            </small>
-                          </p>
-                          <% } %>
-                        </span>
-                      </p>
-                    </div>
-                  </div>
+                  <!-- <div class="row">
+                    <div class="col-7 "> -->
+                  <h2 class="lead">
+                    <b><%=careTakers[i].name%></b></h2>
+                  <p class="text-muted text-sm">
+                    <b>location: <%=careTakers[i].location%></b>
+                  </p>
+                  <p class="text-muted text-sm">
+                    <b>rating: <%=Number(careTakers[i].rating).toFixed(2)%></b>
+                  </p>
+                  <span class="d-flex flex-wrap">
+                    <% for(let j = 0; j < careTakers[i].pet_types.length; j++) {%>
+
+                    <small class="badge badge-dark m-1">
+                      <%=careTakers[i].pet_types[j]%>
+                    </small>
+
+                    <% } %>
+                  </span>
+                  <!-- </div>
+                  </div> -->
                 </div>
                 <div class="card-footer">
                   <div class="footer-buttons row d-flex justify-content-around">
@@ -171,9 +169,6 @@
                       <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-user"></i> Bid for Care
                         Taker</button>
                     </form>
-                    <!-- <a href="/profile/bid/<%=careTakers[i].email%>" class="btn btn-sm btn-primary">
-                      <i class="fas fa-user"></i> Bid for Care Taker
-                    </a> -->
                   </div>
                 </div>
               </div>

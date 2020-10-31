@@ -3550,3 +3550,18 @@ INSERT INTO has_credit_card (number, email, expiry) VALUES (cc_num, po_email, cc
 END;
 '
 LANGUAGE plpgsql;
+
+--Add dates into date_range if not exists to prevent foreign key error.
+CREATE OR REPLACE FUNCTION add_date() RETURNS TRIGGER AS 
+$$ 
+BEGIN 
+  IF ((NEW.start_date, NEW.end_date) NOT IN (SELECT * FROM date_range)) THEN 
+    INSERT INTO date_range(start_date, end_date) VALUES(NEW.start_date, NEW.end_date); 
+  END IF;
+  
+  RETURN NEW; 
+END; 
+$$ 
+LANGUAGE plpgsql;
+
+CREATE TRIGGER hire_add_date BEFORE INSERT OR UPDATE ON hire FOR EACH ROW EXECUTE PROCEDURE add_date();

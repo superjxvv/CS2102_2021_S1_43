@@ -72,10 +72,24 @@
         $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
       });
     })
+
+    function validateForm() {
+      var pet_name = document.forms["preBidForm"]["pet_name"].value;
+      var start_date = document.forms["preBidForm"]["start_date"].value;
+      var end_date = document.forms["preBidForm"]["end_date"].value;
+      if (pet_name == "" || start_date == "" || end_date == "") {
+        $(document).Toasts('create', {
+          class: 'bg-danger',
+          title: 'Incomplete fields',
+          body: 'Please enter all fields to make a bid'
+        })
+        return false;
+      }
+    }
   </script>
 </head>
 
-<body class="sidebar-mini layout-fixed sidebar-closed sidebar-collapse">
+<body class="hold-transition sidebar-mini layout-fixed">
   <%- include('./partials/top-nav-bar.ejs') %>
   <%- include('./partials/side-nav-bar.ejs', {loggedInUser: loggedInUser}) %>
   <div class="content-wrapper">
@@ -103,7 +117,7 @@
         </div>
         <!-- /.card-header -->
         <!-- form start -->
-        <form method="POST" action="/bid" role="form">
+        <form method="POST" action="/bid" role="form" onsubmit="return validateForm()" name="preBidForm">
           <div class="card-body">
             <div class="form-group">
               <label for="ct_email">Care Taker Email address</label>
@@ -142,9 +156,8 @@
               <!-- /.input group -->
             </div>
             <input type="hidden" name="ct_email" value=<%=careTakerToBid.email%>>
-            <input type="hidden" name="owner_email" value=<%=loggedInUserEmail%>>
+            <input type="hidden" name="owner_email" value=<%=loggedInUser.email%>>
             <input type="hidden" id="pet_name" name="pet_name">
-            <!--change to loggedInUser.email when ready-->
           </div>
           <!-- /.card-body -->
 

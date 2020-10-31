@@ -549,7 +549,7 @@ app.get('/dashboard-caretaker-ft', async (req, res) => {
         const values = [req.user.email];
         console.log(values);
         const my_details = await pool.query(
-          sql_query.query.get_po_info,
+          sql_query.query.get_ct_info,
           values
         );
         console.log(my_details.rows);
@@ -813,6 +813,50 @@ app.get('/register', (req, res) => {
   res.render('register');
 });
 
+app.get('/admin_register', (req, res) => {
+  if (req.user && req.user.type === 0) {
+    res.render('admin_reg');
+  } else {
+    req.flash('error', 'Unauthorised action');
+    res.redirect('/login_redirect');
+  }
+});
+
+app.post('/admin_register', async (req, res) => {
+  if (req.user && req.user.type === 0) {
+    let { email, name, password1 } = req.body;
+    let hashedPw = await bcrypt.hash(password1, 10);
+    const queryText = 'SELECT 1 FROM accounts WHERE email = $1';
+    const queryValue = [email];
+    //First check if user already exists
+    pool
+      .query(queryText, queryValue)
+      .then((queryRes) => {
+        if (queryRes.rows.length > 0) {
+          req.flash('error', 'User already exists.');
+          res.render('register');
+        } else {
+          console.log('register user');
+          pool
+            .query(
+              `INSERT INTO pcs_admin(email, name, password) VALUES($1, $2, $3)`,
+              [email, name, hashedPw]
+            )
+            .then((result) => {
+              req.flash('success_msg', 'Successfully added admin account.');
+              //Change redirect to whichever page is used to add new admin account.
+              res.redirect('/admin_register');
+            })
+            .catch((err) => console.error(err));
+        }
+      })
+      .catch((err) => console.error(err));
+  } else {
+    req.flash('error', 'Unauthorised action');
+    res.redirect('/login_redirect');
+  }
+});
+
 app.post('/register', async (req, res) => {
   console.log(req.body);
   let { name, email, region, password1, type, address } = req.body;
@@ -1039,8 +1083,8 @@ app.post('/bid', async (req, res) => {
       loggedIn: req.user
     });
   } else {
-    req.flash('error_msg', 'Please login to submit a bid for a care.');
-    req.redirect('/login');
+    req.flash('error', 'Please login to submit a bid for a care.');
+    res.redirect('/login');
   }
 });
 
@@ -1073,11 +1117,6 @@ app.post('/submit_bid', async (req, res) => {
       new Date()
     ];
 
-    //Add date range to date range table if not exists
-    await pool.query(
-      'INSERT INTO date_range VALUES($1, $2) ON CONFLICT DO NOTHING',
-      [req.body.start_date, req.body.end_date]
-    );
     //Add bid to hire table
     await pool.query(sql_query.query.add_bid, queryValues);
     //Add address if indicated
@@ -1090,7 +1129,7 @@ app.post('/submit_bid', async (req, res) => {
     req.flash('success_msg', 'Bid was successful');
     res.redirect('/dashboard');
   } else {
-    req.flash('error_msg', 'Error: User is not authenticated');
+    req.flash('error', 'Error: User is not authenticated');
     req.redirect('/login');
   }
 });
@@ -1205,7 +1244,7 @@ app.post('/edit_bid', async (req, res) => {
       loggedIn: req.user
     });
   } else {
-    req.flash('error_msg', 'Error: User is not authenticated');
+    req.flash('error', 'Error: User is not authenticated');
     req.redirect('/login');
   }
 });
@@ -1271,7 +1310,7 @@ app.post('/submit_edit', async (req, res) => {
     req.flash('success_msg', 'Bid successfully updated.');
     res.redirect('transactions');
   } else {
-    req.flash('error_msg', 'Error: User is not authenticated');
+    req.flash('error', 'Error: User is not authenticated');
     req.redirect('/login');
   }
 });
@@ -1323,7 +1362,7 @@ app.post('/payment', async (req, res) => {
       loggedIn: req.user
     });
   } else {
-    req.flash('error_msg', 'Error: User is not authenticated');
+    req.flash('error', 'Error: User is not authenticated');
     req.redirect('/login');
   }
 });
@@ -1343,7 +1382,7 @@ app.post('/submit_payment', async (req, res) => {
     req.flash('success_msg', 'Payment successfully made!');
     res.redirect('/transactions');
   } else {
-    req.flash('error_msg', 'Error: User is not authenticated');
+    req.flash('error', 'Error: User is not authenticated');
     req.redirect('/login');
   }
 });

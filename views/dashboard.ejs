@@ -8,7 +8,7 @@
 </head>
 
 <body>
-    <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn}) %>
+    <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn, accountType: accountType}) %>
 
     <% if (!loggedIn) { %>
     <%- include('./partials/profiles/header.ejs') %>
@@ -21,8 +21,8 @@
         </div>
 
         <div class="row">
-            <h4 class="vert-gap-small-header">My Information</h4>
-            <a href="/edit_particulars" class="btn btn-tool btn-sm">Edit</a>
+            <h4 class="vert-gap-small-header">My Information&nbsp;</h4>
+            <a href="/edit_particulars" class="btn btn-tool btn-sm" style="margin-left: 0px"><ion-icon name="create-outline" style="font-size: 24px; padding-bottom: 0px;"></ion-icon></a>
         </div>
         <div class="row text-left">
             <div class="card col-sm col-md" id="square-card">
@@ -38,7 +38,7 @@
         </div>
 
         <div class="row">
-            <h4 class="vert-gap-small-header" style="margin-top: 15px;">Pet Information</h4>
+            <h4 class="vert-gap-small-header" style="margin-top: 15px;">Pet Information&nbsp;</h4>
             <% if (my_pets.length >= 1) { %>
             <a href="/my_pets" style="padding-left: 13px; padding-top: 17px;">See more</a>
             <% } %>
@@ -59,11 +59,11 @@
 
     <div class="container vert-gap-container">
         <div class="row">
-            <h2 class="vert-gap-contents">Top Caretakers Nearby</h2>
+            <h2 class="vert-gap-contents">Top Caretakers Nearby&nbsp;</h2>
             <% if (!loggedIn) { %>
-            <a href="/search" style="padding: 13px">See more</a> <!-- link this to search for nearby caretakers-->
+            <a href="/search" style="padding: 11px">See more</a>
             <% } else {%>
-            <a href="/search/<%=today%>/<%=today%>/<%=my_details[0].location%>/[]/DESC/DESC" style="padding: 13px">See
+            <a href="/search/<%=today%>/<%=today%>/<%=my_details[0].location%>/[]/DESC/DESC" style="padding: 11px">See
                 more</a>
             <% } %>
         </div>
@@ -85,9 +85,9 @@
 
     <div class="container vert-gap-container">
         <div class="row">
-            <h2 class="vert-gap-contents">Transactions</h2>
+            <h2 class="vert-gap-contents">Transactions&nbsp;</h2>
             <% if (loggedIn) { %>
-            <a href="/transactions" style="padding: 13px">See more</a>
+            <a href="/transactions" style="padding: 11px">See more</a>
             <% } %>
         </div>
         <div class="row text-left">
@@ -128,6 +128,7 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
         integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
         crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/ionicons@5.2.3/dist/ionicons.js"></script>
 
 </body>
 

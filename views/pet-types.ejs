@@ -16,15 +16,13 @@
     <!-- AdminLTE App -->
     <script src="/dist/js/adminlte.min.js"></script>
     <script>
-        $(document).ready(function () {
-            console.log("In script function")
-            console.log("from script" + showSuccessToast)
+        $(function () {
+            var showSuccessToast = JSON.parse('<%- JSON.stringify(showSuccessToast) %>') ? JSON.parse('<%- JSON.stringify(showSuccessToast) %>') : [];
             if (showSuccessToast) {
                 $(document).Toasts('create', {
                     class: 'bg-success',
                     title: 'Pet Type added successfully!',
-                    subtitle: 'Subtitle',
-                    body: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr.'
+                    position: 'topLeft'
                 })
             }
         });
@@ -32,7 +30,7 @@
 </head>
 
 <body style="background-color: lightgrey;">
-    <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn}) %>
+    <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn, accountType: accountType}) %>
     <div class="card" style="margin-left: auto; margin-right: auto; margin-top: 5%; width: 80%; align-content: center;">
         <div class="card-header border-0" style="flex-direction: row; display: flex; justify-content: space-between;">
             <h3 class="card-title">Pet Types</h3>
@@ -57,7 +55,7 @@
                         <td><%= petType.name %></td>
                         <td><%= petType.base_daily_price %></td>
                         <td>
-                            <a href="/edit-pet-type?name=<%= petType.name%>" class="text-muted">
+                            <a href="/edit-pet-type/<%=petType.name%>" class="text-muted">
                                 <i class="far fa-edit"></i>
                             </a>
                         </td>

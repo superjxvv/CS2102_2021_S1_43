@@ -506,6 +506,81 @@ app.get('/pcs-admin-dashboard', async (req, res) => {
   }
 });
 
+app.get('/search-transactions', async (req, res) => {
+  try {
+    const currMonth = true;
+    const searchstring = "";
+    const selectedStatus = [];
+    const selectedPetTransferMethod = [];
+    let rating = 'DESC';
+    let totalCost = 'DESC';
+    selectedHires = await pool.query(
+      sql_query.query.all_transactions_price_desc_rating_desc
+    );
+    const allStatus = ['pendingAccept', 'rejected', 'pendingPayment', 'paymentMade', 'inProgress', 'completed', 'cancelled'];
+
+    res.render('search-transactions', {
+      loggedInUser: req.user,
+      selectedHires: selectedHires.rows,
+      allStatus,
+      searchstring,
+      selectedStatus,
+      selectedPetTransferMethod,
+      rating,
+      totalCost,
+      currMonth,
+      loggedIn: req.user
+    });
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
+app.get('/search-transactions/:status/:currMonth', async (req, res) => {
+  try {
+    const currMonth = req.params.currMonth;
+    const searchstring = "";
+    const selectedStatus = JSON.parse(req.params.status);
+    const selectedPetTransferMethod = [];
+    let rating = 'DESC';
+    let totalCost = 'DESC';
+    if (selectedStatus.length > 0) {
+    //   var selectedStatusString = "";
+    //   for (var i = 0; i < selectedStatus.length; i++) {
+    //     if (i == 0) {
+    //       selectedStatusString = "('" + selectedStatus[i] + "'";
+    //     } else {
+    //       selectedStatusString = selectedStatusString + ", '" + selectedStatus[i] + "'";
+    //     }
+    //     if (i = selectedStatus.length - 1) {
+    //       selectedStatusString = selectedStatusString + ")";
+    //     }
+    //   }
+      selectedHires = await pool.query(sql_query.query.filter_transactions_status_price_desc_rating_desc, [selectedStatus]);
+    } else {
+      selectedHires = await pool.query(
+        sql_query.query.all_transactions_price_desc_rating_desc
+      );
+    }
+    const allStatus = ['pendingAccept', 'rejected', 'pendingPayment', 'paymentMade', 'inProgress', 'completed', 'cancelled'];
+
+    res.render('search-transactions', {
+      loggedInUser: req.user,
+      selectedHires: selectedHires.rows,
+      allStatus,
+      searchstring,
+      selectedStatus,
+      selectedPetTransferMethod,
+      rating,
+      totalCost,
+      currMonth,
+      loggedIn: req.user
+    });
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
 app.get('/dashboard', async (req, res) => {
   try {
     if (!req.user) {

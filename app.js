@@ -93,7 +93,8 @@ app.get('/search', async (req, res) => {
       selectedPetTypes,
       rating,
       price,
-      loggedIn: req.user
+      loggedIn: req.user,
+      accountType: req.user.type
     });
   } catch (err) {
     console.error(err.message);
@@ -292,7 +293,8 @@ app.get(
         selectedPetTypes,
         rating,
         price,
-        loggedIn: req.user
+        loggedIn: req.user,
+        accountType: req.user.type
       });
     } catch (err) {
       console.error(err.message);
@@ -361,7 +363,8 @@ app.post('/pre-bid', async (req, res) => {
       .slice(0, 10),
     blockedDates: Array.from(datesToDelete),
     availableDates: Array.from(datesToAllow),
-    loggedIn: req.user
+    loggedIn: req.user,
+    accountType: req.user.type
   });
   // } else {
   //   req.flash('error', 'Please login before accessing your transactions.');
@@ -378,7 +381,8 @@ app.get('/caretaker-summary-info', async (req, res) => {
     res.render('caretaker-summary-info', {
       caretakerSummaryInfo: summaryInfo.rows,
       months: moment.months(),
-      loggedIn: req.user
+      loggedIn: req.user,
+      accountType: req.user.type
     });
   } catch (err) {
     console.error(err.message);
@@ -394,7 +398,8 @@ app.get('/pet-types', async (req, res) => {
     res.render('pet-types', {
       allPetTypes: allPetTypes.rows,
       showSuccessToast: launchToast,
-      loggedIn: req.user
+      loggedIn: req.user,
+      accountType: req.user.type
     });
   } catch (err) {
     console.error(err.message);
@@ -407,7 +412,8 @@ app.get('/add-pet-type', async (req, res) => {
     const allPetTypes = await pool.query(sql_query.query.all_pet_types);
     res.render('add-pet-type', {
       allPetTypes: allPetTypes.rows,
-      loggedIn: req.user
+      loggedIn: req.user,
+      accountType: req.user.type
     });
   } catch (err) {
     console.error(err.message);
@@ -442,7 +448,8 @@ app.get('/edit-pet-type/:name', async (req, res) => {
     res.render('edit-pet-type', {
       name: name,
       baseDailyPrice: baseDailyPrice.rows[0]['base_daily_price'],
-      loggedIn: req.user
+      loggedIn: req.user,
+      accountType: req.user.type
     });
   } catch (err) {
     console.error(err.message);
@@ -499,7 +506,8 @@ app.get('/pcs-admin-dashboard', async (req, res) => {
       counts_deliverymethods: counts_deliverymethods,
       first4PetTypes: first4PetTypes.rows,
       first4Caretakers: first4Caretakers.rows,
-      loggedIn: req.user
+      loggedIn: req.user,
+      accountType: req.user.type
     });
   } catch (err) {
     console.error(err.message);
@@ -594,18 +602,17 @@ app.get('/dashboard', async (req, res) => {
         recent_trxn: recent_trxn_completed.rows,
         statusToHuman: statusToHuman,
         loggedIn: req.user,
-        today: new Date().toISOString().slice(0, 10)
+        today: new Date().toISOString().slice(0, 10),
+        accountType: 3
       });
     } else {
       const account_type = req.user.type;
-      if (account_type != 0) {
+      if (account_type == 1) {
         const values = [req.user.email];
-        console.log(values);
         const my_details = await pool.query(
           sql_query.query.get_po_info,
           values
         );
-        console.log(my_details.rows);
         const caretaker_top_ratings = await pool.query(
           sql_query.query.caretaker_top_ratings,
           [my_details.rows[0].location]
@@ -624,8 +631,11 @@ app.get('/dashboard', async (req, res) => {
           my_details: my_details.rows,
           statusToHuman: statusToHuman,
           loggedIn: true,
-          today: new Date().toISOString().slice(0, 10)
+          today: new Date().toISOString().slice(0, 10),
+          accountType: account_type
         });
+      } else if (account_type == 2) {
+        res.redirect('/dashboard-caretaker-ft');
       } else {
         // if is PCSadmin
         // have not tried this out
@@ -651,24 +661,18 @@ app.get('/dashboard-caretaker-ft', async (req, res) => {
           values
         );
         console.log(my_details.rows);
-        const caretaker_top_ratings = await pool.query(
-          sql_query.query.caretaker_top_ratings,
-          [my_details.rows[0].location]
-        );
         const recent_transactions = await pool.query(
           sql_query.query.recent_trxn_po,
           values
         );
-        const my_pets = await pool.query(sql_query.query.my_pets, values);
 
         res.render('./dashboard-caretaker-ft', {
           title: 'Dashboard',
-          top_ratings: caretaker_top_ratings.rows,
           recent_trxn: recent_transactions.rows,
-          my_pets: my_pets.rows,
           my_details: my_details.rows,
           statusToHuman: statusToHuman,
-          loggedIn: req.user
+          loggedIn: req.user,
+          accountType: account_type
         });
       } else {
         // if is PCSadmin
@@ -691,7 +695,8 @@ app.get('/apply_leave', async (req, res) => {
         res.render('./apply_leave', {
           title: 'Apply Leave',
           statusToHuman: statusToHuman,
-          loggedIn: req.user
+          loggedIn: req.user,
+          accountType: account_type
         });
       } else {
         // if is PCSadmin
@@ -708,13 +713,19 @@ app.get('/my_pets', async (req, res) => {
   if (!req.user) {
     res.redirect('/login');
   } else {
-    const values = [req.user.email];
-    const query = await pool.query(sql_query.query.all_my_pets, values);
-    res.render('./my_pets', {
-      title: 'My Pets',
-      all_pets: query.rows,
-      loggedIn: req.user
-    });
+    const account_type = req.user.type;
+    if (account_type == 2) {
+      res.redirect('/dashboard-caretaker-ft');
+    } else {
+      const values = [req.user.email];
+      const query = await pool.query(sql_query.query.all_my_pets, values);
+      res.render('./my_pets', {
+        title: 'My Pets',
+        all_pets: query.rows,
+        loggedIn: req.user,
+        accountType: req.user.type
+      });
+    }
   }
 });
 
@@ -727,7 +738,23 @@ app.get('/edit_particulars', async (req, res) => {
     res.render('./edit_particulars', {
       title: 'Edit Particulars',
       po_info: po_info.rows,
-      loggedIn: req.user
+      loggedIn: req.user,
+      accountType: req.user.type
+    });
+  }
+});
+
+app.get('/edit_caretaker_particulars', async (req, res) => {
+  if (!req.user) {
+    res.redirect('/login');
+  } else {
+    const values = [req.user.email]; // hardcoded
+    const ct_info = await pool.query(sql_query.query.get_ct_info, values);
+    res.render('./edit_caretaker_particulars', {
+      title: 'Edit Particulars',
+      ct_info: ct_info.rows,
+      loggedIn: req.user,
+      accountType: req.user.type
     });
   }
 });
@@ -760,9 +787,8 @@ app.post('/edit_particulars', async (req, res) => {
           console.log(err);
           res.redirect('/edit_particulars?add=fail');
         } else {
-          // should show some kind of success message
-          // req.flash('success_msg', 'Particulars updated.');
-          res.redirect('/dashboard');
+          req.flash('success_msg', 'Particulars updated!');
+          res.redirect('/edit_particulars');
         }
       });
     } else if (pw1 && pw2 && pw1 != pw2) {
@@ -783,7 +809,64 @@ app.post('/edit_particulars', async (req, res) => {
             console.log(err);
             res.redirect('/edit_particulars?add=fail');
           } else {
-            res.redirect('/dashboard');
+            req.flash('success_msg', 'Particulars updated!');
+            res.redirect('/edit_particulars');
+          }
+        }
+      );
+    }
+  }
+});
+
+app.post('/edit_caretaker_particulars', async (req, res) => {
+  if (!req.user) {
+    res.redirect('/login');
+  } else {
+    const pw1 = req.body.pw1;
+    const pw2 = req.body.pw2;
+    if (pw1 && pw2 && pw1 == pw2) {
+      const name = req.body.ct_name;
+      const email = req.user.email;
+      const location = req.body.location;
+      const address = req.body.address;
+      const bank_account = req.body.bank_account;
+      const password = await bcrypt.hash(pw1, 10);
+      const values = [
+        email,
+        name,
+        password,
+        location,
+        address,
+        bank_account
+      ];
+      await pool.query(sql_query.query.update_ct_info, values, (err, data) => {
+        if (err) {
+          console.log(err);
+          res.redirect('/edit_caretaker_particulars?add=fail');
+        } else {
+          req.flash('success_msg', 'Particulars updated!');
+          res.redirect('/edit_caretaker_particulars');
+        }
+      });
+    } else if (pw1 && pw2 && pw1 != pw2) {
+      res.redirect('/edit_caretaker_particulars?add=fail');
+    } else if (!pw1 && !pw2) {
+      const name = req.body.ct_name;
+      const email = req.user.email;
+      const location = req.body.location;
+      const address = req.body.address;
+      const bank_account = req.body.bank_account;
+      const values = [email, name, location, address, bank_account];
+      await pool.query(
+        sql_query.query.update_ct_info_no_pw,
+        values,
+        (err, data) => {
+          if (err) {
+            console.log(err);
+            res.redirect('/edit_caretaker_particulars?add=fail');
+          } else {
+            req.flash('success_msg', 'Particulars updated!');
+            res.redirect('/edit_caretaker_particulars');
           }
         }
       );
@@ -800,12 +883,13 @@ app.get('/add_pet', async (req, res) => {
       title: 'Add Pets',
       pet_types: pet_types.rows,
       query: null,
-      loggedIn: req.user
+      loggedIn: req.user,
+      accountType: req.user.type
     });
   }
 });
 
-app.get('/add_pet/:po_email/:pet_name', async (req, res) => {
+app.get('/add_pet/edit/:po_email/:pet_name', async (req, res) => {
   if (!req.user) {
     res.redirect('/login');
   } else {
@@ -818,25 +902,27 @@ app.get('/add_pet/:po_email/:pet_name', async (req, res) => {
       title: 'Edit Pet Details',
       pet_types: pet_types.rows,
       query: query.rows,
-      loggedIn: req.user
+      loggedIn: req.user,
+      accountType: req.user.type
     });
   }
 });
 
-app.post('/add_pet', async (req, res) => {
+app.post('/add_pet/:action', async (req, res) => {
   if (!req.user) {
     res.redirect('/login');
   } else {
     const pet_name = req.body.pet_name;
     const special_req = req.body.special_req;
     const pet_type = req.body.pet_type;
+    const action = req.params.action;
     const values = [pet_name, special_req, req.user.email, pet_type];
     await pool.query(sql_query.query.add_pet, values, (err, data) => {
       if (err) {
-        console.log(err);
         res.redirect('/add_pet?add=fail');
       } else {
-        res.redirect('/add_pet?add=pass');
+        req.flash('success_msg', ' is ' + action + 'ed!');
+        res.redirect('/my_pet/' + req.user.email + '/' + pet_name);
       }
     });
   }
@@ -857,7 +943,8 @@ app.get('/profile/:iden', async (req, res) => {
       res.render('./caretaker_profile', {
         title: 'Profile of ' + get_ct_trxns.rows[0].ct_name,
         get_ct_trxns: get_ct_trxns.rows,
-        loggedIn: req.user
+        loggedIn: req.user,
+        accountType: req.user.type
       });
     }
   } catch (err) {
@@ -877,7 +964,8 @@ app.get('/my_pet/:po_email/:pet_name', async (req, res) => {
       res.render('./my_pet_profile', {
         title: 'My Pet ' + query.rows[0].pet_name,
         query: query.rows,
-        loggedIn: req.user
+        loggedIn: req.user,
+        accountType: req.user.type
       });
     }
   } catch (err) {
@@ -895,8 +983,7 @@ app.post('/my_pet/:po_email/:pet_name', async (req, res) => {
         console.log(err);
         res.redirect('/my_pets?delete=fail');
       } else {
-        // should show some kind of success message
-        // req.flash('success_msg', 'Particulars updated.');
+        req.flash('success_msg', req.params.pet_name + ' is deleted.');
         res.redirect('/my_pets');
       }
     });
@@ -1177,7 +1264,8 @@ app.post('/bid', async (req, res) => {
       daily_price: daily_price,
       num_days: num_days,
       addr: addrQuery.rows[0].address,
-      loggedIn: req.user
+      loggedIn: req.user,
+      accountType: req.user.type
     });
   } else {
     req.flash('error', 'Please login to submit a bid for a care.');
@@ -1338,7 +1426,8 @@ app.post('/edit_bid', async (req, res) => {
       petType: petType,
       ctName: ct_name,
       addr: addrQuery.rows[0].address,
-      loggedIn: req.user
+      loggedIn: req.user,
+      accountType: req.user.type
     });
   } else {
     req.flash('error', 'Error: User is not authenticated');
@@ -1456,7 +1545,8 @@ app.post('/payment', async (req, res) => {
       ctName: ct_name,
       hasCC: hasCC,
       ccLast4: hasCC ? creditCardQuery.rows[0].number.slice(-4) : '',
-      loggedIn: req.user
+      loggedIn: req.user,
+      accountType: req.user.type
     });
   } else {
     req.flash('error', 'Error: User is not authenticated');
@@ -1531,7 +1621,8 @@ app.get('/transactions', (req, res) => {
           moment: moment,
           title: 'Transactions',
           statusToHuman: statusToHuman,
-          loggedIn: req.user
+          loggedIn: req.user,
+          accountType: req.user.type
         });
       })
       .catch((err) => console.error(err.stack));

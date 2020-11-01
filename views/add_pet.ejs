@@ -6,7 +6,7 @@
 </head>
 
 <body>
-    <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn}) %>
+    <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn, accountType: accountType}) %>
     <div id="content-wrapper">
         <div class="container-fluid">
             <div class="card" style="width: 60%; margin: auto; margin-top: 5%">
@@ -16,9 +16,10 @@
                     <% const special_req = query == null ? "" : query[0].special_requirement; %>
                     <% const pet_type = query == null ? "" : query[0].pet_type; %>
                     <% const submit = query == null ? "Add Pet" : "Edit Pets"; %>
+                    <% const type = query == null ? 'add' : 'edit'; %>
                     <i class="fas fa-dice-d20"></i> &nbsp; <b><%= top %></b>
                 </div>
-                <form method="post" action="/add_pet">
+                <form method="post" action="/add_pet/<%= type %>">
                     <div class="card-body">
                         <div class="form-group row">
                             <label for="pet_name" class="col-sm-3 col-form-label">Pet Name: </label>

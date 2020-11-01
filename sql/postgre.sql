@@ -3551,6 +3551,24 @@ END;
 '
 LANGUAGE plpgsql;
 
+CREATE OR REPLACE PROCEDURE 
+edit_ct_info(ct_email VARCHAR, ct_name VARCHAR, ct_pw VARCHAR, ct_loc VARCHAR, ct_addr VARCHAR, ct_bank_acct VARCHAR) AS
+'
+BEGIN 
+UPDATE care_taker SET name = ct_name, password = ct_pw, location = ct_loc, address = ct_addr, bank_account = ct_bank_acct WHERE email = ct_email;
+END;
+'
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE PROCEDURE 
+edit_ct_info_no_pw(ct_email VARCHAR, ct_name VARCHAR, ct_loc VARCHAR, ct_addr VARCHAR, ct_bank_acct VARCHAR) AS
+'
+BEGIN 
+UPDATE care_taker SET name = ct_name,  location = ct_loc, address = ct_addr, bank_account = ct_bank_acct WHERE email = ct_email;
+END;
+'
+LANGUAGE plpgsql;
+
 --Add dates into date_range if not exists to prevent foreign key error.
 CREATE OR REPLACE FUNCTION add_date() RETURNS TRIGGER AS 
 $$ 

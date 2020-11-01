@@ -6,11 +6,14 @@
 </head>
 
 <body>
-    <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn}) %>
+    <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn, accountType: accountType}) %>
 
     <div class="container vert-gap-container">
         <div class="row">
-            <h2 class="vert-gap-contents">My Pet: <%= query[0].pet_name %></h2>
+            <h2 class="vert-gap-contents">My Pet: <%= query[0].pet_name %>&nbsp;</h2>
+            <% if (messages.success_msg) { %>
+                <h2><%= messages.success_msg %></h2>
+            <% } %>
         </div>
 
         <div class="row text-left">

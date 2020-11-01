@@ -3,25 +3,35 @@
 </head>
 <nav class="navbar navbar-dark navbar-expand-sm fixed-top">
     <div class="container">
+        <% if (accountType != 0) { %>
         <a class="navbar-brand mr-auto" href="/dashboard">PetCare</a>
+        <% } %>
+        <% if (accountType == 0) { %>
+        <a class="navbar-brand mr-auto" href="/pcs-admin-dashboard">PetCare</a>
+        <% } %>
         <div class="collapse navbar-collapse" id="Navbar">
             <ul class="navbar-nav mr-auto">
+                <% if (accountType != 0) { %>
                 <li class="nav-item active"><a class="nav-link" href="/dashboard">Dashboard</a></li>
-                <% if (accountType == 0) { %>
-                    <li class="nav-item active"><a class="nav-link" href="/pcs-admin-dashboard">PCS Admin Dashboard</a></li>
                 <% } %>
-                <% if (loggedIn) { %>
+                <% if (accountType == 0) { %>
+                <li class="nav-item active"><a class="nav-link" href="/pcs-admin-dashboard">PCS Admin Dashboard</a></li>
+                <% } %>
+                <% if (loggedIn && accountType != 0) { %>
                 <li class="nav-item active"><a class="nav-link" href="/transactions">Transactions</a></li>
                 <% } %>
+                <% if (accountType == 0) { %>
+                    <li class="nav-item active"><a class="nav-link" href="/search-transactions">Transactions</a></li>
+                    <% } %>
                 <% if (accountType == 1) { %>
                 <li class="nav-item active"><a class="nav-link" href="/my_pets">My Pets</a></li>
                 <% } %>
                 <% if (!loggedIn) { %>
-                    <li class="nav-item active"><a class="nav-link" href="/login">Login</a></li>
+                <li class="nav-item active"><a class="nav-link" href="/login">Login</a></li>
                 <% } else { %>
-                    <li class="nav-item active"><a class="nav-link" href="/logout">Logout</a></li>
+                <li class="nav-item active"><a class="nav-link" href="/logout">Logout</a></li>
                 <% } %>
             </ul>
-        </div>    
+        </div>
     </div>
 </nav>

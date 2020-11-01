@@ -31,6 +31,7 @@
             let selectedStatus = [];
             const allStatus = JSON.parse('<%- JSON.stringify(allStatus) %>');
             const currMonth = JSON.parse('<%- JSON.stringify(currMonth) %>');
+            console.log(currMonth)
             selectedStatus = JSON.parse('<%- JSON.stringify(selectedStatus) %>') ? JSON.parse('<%- JSON.stringify(selectedStatus) %>') : [];
             $('.select2').select2({
                 data: allStatus,
@@ -42,18 +43,25 @@
                 window.location.href = '/search-transactions/' + JSON.stringify($('.select2').val()) + "/" + currMonth;
             });
 
-
+            check = () => {
+                if (currMonth == 'true') {
+                    currMonth == 'false'
+                } else {
+                    currMonth == 'true'
+                }
+                window.location.href = '/search-transactions/' + JSON.stringify($('.select2').val()) + '/' + currMonth;
+            };
         })
     </script>
 </head>
 
 <body style="background-color: lightgrey;">
-    <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn}) %>
+    <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn, accountType: accountType}) %>
     <h3 style="margin-top: 3%;">Search Transactions</h3>
     <div class="form-group">
         <div class="radio">
             <label>Only show Transactions in current month: </label>
-            <input type="checkbox" name="showCurrentMonth" value="<%=currMonth%>" <% if(currMonth) {%>checked<%}%> onChange="check()" />
+            <input type="checkbox" name="showCurrentMonth" <% if(currMonth == 'true') {%> checked <%}%> onChange="check()" />
             </div>
           </div>
         <label class="col-sm-3">Filter by Transaction Status: </label>
@@ -88,11 +96,33 @@
             <td><%= new Intl.DateTimeFormat('en-GB', { year: 'numeric', month: 'long', day: '2-digit'}).format(hire.transaction_date) %>
             </td>
             <td><%= hire.rating %></td>
-            <% console.log(hire.hire_status)%>
-            <% console.log(hire.hire_status == 'completed')%>
             <% if(hire.hire_status == 'completed') { %>
             <td>
                 <span class="badge badge-success">Completed</span>
+            </td>
+            <% } else if(hire.hire_status == 'rejected') { %>
+            <td>
+                <span class="badge badge-danger">Rejected</span>
+            </td>
+            <% } else if(hire.hire_status == 'cancelled') { %>
+            <td>
+                <span class="badge badge-danger">Cancelled</span>
+            </td>
+            <% } else if(hire.hire_status == 'pendingAccept') { %>
+            <td>
+                <span class="badge badge-secondary">Pending Accept</span>
+            </td>
+            <% } else if(hire.hire_status == 'pendingPayment') { %>
+            <td>
+                <span class="badge badge-secondary">Pending Payment</span>
+            </td>
+            <% } else if(hire.hire_status == 'paymentMade') { %>
+            <td>
+                <span class="badge badge-info">Payment Made</span>
+            </td>
+            <% } else if(hire.hire_status == 'inProgress') { %>
+            <td>
+                <span class="badge badge-info">In Progress</span>
             </td>
             <% } else { %>
             <td><%= hire.hire_status %></td>

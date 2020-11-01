@@ -382,7 +382,7 @@ app.get('/caretaker-summary-info', async (req, res) => {
       caretakerSummaryInfo: summaryInfo.rows,
       months: moment.months(),
       loggedIn: req.user,
-      accountType: req.user.type
+      accountType: 0
     });
   } catch (err) {
     console.error(err.message);
@@ -399,7 +399,7 @@ app.get('/pet-types', async (req, res) => {
       allPetTypes: allPetTypes.rows,
       showSuccessToast: launchToast,
       loggedIn: req.user,
-      accountType: req.user.type
+      accountType: 0
     });
   } catch (err) {
     console.error(err.message);
@@ -413,7 +413,7 @@ app.get('/add-pet-type', async (req, res) => {
     res.render('add-pet-type', {
       allPetTypes: allPetTypes.rows,
       loggedIn: req.user,
-      accountType: req.user.type
+      accountType: 0
     });
   } catch (err) {
     console.error(err.message);
@@ -449,7 +449,7 @@ app.get('/edit-pet-type/:name', async (req, res) => {
       name: name,
       baseDailyPrice: baseDailyPrice.rows[0]['base_daily_price'],
       loggedIn: req.user,
-      accountType: req.user.type
+      accountType: 0
     });
   } catch (err) {
     console.error(err.message);
@@ -507,7 +507,7 @@ app.get('/pcs-admin-dashboard', async (req, res) => {
       first4PetTypes: first4PetTypes.rows,
       first4Caretakers: first4Caretakers.rows,
       loggedIn: req.user,
-      accountType: req.user.type
+      accountType: 0
     });
   } catch (err) {
     console.error(err.message);
@@ -516,7 +516,7 @@ app.get('/pcs-admin-dashboard', async (req, res) => {
 
 app.get('/search-transactions', async (req, res) => {
   try {
-    const currMonth = true;
+    const currMonth = false;
     const searchstring = "";
     const selectedStatus = [];
     const selectedPetTransferMethod = [];
@@ -537,7 +537,8 @@ app.get('/search-transactions', async (req, res) => {
       rating,
       totalCost,
       currMonth,
-      loggedIn: req.user
+      loggedIn: req.user,
+      accountType: 0
     });
   } catch (err) {
     console.error(err.message);
@@ -553,22 +554,21 @@ app.get('/search-transactions/:status/:currMonth', async (req, res) => {
     let rating = 'DESC';
     let totalCost = 'DESC';
     if (selectedStatus.length > 0) {
-    //   var selectedStatusString = "";
-    //   for (var i = 0; i < selectedStatus.length; i++) {
-    //     if (i == 0) {
-    //       selectedStatusString = "('" + selectedStatus[i] + "'";
-    //     } else {
-    //       selectedStatusString = selectedStatusString + ", '" + selectedStatus[i] + "'";
-    //     }
-    //     if (i = selectedStatus.length - 1) {
-    //       selectedStatusString = selectedStatusString + ")";
-    //     }
-    //   }
-      selectedHires = await pool.query(sql_query.query.filter_transactions_status_price_desc_rating_desc, [selectedStatus]);
+      if (currMonth == 'false') {
+        selectedHires = await pool.query(sql_query.query.filter_transactions_status_price_desc_rating_desc, [selectedStatus]);
+      } else {
+        selectedHires = await pool.query(sql_query.query.filter_currmonth_transactions_status_price_desc_rating_desc, [selectedStatus]);
+      }
     } else {
-      selectedHires = await pool.query(
-        sql_query.query.all_transactions_price_desc_rating_desc
-      );
+      if (currMonth == 'false') {
+        selectedHires = await pool.query(
+          sql_query.query.all_transactions_price_desc_rating_desc
+        );
+      } else {
+        selectedHires = await pool.query(
+          sql_query.query.curr_month_transactions_price_desc_rating_desc
+        );
+      }
     }
     const allStatus = ['pendingAccept', 'rejected', 'pendingPayment', 'paymentMade', 'inProgress', 'completed', 'cancelled'];
 
@@ -582,7 +582,8 @@ app.get('/search-transactions/:status/:currMonth', async (req, res) => {
       rating,
       totalCost,
       currMonth,
-      loggedIn: req.user
+      loggedIn: req.user,
+      accountType: 0
     });
   } catch (err) {
     console.error(err.message);

@@ -3575,16 +3575,32 @@ END;
 LANGUAGE plpgsql;
 
 --Add dates into date_range if not exists to prevent foreign key error.
-CREATE OR REPLACE FUNCTION add_date() RETURNS TRIGGER AS 
+--Auto accepts if caretaker is fulltimer
+CREATE OR REPLACE FUNCTION add_hire() RETURNS TRIGGER AS 
 $$ 
 BEGIN 
   IF ((NEW.start_date, NEW.end_date) NOT IN (SELECT * FROM date_range)) THEN 
     INSERT INTO date_range(start_date, end_date) VALUES(NEW.start_date, NEW.end_date); 
   END IF;
-  
+  IF (NEW.ct_email IN (SELECT email FROM full_timer)) THEN
+    NEW.hire_status := 'pendingPayment';
+  END IF;
   RETURN NEW; 
 END; 
 $$ 
 LANGUAGE plpgsql;
 
-CREATE TRIGGER hire_add_date BEFORE INSERT OR UPDATE ON hire FOR EACH ROW EXECUTE PROCEDURE add_date();
+CREATE TRIGGER hire_add_hire BEFORE INSERT ON hire FOR EACH ROW EXECUTE PROCEDURE add_hire();
+
+CREATE OR REPLACE FUNCTION update_hire() RETURNS TRIGGER AS 
+$$ 
+BEGIN 
+  IF ((NEW.start_date, NEW.end_date) NOT IN (SELECT * FROM date_range)) THEN 
+    INSERT INTO date_range(start_date, end_date) VALUES(NEW.start_date, NEW.end_date); 
+  END IF;
+  RETURN NEW; 
+END; 
+$$ 
+LANGUAGE plpgsql;
+
+CREATE TRIGGER hire_update_hire BEFORE UPDATE ON hire FOR EACH ROW EXECUTE PROCEDURE update_hire();

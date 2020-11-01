@@ -103,7 +103,7 @@ sql.query = {
   get_a_hire:
     'SELECT * FROM hire WHERE owner_email = $1 AND ct_email = $2 AND start_date = $3 AND end_date = $4 AND pet_name = $5',
   get_ct_type: 'SELECT job FROM care_taker WHERE email = $1',
-  dates_caring: 'SELECT start_date, end_date FROM hire WHERE ct_email = $1',
+  dates_caring: 'SELECT start_date, end_date FROM hire WHERE ct_email = $1 AND start_date >= $2',
   part_timer_availability:
     'SELECT start_date, end_date FROM indicates_availability WHERE email = $1',
   full_timer_leave:
@@ -113,7 +113,7 @@ sql.query = {
   petFromType:
     'SELECT pet_name FROM is_of WHERE owner_email = $1 AND pet_type = $2',
   add_bid:
-    "INSERT INTO hire(owner_email, pet_name, ct_email, num_pet_days, total_cost, hire_status, method_of_pet_transfer, start_date, end_date, transaction_date) VALUES ($1, $2, $3, $4, $5, 'pendingAccept', $6, $7, $8, $9)",
+    "INSERT INTO hire(owner_email, pet_name, ct_email, num_pet_days, total_cost, hire_status, method_of_pet_transfer, start_date, end_date, transaction_date, address) VALUES ($1, $2, $3, $4, $5, 'pendingAccept', $6, $7, $8, $9, $10)",
   dailyPriceGivenTypeAndCT:
     'SELECT daily_price FROM can_take_care_of WHERE email = $1 AND pet_type = $2',
   ownerAddress: 'SELECT address FROM pet_owner WHERE email = $1',

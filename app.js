@@ -1169,7 +1169,7 @@ const transferConvert = (method) => {
 
 /*
 Pushes all dates within given range into outputSet.
-Function takes in 3 arguments with 1 optional argument, criteriaSet. 
+Function takes in 3 arguments with 1 optional argument, criteriaSet 
 If a date is in criteria set it won't be added to output set.
 function(startDate, endDate, outputSet, criteriaSet)
 */
@@ -1191,6 +1191,28 @@ function datesFromRange(startDate, endDate, outputSet) {
     dateMove.setDate(dateMove.getDate() + 1);
   }
 }
+
+/*
+Sums up the counts of each date occuring.
+ */
+function countDatesFromRange(startDate, endDate, hashMap) {
+  var startDate = startDate.toISOString();
+  var endDate = endDate.toISOString();
+  var dateMove = new Date(startDate);
+  var strDate = startDate;
+
+  while (strDate < endDate) {
+    var strDate = dateMove.toISOString().slice(0, 10);
+    if (strDate in hashMap) {
+      hashMap[strDate] += 1
+    } else {
+      hashMap[strDate] = 1;
+    }
+    dateMove.setDate(dateMove.getDate() + 1);
+  
+  }
+}
+
 
 /*
 Removes dates within a particular range from the set.
@@ -1236,11 +1258,12 @@ app.post('/bid', async (req, res) => {
     const pet_name = req.body.pet_name;
     const num_days = diffDays(new Date(start_date), new Date(end_date));
 
-    const ctNameQuery = await pool.query(
-      'SELECT name FROM care_taker WHERE email = $1',
+    const ctQuery = await pool.query(
+      'SELECT * FROM care_taker WHERE email = $1',
       [ct_email]
     );
-    const ct_name = ctNameQuery.rows[0].name;
+    const ct_name = ctQuery.rows[0].name;
+    const ct_has_address = ctQuery.rows[0].address != null;
     const petTypeQuery = await pool.query(
       sql_query.query.petTypeFromOwnerAndName,
       [owner_email, pet_name]
@@ -1258,6 +1281,7 @@ app.post('/bid', async (req, res) => {
     res.render('bid', {
       ct_name: ct_name,
       ct_email: ct_email,
+      ct_has_address : ct_has_address,
       start_date: convertDate(start_date),
       end_date: convertDate(end_date),
       pet_name: pet_name,
@@ -1291,6 +1315,13 @@ app.post('/submit_bid', async (req, res) => {
       [req.body.ct_email, req.body.pet_type]
     );
     console.log(num_days);
+    
+    const address = req.body.transferMethod === 'cPickup' 
+      ? req.body.address
+      : req.body.transferMethod === 'oDeliver'
+        ? pool.query(`SELECT address FROM care_taker WHERE email = $1`, [req.body.ct_email]).rows[0].address
+        : null;
+
     queryValues = [
       owner_email,
       req.body.pet_name,
@@ -1300,7 +1331,8 @@ app.post('/submit_bid', async (req, res) => {
       req.body.transferMethod,
       req.body.start_date,
       req.body.end_date,
-      new Date()
+      new Date(),
+      address  
     ];
 
     //Add bid to hire table
@@ -1316,7 +1348,7 @@ app.post('/submit_bid', async (req, res) => {
     res.redirect('/dashboard');
   } else {
     req.flash('error', 'Error: User is not authenticated');
-    req.redirect('/login');
+    res.redirect('/login');
   }
 });
 
@@ -1331,11 +1363,13 @@ app.post('/edit_bid', async (req, res) => {
     );
     const originalHire = originalHireQuery.rows[0];
     const ct_email = originalHire.ct_email;
-    const ct_nameQuery = await pool.query(
-      'SELECT name FROM care_taker WHERE email = $1',
+    const ct_Query = await pool.query(
+      'SELECT * FROM care_taker WHERE email = $1',
       [ct_email]
     );
-    const ct_name = ct_nameQuery.rows[0].name;
+    const ct_name = ct_Query.rows[0].name;
+    const ct_has_address = ct_Query.rows[0].address != null;
+
     //Whether ct is full time or part time
     const jobTypeQuery = await pool.query(sql_query.query.get_ct_type, [
       ct_email
@@ -1355,9 +1389,10 @@ app.post('/edit_bid', async (req, res) => {
     );
     const costPerDay = costPerDayQuery.rows[0].daily_price;
 
-    //Dates that this ct is already booked.
+    //Dates that this ct is already booked, today or later.
     const datesCaring = await pool.query(sql_query.query.dates_caring, [
-      ct_email
+      ct_email,
+      new Date()
     ]);
 
     //Address of pet_owner if any
@@ -1365,13 +1400,33 @@ app.post('/edit_bid', async (req, res) => {
       originalHire.owner_email
     ]);
 
+
     var datesToDelete = new Set();
+
+    const maxConcLimit = ct_Query.rows[0].max_concurrent_pet_limit;
+    var concurrentTransactions = new Object()
+    //For each date, count number of occurences.
     for (var i = 0; i < datesCaring.rows.length; i++) {
       const usedDate = datesCaring.rows[i];
-      datesFromRange(usedDate.start_date, usedDate.end_date, datesToDelete);
+      countDatesFromRange(usedDate.start_date, usedDate.end_date, concurrentTransactions);
     }
+    //For each date counted in hashMap concurrentTransactions, add it to datesToDelete if the count > max limit
+    for (var key in concurrentTransactions) {
+      if (concurrentTransactions[key] > maxConcLimit) {
+        datesToDelete.add(key);
+      }
+    }
+
     var datesToAllow = new Set();
     var isPartTimer = false;
+
+    //Must remove the original chosen dates from blocked dates so that can still choose back original date.
+    removeDatesFromRange(
+      new Date(req.body.start_date),
+      new Date(req.body.end_date),
+      datesToDelete
+    );
+
     //Part timer only show available dates
     if (jobType == 'part_timer') {
       const availability = await pool.query(
@@ -1399,13 +1454,6 @@ app.post('/edit_bid', async (req, res) => {
         datesFromRange(leaveDate.start_date, leaveDate.end_date, datesToDelete);
       }
     }
-
-    //Must remove the original chosen dates from blocked dates so that can still choose back original date.
-    removeDatesFromRange(
-      new Date(req.body.start_date),
-      new Date(req.body.end_date),
-      datesToDelete
-    );
     res.render('edit_bid', {
       originalStartDate: originalHire.start_date,
       originalEndDate: originalHire.end_date,
@@ -1426,13 +1474,14 @@ app.post('/edit_bid', async (req, res) => {
       petName: originalHire.pet_name,
       petType: petType,
       ctName: ct_name,
+      ct_has_address: ct_has_address,
       addr: addrQuery.rows[0].address,
       loggedIn: req.user,
       accountType: req.user.type
     });
   } else {
     req.flash('error', 'Error: User is not authenticated');
-    req.redirect('/login');
+    res.redirect('/login');
   }
 });
 
@@ -1456,6 +1505,11 @@ app.post('/submit_edit', async (req, res) => {
         ? new Date(req.body.ori_end_date)
         : new Date(req.body.end_date);
     const numDays = diffDays(startDate, endDate);
+    const address = req.body.transferMethod === 'cPickup' 
+      ? req.body.address
+      : req.body.transferMethod === 'oDeliver'
+        ? pool.query(`SELECT address FROM care_taker WHERE email = $1`, [req.body.ct_email]).rows[0].address
+        : null;
     //Use pet type to server query cost per day to be sure
     const petTypeQuery = await pool.query(
       sql_query.query.petTypeFromOwnerAndName,
@@ -1484,7 +1538,8 @@ app.post('/submit_edit', async (req, res) => {
       req.body.transferMethod,
       startDate,
       endDate,
-      new Date()
+      new Date(),
+      address
     ];
     await pool.query(sql_query.query.add_bid, queryValues);
     //Add address if indicated
@@ -1498,7 +1553,7 @@ app.post('/submit_edit', async (req, res) => {
     res.redirect('transactions');
   } else {
     req.flash('error', 'Error: User is not authenticated');
-    req.redirect('/login');
+    res.redirect('/login');
   }
 });
 
@@ -1551,7 +1606,7 @@ app.post('/payment', async (req, res) => {
     });
   } else {
     req.flash('error', 'Error: User is not authenticated');
-    req.redirect('/login');
+    res.redirect('/login');
   }
 });
 
@@ -1571,7 +1626,7 @@ app.post('/submit_payment', async (req, res) => {
     res.redirect('/transactions');
   } else {
     req.flash('error', 'Error: User is not authenticated');
-    req.redirect('/login');
+    res.redirect('/login');
   }
 });
 

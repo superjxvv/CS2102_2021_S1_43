@@ -23,7 +23,7 @@
   <body class="bg-light">
     <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn}) %>
     <div class="container">
-    <div 
+    <div> 
   <div class="py-5 text-center">
     <h2>Bidding</h2>
   </div>
@@ -82,7 +82,9 @@
             <label for="transfer">Pet Transfer Method</label>
             <select class="custom-select d-block w-100" id="transferMethod" name ="transferMethod" required> 
               <option value = "cPickup">Caretaker pickup</option>
+              <% if (ct_has_address) { %>
               <option value = "oDeliver">Dropoff at caretaker</option>
+              <% } %>
               <option value = "office">Dropoff at Pet Care office.</option>
             </select>
             <div class="invalid-feedback">
@@ -100,34 +102,16 @@
               </div>
           </div>
         </div>
-          <!-- <div class="col-md-5 mb-3">
-            <label for="transfer">Select Pet Type: <%#= pet_type %></label>
-            <select class="custom-select d-block w-100" id="pet_name" name="pet_name" required> 
-              <%# pets.forEach(pet => { %>
-                <option value = <%#= pet.pet_name %>><%#= pet.pet_name %></option>
-              <%# }) %>
-            </select>
-            <div class="invalid-feedback">
-              Please select a valid pet transfer method.
-            </div>
-          </div>
-        </div>
-        <hr class="mb-4"> -->
 
         <!--Address-->
         <div id="addressBlock">
         <div class="mb-3">
           <label for="address"> Full Address</label>
           <% if (addr != null) { %>
-          <div class="card">
-            <div class="card-body">
-              <h6 class="card-subtitle mb-2 text-muted">Change this address in your profile settings.</h6>
-              <p class="card-text"><%= addr %></p>
-              <input type="hidden" name="address" value="<%= addr %>">
-            </div>
-          </div>
+          <input type="text" class="form-control" name="address" value="<%= addr %>" required>
           <% } else { %>
           <input type="text" class="form-control" name="address" placeholder="e.g. Blk 154 Telok Blangah Singapore 123456" required>
+          <% } %>
           <div class="invalid-feedback">
             Please enter your address.
           </div>
@@ -137,7 +121,6 @@
           <input type="checkbox" class="custom-control-input" id="save-info" name="saveAddress">
           <label class="custom-control-label" for="save-info">Save this address for use next time</label>
         </div>
-        <% } %>
         <hr class="mb-4">
       </div>
       <!--Address end-->
@@ -158,7 +141,6 @@
   $(document).on('change', 'select[name="transferMethod"]', function(){
     $("#addressBlock").toggle(this.value ==="cPickup");
   });
-
 </script>
 </body>
 </html>

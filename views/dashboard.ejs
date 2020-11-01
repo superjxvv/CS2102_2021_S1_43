@@ -29,10 +29,19 @@
                 <p><b>My Name:</b> <%= my_details[0].name %><br>
                     <b>My Email:</b> <%= my_details[0].email %><br>
                     <b>My Location:</b> <%= my_details[0].location %><br>
-                    <b>My Address:</b> <%= my_details[0].address %><br>
-                    <b>My Credit Card:</b>
-                    <%= my_details[0].number == null ? "" : my_details[0].number.substr(0, my_details[0].number.length - 4).replace(/./gi, "*") + my_details[0].number.substr(-4) %><br>
-                    <b>My Credit Card Expiry Date:</b> <%= my_details[0].expiry %><br>
+                    <% if (my_details[0].address) { %>
+                        <b>My Address:</b> <%= my_details[0].address %><br>
+                    <% } %>
+                    <% if (my_details[0].number) { %>
+                        <b>My Credit Card:</b>
+                        <%= my_details[0].number.substr(0, my_details[0].number.length - 4).replace(/./gi, "*") + my_details[0].number.substr(-4) %><br>
+                    <% } %>
+                    <% if (my_details[0].expiry) { %>
+                        <b>My Credit Card Expiry Date:</b> <%= my_details[0].expiry %><br>
+                    <% } %>
+                    <% if (!my_details[0].address || !my_details[0].number || !my_details[0].expiry) { %>
+                        <i>Please fill in missing particulars!</i>
+                    <% } %>
                 </p>
             </div>
         </div>
@@ -44,76 +53,102 @@
             <% } %>
         </div>
         <div class="row text-left">
-            <% my_pets.forEach(pet => { %>
-            <button class="card col-sm col-md" id="square-card"
-                onclick="location.href='/my_pet/<%= pet.email %>/<%= pet.pet_name %>'">
-                <p><b>Pet Name:</b> <%= pet.pet_name %><br>
-                    <b>Pet Type:</b> <%= pet.pet_type %><br>
-                    <b>Special Requirements:</b> <%= pet.special_requirement %><br>
-                </p>
-            </button>
-            <% }) %>
+            <% if (recent_trxn.length == 0) { %>
+                <div class="card col-sm col-md" id="square-card">
+                    <p><i>No Transactions!</i></p>
+                </div>
+            <% } else { %>
+                <% my_pets.forEach(pet => { %>
+                <button class="card col-sm col-md" id="square-card"
+                    onclick="location.href='/my_pet/<%= pet.email %>/<%= pet.pet_name %>'">
+                    <p><b>Pet Name:</b> <%= pet.pet_name %><br>
+                        <b>Pet Type:</b> <%= pet.pet_type %><br>
+                        <b>Special Requirements:</b> <%= pet.special_requirement %><br>
+                    </p>
+                </button>
+                <% }) %>
+            <% } %>
         </div>
     </div>
     <% } %>
 
     <div class="container vert-gap-container">
         <div class="row">
-            <h2 class="vert-gap-contents">Top Caretakers Nearby&nbsp;</h2>
             <% if (!loggedIn) { %>
-            <a href="/search" style="padding: 11px">See more</a>
+                <h2 class="vert-gap-contents">Top Caretakers&nbsp;</h2>
+                <a href="/search" style="padding: 11px">See more</a>
             <% } else {%>
-            <a href="/search/<%=today%>/<%=today%>/<%=my_details[0].location%>/[]/DESC/DESC" style="padding: 11px">See
-                more</a>
+                <h2 class="vert-gap-contents">Top Caretakers Nearby&nbsp;</h2>
+                <a href="/search/<%=today%>/<%=today%>/<%=my_details[0].location%>/[]/DESC/DESC" style="padding: 11px">See more</a>
             <% } %>
         </div>
-
-        <div class="row text-left">
-            <% top_ratings.forEach(caretaker => { %>
-            <button class="card col-sm col-md" id="square-card"
-                onclick="location.href='/profile/<%= caretaker.email %>'">
-                <p><b>Name:</b> <%= caretaker.name %><br>
-                    <b>Rating:</b>
-                    <%= caretaker.rating == null ? "No Rating Yet" : Number(caretaker.rating).toFixed(2) %><br>
-                    <b>Location:</b> <%= caretaker.location %><br>
-                    <b>Job:</b> <%= caretaker.job == "part_timer" ? "Part Time" : "Full Time" %><br>
+        <% if (top_ratings.length == 0) { %>
+            <div class="card col-sm col-md" id="square-card" style="margin-bottom: 30px;">
+                <p>
+                    <i>No Caretakers Nearby!</i><br>
+                    <a href="/search" style="padding: 11px">Click here to see all caretakers.</a>
                 </p>
-            </button>
-            <% }) %>
-        </div>
+            </div>
+        <% } else { %>
+            <div class="row text-left">
+                <% for (var i = 0; i < 4; i++) { %>
+                    <% const caretaker = top_ratings[i]; %>
+                    <button class="card col-sm col-md" id="square-card" onclick="location.href='/profile/<%= caretaker.email %>'">
+                        <p><b>Name:</b> <%= caretaker.name %><br>
+                            <b>Rating:</b>
+                            <%= caretaker.rating == null ? "No Rating Yet" : Number(caretaker.rating).toFixed(2) %><br>
+                            <b>Location:</b> <%= caretaker.location %><br>
+                            <b>Job:</b> <%= caretaker.job == "part_timer" ? "Part Time" : "Full Time" %><br>
+                        </p>
+                    </button>
+                <% } %>
+            </div>
+        <% } %>
     </div>
 
     <div class="container vert-gap-container">
         <div class="row">
-            <h2 class="vert-gap-contents">Transactions&nbsp;</h2>
-            <% if (loggedIn) { %>
-            <a href="/transactions" style="padding: 11px">See more</a>
+            
+            <% if (loggedIn) {  %>
+                <h2 class="vert-gap-contents">My Transactions&nbsp;</h2>
+                <% if (recent_trxn.length > 4) { %>
+                    <a href="/transactions" style="padding: 11px">See more</a>
+                <% } %>
+            <% } else { %>
+                <h2 class="vert-gap-contents">Transactions&nbsp;</h2>
             <% } %>
         </div>
         <div class="row text-left">
-            <% recent_trxn.forEach(trxn => { %>
-            <div class="card col-sm col-md" id="square-card" style="margin-bottom: 30px;">
-                <p><b>Status:</b>
-                    <% if (trxn.hire_status == 'completed') { %>
-                    <span class="badge badge-success"><%= statusToHuman(trxn.hire_status) %></span><br>
-                    <% } else if (trxn.hire_status == 'cancelled' || trxn.hire_status == 'rejected') { %>
-                    <span class="badge badge-danger"><%= statusToHuman(trxn.hire_status) %></span><br>
-                    <% } else if (trxn.hire_status == 'pendingPayment') { %>
-                    <span class="badge badge-warning"><%= statusToHuman(trxn.hire_status) %></span><br>
-                    <% } else { %>
-                    <span class="badge badge-info"><%= statusToHuman(trxn.hire_status) %></span><br>
-                    <% } %>
-                    <b>Date:</b> <%= stringToDate(String(trxn.start_date)) %> to
-                    <%= stringToDate(String(trxn.end_date)) %><br>
-                    <b>Caretaker:</b> <a href="/profile/<%= trxn.ct_email %>"><%= trxn.ct_name %></a><br>
-                    <b>Pet Name:</b> <%= trxn.pet_name %><br>
-                    <% if (trxn.hire_status == 'completed') { %>
-                    <b>Rating:</b> <%= trxn.hire_status == null ? 'NA' : trxn.rating %><br>
-                    <b>Review:</b> <%= trxn.review_text == null ? 'NA' : trxn.review_text %><br>
-                    <% } %>
-                </p>
-            </div>
-            <% }) %>
+            <% if (recent_trxn.length == 0) { %>
+                <div class="card col-sm col-md" id="square-card" style="margin-bottom: 30px;">
+                    <p><i>No Transactions!</i></p>
+                </div>
+            <% } else { %>
+                <% for (var i = 0; i < 4; i++) { %>
+                    <% const trxn = recent_trxn[i]; %>
+                    <div class="card col-sm col-md" id="square-card" style="margin-bottom: 30px;">
+                        <p><b>Status:</b>
+                            <% if (trxn.hire_status == 'completed') { %>
+                            <span class="badge badge-success"><%= statusToHuman(trxn.hire_status) %></span><br>
+                            <% } else if (trxn.hire_status == 'cancelled' || trxn.hire_status == 'rejected') { %>
+                            <span class="badge badge-danger"><%= statusToHuman(trxn.hire_status) %></span><br>
+                            <% } else if (trxn.hire_status == 'pendingPayment') { %>
+                            <span class="badge badge-warning"><%= statusToHuman(trxn.hire_status) %></span><br>
+                            <% } else { %>
+                            <span class="badge badge-info"><%= statusToHuman(trxn.hire_status) %></span><br>
+                            <% } %>
+                            <b>Date:</b> <%= stringToDate(String(trxn.start_date)) %> to
+                            <%= stringToDate(String(trxn.end_date)) %><br>
+                            <b>Caretaker:</b> <a href="/profile/<%= trxn.ct_email %>"><%= trxn.ct_name %></a><br>
+                            <b>Pet Name:</b> <%= trxn.pet_name %><br>
+                            <% if (trxn.hire_status == 'completed') { %>
+                            <b>Rating:</b> <%= trxn.hire_status == null ? 'NA' : trxn.rating %><br>
+                            <b>Review:</b> <%= trxn.review_text == null ? 'NA' : trxn.review_text %><br>
+                            <% } %>
+                        </p>
+                    </div>
+                <% } %>
+            <% } %>
         </div>
     </div>
 

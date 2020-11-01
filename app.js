@@ -936,16 +936,29 @@ app.get('/profile/:iden', async (req, res) => {
     } else {
       const ct_email = req.params.iden;
       const values = [ct_email];
+      const get_ct_info = await pool.query(
+        sql_query.query.get_ct_info,
+        values
+      );
       const get_ct_trxns = await pool.query(
         sql_query.query.get_ct_trxn,
         values
       );
+      const get_ct_prices = await pool.query(
+        sql_query.query.get_ct_prices,
+        values
+      );
+      console.log(get_ct_trxns.rows);
+      console.log(get_ct_prices.rows);
 
       res.render('./caretaker_profile', {
-        title: 'Profile of ' + get_ct_trxns.rows[0].ct_name,
+        title: 'Profile of ' + get_ct_info.rows[0].name,
+        get_ct_info: get_ct_info.rows,
         get_ct_trxns: get_ct_trxns.rows,
+        get_ct_prices: get_ct_prices.rows,
         loggedIn: req.user,
-        accountType: req.user.type
+        accountType: req.user.type,
+        statusToHuman: statusToHuman
       });
     }
   } catch (err) {

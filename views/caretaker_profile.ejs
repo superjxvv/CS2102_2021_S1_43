@@ -15,13 +15,16 @@
             <h2 class="vert-gap-contents">Caretaker Information</h2>
         </div>
         
-        <div class="row">
-            <h4 class="vert-gap-small-header">Caretaker Information</h4>
-        </div>
         <div class="row text-left">
             <div class="card col-sm col-md" id="square-card" style="margin-bottom: 15px;">
-                <p><b>My Name:</b> <%= get_ct_trxns[0].ct_name %><br>
-                   <b>My Email:</b> <%= get_ct_trxns[0].ct_email %><br>
+                <p><b>My Name:</b> <%= get_ct_info[0].name %><br>
+                    <b>My Email:</b> <%= get_ct_info[0].email %><br>
+                    <b>My Location:</b> <%= get_ct_info[0].location %><br>
+                    <% if (!get_ct_info[0].rating) { %>
+                        <b>My Rating:</b><i> No Rating Yet!</i><br>
+                    <% } else { %> 
+                        <b>My Rating:</b> <%= Number(get_ct_info[0].rating).toFixed(2) %><br>
+                    <% } %>
                 </p>
             </div>
         </div>
@@ -29,36 +32,56 @@
 
     <div class="container vert-gap-container">
         <div class="row">
+            <h2 class="vert-gap-contents">Prices Per Pet Type</h2>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <% get_ct_prices.forEach(type => { %>
+                    <tr>
+                        <th style="width:50%"><%= type.pet_type %></th>
+                        <td style="text-align: end;"><%= type.daily_price %></td>
+                    </tr>
+                <% }); %>
+            </table>
+        </div>
+    </div>
+    
+
+    <div class="container vert-gap-container">
+        <div class="row">
             <h2 class="vert-gap-contents">Past Transactions</h2>
-            <% if (get_ct_trxns.length >= 4) { %>
-                <a href="/transactions" style="padding: 13px">See more</a>
-            <% } %>
         </div>
         <div class="row text-left">
-            <% get_ct_trxns.forEach(trxn => { %>
-            <div class="card col-sm col-md" id="square-card">
-                <p><b>Status:</b> 
-                    <% if (trxn.hire_status == 'completed') { %>
-                        <span class="badge badge-success"><%= trxn.hire_status %></span><br>
-                    <% } else if (trxn.hire_status == 'cancelled' || trxn.hire_status == 'rejected') { %>
-                        <span class="badge badge-danger"><%= trxn.hire_status %></span><br>
-                    <% } else if (trxn.hire_status == 'pendingPayment') { %>
-                        <span class="badge badge-warning"><%= trxn.hire_status %></span><br>
-                    <% } else { %>
-                        <span class="badge badge-info"><%= trxn.hire_status %></span><br>
-                    <% } %>
-                    <b>Date:</b> <%= stringToDate(String(trxn.start_date)) %> to
-                    <%= stringToDate(String(trxn.end_date)) %><br>
-                    <b>Pet Owner: </b><%= trxn.po_name %><br>
-                    <b>Pet Type: </b><%= trxn.type %><br>
-                    <b>Caretaker:</b> <%= trxn.ct_name %><br>
-                    <% if (trxn.hire_status == 'completed') { %>
-                        <b>Rating:</b> <%= trxn.rating == null ? 'NA' : trxn.rating %><br>
-                        <b>Review:</b> <%= trxn.review_text == null ? 'NA' : trxn.review_text %><br>
-                    <% } %>
-                </p>
-            </div>
-            <% }) %>
+            <% if (get_ct_trxns.length == 0) { %>
+                <div class="card col-sm col-md" id="square-card" style="margin-bottom: 30px;">
+                    <p><i>No Completed Transactions Yet!</i></p>
+                </div>
+            <% } else { %>
+                <% get_ct_trxns.forEach(trxn => { %>
+                    <div class="card col-sm col-md" id="square-card">
+                        <p><b>Status:</b> 
+                            <% if (trxn.hire_status == 'completed') { %>
+                                <span class="badge badge-success"><%= statusToHuman(trxn.hire_status) %></span><br>
+                            <% } else if (trxn.hire_status == 'cancelled' || trxn.hire_status == 'rejected') { %>
+                                <span class="badge badge-danger"><%= statusToHuman(trxn.hire_status) %></span><br>
+                            <% } else if (trxn.hire_status == 'pendingPayment') { %>
+                                <span class="badge badge-warning"><%= statusToHuman(trxn.hire_status) %></span><br>
+                            <% } else { %>
+                                <span class="badge badge-info"><%= statusToHuman(trxn.hire_status) %></span><br>
+                            <% } %>
+                            <b>Date:</b> <%= stringToDate(String(trxn.start_date)) %> to
+                            <%= stringToDate(String(trxn.end_date)) %><br>
+                            <b>Pet Owner: </b><%= trxn.po_name %><br>
+                            <b>Pet Type: </b><%= trxn.type %><br>
+                            <b>Caretaker:</b> <%= trxn.ct_name %><br>
+                            <% if (trxn.hire_status == 'completed') { %>
+                                <b>Rating:</b> <%= trxn.rating == null ? 'NA' : trxn.rating %><br>
+                                <b>Review:</b> <%= trxn.review_text == null ? 'NA' : trxn.review_text %><br>
+                            <% } %>
+                        </p>
+                    </div>
+                <% }); %>
+            <% } %>
         </div>
     </div>
 

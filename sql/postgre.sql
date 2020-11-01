@@ -4,7 +4,9 @@ SET search_path TO pet_care;
 CREATE TABLE pcs_admin(
   email VARCHAR PRIMARY KEY,
   name VARCHAR NOT NULL,
-  password VARCHAR NOT NULL
+  password VARCHAR NOT NULL,
+  is_super_admin BOOLEAN NOT NULL DEFAULT FALSE,
+  deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE pet_owner(
@@ -12,7 +14,8 @@ CREATE TABLE pet_owner(
   name VARCHAR NOT NULL,
   password VARCHAR NOT NULL,
   location VARCHAR NOT NULL,
-  address VARCHAR
+  address VARCHAR,
+  deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE has_credit_card(
@@ -34,7 +37,8 @@ CREATE TABLE care_taker(
   bank_account VARCHAR,
   max_concurrent_pet_limit INTEGER,
   job job_type NOT NULL,
-  address VARCHAR
+  address VARCHAR,
+  deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE VIEW accounts AS (
@@ -107,6 +111,7 @@ CREATE TABLE hire (
   transaction_date DATE NOT NULL,
   rating INTEGER CHECK (rating >= 1 AND rating <= 5),
   review_text VARCHAR,
+  address VARCHAR,
   PRIMARY KEY(owner_email, pet_name, ct_email, start_date, end_date),
   FOREIGN KEY (owner_email, pet_name) REFERENCES own_pet(email, pet_name),
   FOREIGN KEY(start_date, end_date) REFERENCES date_range(start_date, end_date)

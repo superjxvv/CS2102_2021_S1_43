@@ -82,7 +82,7 @@ CREATE TABLE is_of (
   pet_name VARCHAR NOT NULL,
   owner_email VARCHAR NOT NULL,
   FOREIGN KEY (pet_name, owner_email) REFERENCES own_pet(pet_name, email),
-  PRIMARY KEY (pet_type, pet_name, owner_email)
+  PRIMARY KEY (pet_name, owner_email)
 );
 
 CREATE TABLE date_range (
@@ -3526,12 +3526,15 @@ insert into indicates_availability (email, start_date, end_date) values ('vbleyt
 insert into indicates_availability (email, start_date, end_date) values ('lgrinov4y@canalblog.com', '2020-10-28', '2022-10-18');
 insert into indicates_availability (email, start_date, end_date) values ('jgeffinger1s@blog.com', '2020-11-13', '2022-10-15');
 
-CREATE OR REPLACE PROCEDURE 
-add_pet(p_name VARCHAR, special_req VARCHAR, po_email VARCHAR, type VARCHAR) AS
+CREATE OR REPLACE FUNCTION 
+add_pet(p_name VARCHAR, special_req VARCHAR, po_email VARCHAR, type VARCHAR) RETURNS NUMERIC AS
 '
+DECLARE exists NUMERIC;
 BEGIN 
-INSERT INTO own_pet (pet_name, special_requirement, email) VALUES (p_name, special_req, po_email) ON CONFLICT (pet_name, email) DO UPDATE SET special_requirement = special_req;
-INSERT INTO is_of (pet_type, pet_name, owner_email) VALUES (type, p_name, po_email) ON CONFLICT (pet_type, pet_name, owner_email) DO NOTHING;
+SELECT COUNT(pet_name) INTO exists FROM own_pet WHERE pet_name = p_name AND email = po_email;
+INSERT INTO own_pet (pet_name, special_requirement, email) VALUES (p_name, special_req, po_email) ON CONFLICT (pet_name, email) DO UPDATE SET special_requirement = special_req, deleted = false;
+INSERT INTO is_of (pet_type, pet_name, owner_email) VALUES (type, p_name, po_email) ON CONFLICT (pet_name, owner_email) DO NOTHING;
+RETURN exists;
 END;
 '
 LANGUAGE plpgsql;

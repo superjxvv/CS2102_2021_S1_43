@@ -94,7 +94,6 @@ app.get('/search', async (req, res) => {
       rating,
       price,
       loggedIn: req.user,
-      accountType: req.user.type
     });
   } catch (err) {
     console.error(err.message);
@@ -741,7 +740,8 @@ app.get('/edit_particulars', async (req, res) => {
       title: 'Edit Particulars',
       po_info: po_info.rows,
       loggedIn: req.user,
-      accountType: req.user.type
+      accountType: req.user.type,
+      testAddress: testAddress
     });
   }
 });
@@ -771,7 +771,7 @@ app.post('/edit_particulars', async (req, res) => {
       const name = req.body.po_name;
       const email = req.user.email;
       const location = req.body.location;
-      const address = req.body.address;
+      const address = req.body.address ? req.body.address : null;
       const cc_num = req.body.cc_num;
       const cc_date = req.body.cc_date;
       const password = await bcrypt.hash(pw1, 10);
@@ -799,7 +799,7 @@ app.post('/edit_particulars', async (req, res) => {
       const name = req.body.po_name;
       const email = req.user.email;
       const location = req.body.location;
-      const address = req.body.address;
+      const address = req.body.address ? req.body.address : null;
       const cc_num = req.body.cc_num;
       const cc_date = req.body.cc_date;
       const values = [email, name, location, address, cc_num, cc_date];
@@ -830,7 +830,7 @@ app.post('/edit_caretaker_particulars', async (req, res) => {
       const name = req.body.ct_name;
       const email = req.user.email;
       const location = req.body.location;
-      const address = req.body.address;
+      const address = req.body.address ? req.body.address : null;
       const bank_account = req.body.bank_account;
       const password = await bcrypt.hash(pw1, 10);
       const values = [
@@ -856,7 +856,7 @@ app.post('/edit_caretaker_particulars', async (req, res) => {
       const name = req.body.ct_name;
       const email = req.user.email;
       const location = req.body.location;
-      const address = req.body.address;
+      const address = req.body.address ? req.body.address : null;
       const bank_account = req.body.bank_account;
       const values = [email, name, location, address, bank_account];
       await pool.query(
@@ -917,12 +917,16 @@ app.post('/add_pet/:action', async (req, res) => {
     const pet_name = req.body.pet_name;
     const special_req = req.body.special_req;
     const pet_type = req.body.pet_type;
-    const action = req.params.action;
+    var action = req.params.action;
     const values = [pet_name, special_req, req.user.email, pet_type];
     await pool.query(sql_query.query.add_pet, values, (err, data) => {
       if (err) {
+        console.log(err);
         res.redirect('/add_pet?add=fail');
       } else {
+        if (data) {
+          action = 'restor';
+        }
         req.flash('success_msg', ' is ' + action + 'ed!');
         res.redirect('/my_pet/' + req.user.email + '/' + pet_name);
       }

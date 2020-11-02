@@ -159,7 +159,14 @@
 		var originalStartDate = new Date("<%= originalStartDate %>");
     var originalEndDate = new Date("<%= originalEndDate %>");
     var costPerDay = parseInt("<%= costPerDay %>");
-
+    const isInvalidDate = (aDate) => {
+				const date = aDate.format('YYYY-MM-DD');
+				if (isPartTimer) {
+					return !(availableDates.has(date) && !blockedDates.has(date));
+				} else {
+					return blockedDates.has(date);
+				}
+			};
 		$('input[name="dates"]').daterangepicker({
 			minDate: today,
 			maxDate: latestDate,
@@ -168,38 +175,17 @@
 			locale: {
     		format: 'DD/MM/YYYY'
   		},
-			isInvalidDate : (aDate) => {
-				const date = aDate.format('YYYY-MM-DD');
-				if (isPartTimer) {
-					return !(availableDates.has(date) && !blockedDates.has(date));
-				} else {
-					return blockedDates.has(date);
-				}
-			}
+			isInvalidDate : isInvalidDate
 		});
 
     //Dates are in moment
     function includesInvalidDate(startDate, endDate) {
-      var startDate = startDate.toDate();
-      var endDate = endDate.toDate();
-      //First check that dates don't include include invalid date.
-      blockedDates.forEach(x =>  {
-        let y = new Date(x);
-        if (startDate < y && endDate > y) {
+      var currDate = startDate;
+      while (currDate.isBefore(endDate) || currDate.isSame(endDate)) {
+        if (isInvalidDate(currDate)) {
           return false;
         }
-      });
-
-      //For part timer, check if the date range is completely covered in availability.
-      if (isPartTimer) {
-        var currDate = startDate;
-        while (currDate < endDate) {
-          if (!availableDates.has(currDate.toISOString().split('T')[0])) {
-            return false;
-          } else {
-            currDate.setDate(currDate.getDate() + 1);
-          }
-        }
+        currDate.add(1, 'days');
       }
       return true;
     }
@@ -223,7 +209,7 @@
         document.getElementById("end_date").value = picker.endDate;
         document.getElementById("side_start_date").innerHTML = picker.startDate.format("DD/MM/YYYY");
         document.getElementById("side_end_date").innerHTML = picker.endDate.format("DD/MM/YYYY");
-        document.getElementById("totalCost").innerHTML = picker.endDate.diff(picker.startDate, "days") * costPerDay
+        document.getElementById("totalCost").innerHTML = (Math.round(picker.endDate.diff(picker.startDate, "days") * costPerDay * 100) / 100).toFixed(2);
       }
     });
     

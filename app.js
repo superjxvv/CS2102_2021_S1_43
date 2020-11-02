@@ -1428,7 +1428,7 @@ app.post('/edit_bid', async (req, res) => {
     }
     //For each date counted in hashMap concurrentTransactions, add it to datesToDelete if the count > max limit
     for (var key in concurrentTransactions) {
-      if (concurrentTransactions[key] > maxConcLimit) {
+      if (concurrentTransactions[key] >= maxConcLimit) {
         datesToDelete.add(key);
       }
     }

@@ -64,7 +64,7 @@
                     <p><i>No Transactions!</i></p>
                 </div>
             <% } else { %>
-                <% for (var i = 0; i < 4; i++) { %>
+                <% for (var i = 0; i < 4 && i < my_pets.length; i++) { %>
                     <% const pet = my_pets[i]; %>
                     <button class="card col-sm col-md" id="square-card"
                         onclick="location.href='/my_pet/<%= pet.email %>/<%= pet.pet_name %>'">
@@ -131,7 +131,7 @@
                     <p><i>No Transactions!</i></p>
                 </div>
             <% } else { %>
-                <% for (var i = 0; i < 4; i++) { %>
+                <% for (var i = 0; i < 4 && i < recent_trxn.length; i++) { %>
                     <% const trxn = recent_trxn[i]; %>
                     <div class="card col-sm col-md" id="square-card" style="margin-bottom: 30px;">
                         <p><b>Status:</b>

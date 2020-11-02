@@ -50,11 +50,11 @@
           <div>
             <h6 class="my-0">Cost per day</h6>
           </div>
-          <span class="text-muted" id="costPerDay">$<%= costPerDay %></span>
+          <span class="text-muted" id="costPerDay">$<%= (Math.round(costPerDay * 100) / 100).toFixed(2) %></span>
         </li>
         <li class="list-group-item d-flex justify-content-between">
           <span>Total (SGD)</span>
-          <strong id="totalCost">$<%= costPerDay * numDays %></strong>
+          <strong id="totalCost">$<%= (Math.round(costPerDay * numDays * 100) / 100).toFixed(2) %></strong>
         </li>
       </ul>
 		</div>

@@ -86,9 +86,6 @@ sql.query = {
   // 4 most recent transactions
   recent_trxn_po:
     'SELECT H.hire_status, H.start_date, H.end_date, C.name AS ct_name, C.email AS ct_email, P.name AS po_name, H.pet_name, H.rating, H.review_text FROM hire H INNER JOIN care_taker C ON H.ct_email = C.email INNER JOIN pet_owner P ON H.owner_email = P.email WHERE H.owner_email = $1 ORDER BY H.transaction_date DESC',
-  // 4 of my pets
-  my_pets:
-    'SELECT * FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.email = $1 AND deleted = false LIMIT 4',
   all_my_pets:
     'SELECT * FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.email = $1  AND deleted = false ORDER BY O.pet_name',
   get_pet_info:

@@ -622,7 +622,7 @@ app.get('/dashboard', async (req, res) => {
           sql_query.query.recent_trxn_po,
           values
         );
-        const my_pets = await pool.query(sql_query.query.my_pets, values);
+        const my_pets = await pool.query(sql_query.query.all_my_pets, values);
 
         res.render('./dashboard', {
           title: 'Dashboard',
@@ -785,8 +785,8 @@ app.post('/edit_particulars', async (req, res) => {
       ];
       await pool.query(sql_query.query.update_po_info, values, (err, data) => {
         if (err) {
-          console.log(err);
-          res.redirect('/edit_particulars?add=fail');
+          req.flash('error', err);
+          res.redirect('/edit_particulars');
         } else {
           req.flash('success_msg', 'Particulars updated!');
           res.redirect('/edit_particulars');
@@ -810,7 +810,7 @@ app.post('/edit_particulars', async (req, res) => {
             res.redirect('/edit_particulars?add=fail');
           } else {
             req.flash('success_msg', 'Particulars updated!');
-          res.redirect('/edit_particulars');
+            res.redirect('/edit_particulars');
           }
         }
       );
@@ -919,14 +919,15 @@ app.post('/add_pet/:action', async (req, res) => {
     const values = [pet_name, special_req, req.user.email, pet_type];
     await pool.query(sql_query.query.add_pet, values, (err, data) => {
       if (err) {
-        console.log(err);
-        res.redirect('/add_pet?add=fail');
+        req.flash('error', err);
+        res.redirect('/add_pet'); // check this again
       } else {
+        console.log(data.rows[0]);
         if (data.rows[0].add_pet == 1) {
           action = 'restor';
         }
-        req.flash('success_msg', ' is ' + action + 'ed!');
-        res.redirect('/my_pet/' + req.user.email + '/' + pet_name);
+        req.flash('success_msg', 'Pet ' + pet_name + ' is ' + action + 'ed!');
+        res.redirect('/my_pets');
       }
     });
   }
@@ -990,15 +991,15 @@ app.get('/my_pet/:po_email/:pet_name', async (req, res) => {
   }
 });
 
-app.post('/my_pet/:po_email/:pet_name', async (req, res) => {
+app.post('/my_pets/:po_email/:pet_name', async (req, res) => {
   if (!req.user) {
     res.redirect('/login');
   } else {
     const values = [req.params.pet_name, req.params.po_email];
     await pool.query(sql_query.query.delete_pet, values, (err, data) => {
       if (err) {
-        console.log(err);
-        res.redirect('/my_pets?delete=fail');
+        req.flash('error', 'Delete failed.');
+        res.redirect('/my_pets');
       } else {
         req.flash('success_msg', req.params.pet_name + ' is deleted.');
         res.redirect('/my_pets');

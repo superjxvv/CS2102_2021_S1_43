@@ -4,6 +4,10 @@
 <html lang="en">
 
 <head>
+    <script src="/plugins/jquery/jquery.min.js"></script>
+    <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/dist/js/adminlte.min.js"></script>
+    <link rel="stylesheet" href="/dist/css/adminlte.min.css">
     <%- include('./partials/head.ejs') %>
 </head>
 
@@ -15,7 +19,7 @@
     <% } %>
 
     <% if (loggedIn) { %>
-    <div class="container vert-gap-container">
+    <div class="container vert-gap-container" style="padding-top: 30px">
         <div class="row">
             <h2 class="vert-gap-contents">User Information</h2>
         </div>
@@ -58,15 +62,16 @@
                     <p><i>No Transactions!</i></p>
                 </div>
             <% } else { %>
-                <% my_pets.forEach(pet => { %>
-                <button class="card col-sm col-md" id="square-card"
-                    onclick="location.href='/my_pet/<%= pet.email %>/<%= pet.pet_name %>'">
-                    <p><b>Pet Name:</b> <%= pet.pet_name %><br>
-                        <b>Pet Type:</b> <%= pet.pet_type %><br>
-                        <b>Special Requirements:</b> <%= pet.special_requirement %><br>
-                    </p>
-                </button>
-                <% }) %>
+                <% for (var i = 0; i < 4; i++) { %>
+                    <% const pet = my_pets[i]; %>
+                    <button class="card col-sm col-md" id="square-card"
+                        onclick="location.href='/my_pet/<%= pet.email %>/<%= pet.pet_name %>'">
+                        <p><b>Pet Name:</b> <%= pet.pet_name %><br>
+                            <b>Pet Type:</b> <%= pet.pet_type %><br>
+                            <b>Special Requirements:</b> <%= pet.special_requirement == "" ? 'NA' : pet.special_requirement %><br>
+                        </p>
+                    </button>
+                <% } %>
             <% } %>
         </div>
     </div>

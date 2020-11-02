@@ -13,7 +13,7 @@
     const testAddress = (address) => /[a-zA-Z]/g.test(address);
     function validateForm() {
         const address = document.forms["particulars_form"]["address"].value;
-        if (!testAddress(address)) {
+        if (address != "" && !testAddress(address)) {
             $(document).Toasts('create', {
                 class: 'bg-danger',
                 title: 'Address format invalid!',
@@ -32,11 +32,20 @@
             return false;
         }
         const cc_num = document.forms["particulars_form"]["cc_num"].value;
-        if (cc_num.length < 8) {
+        if (cc_num != "" && cc_num.length < 8) {
             $(document).Toasts('create', {
                 class: 'bg-danger',
-                title: 'Credit Card Number invalid!!',
+                title: 'Credit Card Number invalid!',
                 body: 'Please re-enter your Credit Card Number. Ensure that it is at least 8 digits long.'
+            })
+            return false;
+        }
+        const cc_date = document.forms["particulars_form"]["cc_date"].value;
+        if (!(cc_num == "" && cc_date == "") && (cc_num == "" || cc_date == "")) {
+            $(document).Toasts('create', {
+                class: 'bg-danger',
+                title: 'Missing Credit Card details!',
+                body: 'Please enter both your Credit Card Number and its expiry date.'
             })
             return false;
         }

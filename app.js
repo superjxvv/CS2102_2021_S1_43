@@ -771,8 +771,8 @@ app.post('/edit_particulars', async (req, res) => {
       const email = req.user.email;
       const location = req.body.location;
       const address = req.body.address ? req.body.address : null;
-      const cc_num = req.body.cc_num;
-      const cc_date = req.body.cc_date;
+      const cc_num = req.body.cc_num ? req.body.cc_num : null;
+      const cc_date = req.body.cc_date ? req.body.cc_date : null;
       const password = await bcrypt.hash(pw1, 10);
       const values = [
         email,

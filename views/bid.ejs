@@ -69,7 +69,7 @@
     
     <!--Form-->
     <div class="col-md-8 order-md-1">
-      <form action="/submit_bid" class="needs-validation" novalidate method="POST">
+      <form action="/submit_bid" class="needs-validation" novalidate method="POST" onsubmit="clearAddr()">
           <!--Pass rest of details back-->
         <input type="hidden" name="ct_email" value="<%=ct_email%>">
         <input type="hidden" name="start_date" value="<%=start_date%>">
@@ -108,9 +108,9 @@
         <div class="mb-3">
           <label for="address"> Full Address</label>
           <% if (addr != null) { %>
-          <input type="text" class="form-control" name="address" value="<%= addr %>" required>
+          <input type="text" class="form-control" id="address" name="address" value="<%= addr %>" required>
           <% } else { %>
-          <input type="text" class="form-control" name="address" placeholder="e.g. Blk 154 Telok Blangah Singapore 123456" required>
+          <input type="text" class="form-control" id="address" name="address" placeholder="e.g. Blk 154 Telok Blangah Singapore 123456" required>
           <% } %>
           <div class="invalid-feedback">
             Please enter your address.
@@ -144,6 +144,14 @@
   $(document).on('change', 'select[name="transferMethod"]', function(){
     $("#addressBlock").toggle(this.value ==="cPickup");
   });
+
+function clearAddr() {
+    console.log(document.getElementById("transferMethod").value);
+    if (document.getElementById("transferMethod").value != "cPickup") {
+      document.getElementById("address").value = "Blank";
+      $("#save-info").prop("checked", false);
+    }
+  }
 
   if ("<%= messages.success_msg %>") {
     $(document).Toasts('create', {

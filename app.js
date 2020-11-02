@@ -1091,8 +1091,8 @@ app.post('/register', async (req, res) => {
                 ? `INSERT INTO pet_owner VALUES ($1, $2, $3, $4, $5)`
                 : `INSERT INTO pet_owner(email, name, password, location) VALUES ($1, $2, $3, $4)`
               : hasAddress
-                ? `INSERT INTO care_taker(email, name, password, location, job, address) VALUES($1, $2, $3, $4, 'part_timer', $5)`
-                : `INSERT INTO care_taker(email, name, password, location, job) VALUES($1, $2, $3, $4, 'part_timer')`;
+                ? `INSERT INTO care_taker(email, name, password, location, job, address, max_concurrent_pet_limit) VALUES($1, $2, $3, $4, 'part_timer', $5, 2)`
+                : `INSERT INTO care_taker(email, name, password, location, job, max_concurrent_pet_limit) VALUES($1, $2, $3, $4, 'part_timer', 2)`;
           createAccountQueryValues = hasAddress
             ? [email, name, hashedPw, region, address]
             : [email, name, hashedPw, region];
@@ -1265,7 +1265,7 @@ const diffDays = (firstDate, secondDate) =>
     )
   );
 
-//Jeremy (Chua) please pass in ct_name, ct_email, start_date, end_date, pet type. I will change method to post once that is done.
+
 app.post('/bid', async (req, res) => {
   if (req.user) {
     const ct_email = req.body.ct_email;
@@ -1274,7 +1274,7 @@ app.post('/bid', async (req, res) => {
     const end_date = req.body.end_date;
     console.log("bid req", req.body);
     const pet_name = req.body.pet_name;
-    const num_days = diffDays(new Date(start_date), new Date(end_date));
+    const num_days = diffDays(new Date(start_date), new Date(end_date)) + 1;
 
     const ctQuery = await pool.query(
       'SELECT * FROM care_taker WHERE email = $1',
@@ -1325,7 +1325,7 @@ app.post('/submit_bid', async (req, res) => {
     const num_days = diffDays(
       moment(req.body.start_date, 'DD/MM/YYYY').toDate(),
       moment(req.body.end_date, 'DD/MM/YYYY').toDate()
-    );
+    ) + 1;
     //Confirm daily price
     const dailyPriceQuery = await pool.query(
       sql_query.query.dailyPriceGivenTypeAndCT,
@@ -1487,7 +1487,7 @@ app.post('/edit_bid', async (req, res) => {
       blockedDates: Array.from(datesToDelete),
       availableDates: Array.from(datesToAllow),
       costPerDay: costPerDay,
-      numDays: diffDays(originalHire.start_date, originalHire.end_date),
+      numDays: diffDays(originalHire.start_date, originalHire.end_date) + 1,
       petName: originalHire.pet_name,
       petType: petType,
       ctName: ct_name,
@@ -1521,7 +1521,7 @@ app.post('/submit_edit', async (req, res) => {
       req.body.end_date === ''
         ? new Date(req.body.ori_end_date)
         : new Date(req.body.end_date);
-    const numDays = diffDays(startDate, endDate);
+    const numDays = diffDays(startDate, endDate) + 1;
     const address = req.body.transferMethod === 'cPickup' 
       ? req.body.address
       : req.body.transferMethod === 'oDeliver'

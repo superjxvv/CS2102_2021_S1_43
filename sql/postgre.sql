@@ -3582,6 +3582,20 @@ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION add_hire() RETURNS TRIGGER AS 
 $$ 
 BEGIN 
+  --Check if exceed concurrent pet limit
+  IF (EXISTS(
+  SELECT 1
+  FROM generate_series(NEW.start_date - CURRENT_DATE, 
+     NEW.end_date - CURRENT_DATE ) i, hire
+  WHERE hire.ct_email = NEW.ct_email AND hire.hire_status <> 'rejected' AND hire.hire_status <> 'completed' 
+    AND hire.hire_status <> 'cancelled' AND (hire.start_date, hire.end_date) OVERLAPS (CURRENT_DATE + i, CURRENT_DATE + i) 
+  GROUP BY CURRENT_DATE
+  HAVING COUNT(*) > (SELECT max_concurrent_pet_limit FROM care_taker WHERE email = 'NEW.ct_email')
+  )) THEN
+    RAISE NOTICE 'Exceed max concurrent';
+    RETURN NULL;
+  END IF;
+
   IF ((NEW.start_date, NEW.end_date) NOT IN (SELECT * FROM date_range)) THEN 
     INSERT INTO date_range(start_date, end_date) VALUES(NEW.start_date, NEW.end_date); 
   END IF;

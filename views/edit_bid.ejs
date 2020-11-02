@@ -60,14 +60,14 @@
 		</div>
 		<!--Summary end-->
     <div class="col-md-8 order-md-1">
-      <form action="/submit_edit" class="needs-validation" novalidate method="POST">
+      <form action="/submit_edit" class="needs-validation" novalidate method="POST" onsubmit="clearAddr()">
         <div class="row">
           <div class="col-md-7 mb-3">
             <h4 class="mb-3">Change Pet Transfer Method</h4>
             <p>Current method: <%= transferConvert(trans.method_of_pet_transfer) %></p>
             <div class="float-left">
-              <select class="custom-select d-block" name="transferMethod" required> 
-                <option value = "cPickup">Caretaker pickup</option>
+              <select class="custom-select d-block" id="transferMethod" name="transferMethod" required> 
+                <option value = "cPickup" selected>Caretaker pickup</option>
                 <% if (ct_has_address) { %>
                   <option value = "oDeliver">Dropoff at caretaker</option>
                 <% } %>
@@ -94,9 +94,9 @@
           <div class="mb-3">
             <label for="address"> Full Address</label>
             <% if (addr != null) { %>
-            <input type="text" class="form-control" name="address" value="<%= addr %>" required>
+            <input type="text" class="form-control" id="address" name="address" value="<%= addr %>" required>
             <% } else { %>
-            <input type="text" class="form-control" name="address" placeholder="e.g. Blk 154 Telok Blangah Singapore 123456" required>
+            <input type="text" class="form-control" id ="address" name="address" placeholder="e.g. Blk 154 Telok Blangah Singapore 123456" required>
             <% } %>
             <div class="invalid-feedback">
               Please enter your address.
@@ -225,7 +225,16 @@
         document.getElementById("side_end_date").innerHTML = picker.endDate.format("DD/MM/YYYY");
         document.getElementById("totalCost").innerHTML = picker.endDate.diff(picker.startDate, "days") * costPerDay
       }
-		});
+    });
+    
+    function clearAddr() {
+      console.log(document.getElementById("transferMethod").value);
+      if (document.getElementById("transferMethod").value != "cPickup") {
+        document.getElementById("address").value = "Blank";
+        $("#save-info").prop("checked", false);
+      }
+    }
+
     $(document).on('change', 'select[name="transferMethod"]', function(){
       $("#addressBlock").toggle(this.value ==="cPickup");
     });

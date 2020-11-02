@@ -18,6 +18,10 @@
                     <p><b>Caretaker:</b> <a href="/profile/<%= all.ct_email %>"><%= all.ct_name %></a></p>
                 </div>
                 <div class="col col-4">
+                    <% console.log(all); %>
+                    <% if (all.addr && (all.hire_status == 'completed' || all.hire_status == 'inProgress')) { %>
+                        <p><b>Address:</b> <%= all.addr %></p>
+                    <% } %>
                     <p><b>Status:</b> 
                     <% if (all.hire_status == 'completed') { %>
                         <span class="badge badge-success"><%= statusToHuman(all.hire_status) %></span><br>

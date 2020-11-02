@@ -314,7 +314,8 @@ app.post('/pre-bid', async (req, res) => {
   ]);
   //Dates that this ct is already booked.
   const datesCaring = await pool.query(sql_query.query.dates_caring, [
-    ct_email
+    ct_email,
+    new Date()
   ]);
   var datesToDelete = new Set();
   for (var i = 0; i < datesCaring.rows.length; i++) {
@@ -1290,7 +1291,6 @@ app.post('/bid', async (req, res) => {
     const addrQuery = await pool.query(sql_query.query.ownerAddress, [
       owner_email
     ]);
-
     res.render('bid', {
       ct_name: ct_name,
       ct_email: ct_email,

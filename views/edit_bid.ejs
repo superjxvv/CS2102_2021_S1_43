@@ -145,7 +145,9 @@
   <script src="/plugins/bootstrap/js/form-validation.js"></script>
 	<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
 	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-	<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+  <link rel="stylesheet" href="/dist/css/adminlteToast.css">
+  <script src="/dist/js/adminlte.min.js"></script>
 	<script>
 		var today = new Date("<%= today %>");
 		var latestDate = new Date("<%= latestDate %>");
@@ -186,7 +188,21 @@
     $(document).on('change', 'select[name="transferMethod"]', function(){
       $("#addressBlock").toggle(this.value ==="cPickup");
     });
-  
+    
+  if ("<%= messages.success_msg %>") {
+    $(document).Toasts('create', {
+            class: 'bg-success',
+            title: 'Success',
+            body: "<%= messages.success_msg %>"
+    });
+  }
+  if ("<%= messages.error %>") {
+    $(document).Toasts('create', {
+            class: 'bg-danger',
+            title: 'Error',
+            body: "<%= messages.error %>"
+    });
+  }
 	</script>
 </body>
 </html>

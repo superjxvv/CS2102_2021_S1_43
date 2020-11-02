@@ -177,13 +177,54 @@
 				}
 			}
 		});
-		$('input[name="dates"]').on('apply.daterangepicker', function(ev, picker) {
-			document.getElementById("start_date").value = picker.startDate;
-      document.getElementById("end_date").value = picker.endDate;
-      document.getElementById("side_start_date").innerHTML = picker.startDate.format("DD/MM/YYYY");
-      document.getElementById("side_end_date").innerHTML = picker.endDate.format("DD/MM/YYYY");
-      document.getElementById("totalCost").innerHTML = picker.endDate.diff(picker.startDate, "days") * costPerDay
 
+    //Dates are in moment
+    function includesInvalidDate(startDate, endDate) {
+      var startDate = startDate.toDate();
+      var endDate = endDate.toDate();
+      //First check that dates don't include include invalid date.
+      blockedDates.forEach(x =>  {
+        let y = new Date(x);
+        if (startDate < y && endDate > y) {
+          return false;
+        }
+      });
+
+      //For part timer, check if the date range is completely covered in availability.
+      if (isPartTimer) {
+        var currDate = startDate;
+        while (currDate < endDate) {
+          if (!availableDates.has(currDate.toISOString().split('T')[0])) {
+            return false;
+          } else {
+            currDate.setDate(currDate.getDate() + 1);
+          }
+        }
+      }
+      return true;
+    }
+
+    function errorToast(msg) {
+      $(document).Toasts('create', {
+            class: 'bg-danger',
+            title: 'Error',
+            body: msg
+      });
+    }
+
+		$('input[name="dates"]').on('apply.daterangepicker', function(ev, picker) {
+      if (!includesInvalidDate(picker.startDate, picker.endDate)) {
+        errorToast("Please a date range that does not include any disabled date");
+        //Set date to original dates
+        picker.setStartDate(originalStartDate);
+        picker.setEndDate(originalEndDate);
+      } else {
+        document.getElementById("start_date").value = picker.startDate;
+        document.getElementById("end_date").value = picker.endDate;
+        document.getElementById("side_start_date").innerHTML = picker.startDate.format("DD/MM/YYYY");
+        document.getElementById("side_end_date").innerHTML = picker.endDate.format("DD/MM/YYYY");
+        document.getElementById("totalCost").innerHTML = picker.endDate.diff(picker.startDate, "days") * costPerDay
+      }
 		});
     $(document).on('change', 'select[name="transferMethod"]', function(){
       $("#addressBlock").toggle(this.value ==="cPickup");

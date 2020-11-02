@@ -1,9 +1,53 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en">  
 
 <head>
+    <script src="/plugins/jquery/jquery.min.js"></script>
+    <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/dist/js/adminlte.min.js"></script>
+    <link rel="stylesheet" href="/dist/css/adminlte.min.css">
     <%- include('./partials/head.ejs') %>
 </head>
+
+<script>
+    const testAddress = (address) => /[a-zA-Z]/g.test(address);
+    function validateForm() {
+        const address = document.forms["particulars_form"]["address"].value;
+        if (!testAddress(address)) {
+            $(document).Toasts('create', {
+                class: 'bg-danger',
+                title: 'Address format invalid!',
+                body: 'Please enter a proper address.'
+            })
+            return false;
+        }
+        const pw1 = document.forms["particulars_form"]["pw1"].value;
+        const pw2 = document.forms["particulars_form"]["pw2"].value;
+        if (pw1 != pw2) {
+            $(document).Toasts('create', {
+                class: 'bg-danger',
+                title: 'Passwords do not match!',
+                body: 'Please re-enter your passwords.'
+            })
+            return false;
+        }
+        const cc_num = document.forms["particulars_form"]["cc_num"].value;
+        if (cc_num.length < 8) {
+            $(document).Toasts('create', {
+                class: 'bg-danger',
+                title: 'Credit Card Number invalid!!',
+                body: 'Please re-enter your Credit Card Number. Ensure that it is at least 8 digits long.'
+            })
+            return false;
+        }
+    }
+
+    // $('#particulars_form').submit(function(e){
+    //     e.preventDefault();
+
+    //     console.log("submitted"); 
+    // });
+</script>
 
 <body>
     <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn, accountType: accountType}) %>
@@ -18,7 +62,7 @@
                         <i class="fas fa-dice-d20">&nbsp;- <%= messages.success_msg %></i>
                     <% } %>
                 </div>
-                <form method="post" action="/edit_particulars">
+                <form method="POST" action="/edit_particulars" role="form" onsubmit="return validateForm()" id="particulars_form">
                     <div class="card-body">
                         <div class="form-group row">
                             <label for="po_name" class="col-sm-3 col-form-label">Name: </label>
@@ -75,7 +119,7 @@
                             <label for="cc_num" class="col-sm-3 col-form-label">Credit Card Number: </label>
                             <div class="col-sm-9">
                                 <input type="text" class="form-control" id="cc_num"
-                                    name="cc_num" value="<%= po_info[0].number %>" minlength="8">
+                                    name="cc_num" value="<%= po_info[0].number %>">
                             </div>
                         </div>
                         <div class="form-group row">
@@ -94,5 +138,10 @@
         </div>
     </div>
 </body>
+<!-- CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+
+<!-- jQuery and JS bundle w/ Popper.js -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
 
 </html>

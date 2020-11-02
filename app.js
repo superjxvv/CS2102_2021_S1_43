@@ -734,14 +734,13 @@ app.get('/edit_particulars', async (req, res) => {
   if (!req.user) {
     res.redirect('/login');
   } else {
-    const values = [req.user.email]; // hardcoded
+    const values = [req.user.email];
     const po_info = await pool.query(sql_query.query.get_po_info, values);
     res.render('./edit_particulars', {
       title: 'Edit Particulars',
       po_info: po_info.rows,
       loggedIn: req.user,
       accountType: req.user.type,
-      testAddress: testAddress
     });
   }
 });
@@ -750,7 +749,7 @@ app.get('/edit_caretaker_particulars', async (req, res) => {
   if (!req.user) {
     res.redirect('/login');
   } else {
-    const values = [req.user.email]; // hardcoded
+    const values = [req.user.email];
     const ct_info = await pool.query(sql_query.query.get_ct_info, values);
     res.render('./edit_caretaker_particulars', {
       title: 'Edit Particulars',
@@ -802,17 +801,16 @@ app.post('/edit_particulars', async (req, res) => {
       const address = req.body.address ? req.body.address : null;
       const cc_num = req.body.cc_num;
       const cc_date = req.body.cc_date;
-      const values = [email, name, location, address, cc_num, cc_date];
+      var values = [email, name, location, address, cc_num, cc_date];
       await pool.query(
         sql_query.query.update_po_info_no_pw,
         values,
         (err, data) => {
           if (err) {
-            console.log(err);
             res.redirect('/edit_particulars?add=fail');
           } else {
             req.flash('success_msg', 'Particulars updated!');
-            res.redirect('/edit_particulars');
+          res.redirect('/edit_particulars');
           }
         }
       );
@@ -924,7 +922,7 @@ app.post('/add_pet/:action', async (req, res) => {
         console.log(err);
         res.redirect('/add_pet?add=fail');
       } else {
-        if (data) {
+        if (data.rows[0].add_pet == 1) {
           action = 'restor';
         }
         req.flash('success_msg', ' is ' + action + 'ed!');

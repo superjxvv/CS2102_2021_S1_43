@@ -1720,3 +1720,74 @@ app.get('/transactions', (req, res) => {
     res.redirect('/login');
   }
 });
+
+app.get('/give_review/:action', async (req, res) => {
+  try {
+    if (!req.user) {
+      res.redirect('/dashboard');
+    } else {
+      const account_type = req.user.type;
+      if (account_type == 1) {
+        const owner_email = req.query.owner_email;
+        const ct_email = req.query.ct_email;
+        const start_date = new Date(req.query.start_date);
+        const end_date = new Date(req.query.end_date);
+        const pet_name = req.query.pet_name;
+        const ct_name = await pool.query(sql_query.query.get_ct_info, [ct_email]);
+        var data = [];
+        if (req.params.action == 'edit') {
+          const query = await pool.query(
+            sql_query.query.get_one_trxn,
+            [owner_email, pet_name, start_date, end_date, ct_email]
+          );
+          const rating = query.rows[0].rating;
+          const review = query.rows[0].review_text;
+          data = [owner_email, ct_email, ct_name.rows[0].name, start_date, end_date, pet_name, rating, review];
+        } else {
+          data = [owner_email, ct_email, ct_name.rows[0].name, start_date, end_date, pet_name];
+        }
+        res.render('./make_review', {
+          title: 'Give Review',
+          data: data,
+          moment: moment,
+          loggedIn: true,
+          today: new Date().toISOString().slice(0, 10),
+          accountType: account_type,
+          action: req.params.action
+        });
+      } else if (account_type == 2) {
+        res.redirect('/dashboard-caretaker-ft');
+      } else {
+        // if is PCSadmin
+        // have not tried this out
+        res.redirect('/caretaker-summary-info');
+      }
+    }
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
+app.post('/give_review/:action', async (req, res) => {
+  if (!req.user) {
+    res.redirect('/login');
+  } else {
+    const rating = req.body.rating;
+    const review = req.body.review == "" ? null : req.body.review;
+    const owner_email = req.user.email;
+    const pet_name = req.body.pet_name;
+    const start_date = moment(new Date(req.body.start_date) + 1).format('YYYY-MM-DD');
+    const end_date = moment(new Date(req.body.end_date) + 1).format('YYYY-MM-DD');
+    const ct_email = req.body.ct_email;
+    const values = [rating, review, owner_email, pet_name, start_date, end_date, ct_email];
+    await pool.query(sql_query.query.give_review, values, (err, data) => {
+      if (err) {
+        req.flash('error', err);
+        res.redirect('/transactions');
+      } else {
+        req.flash('success_msg', 'Review ' + req.params.action + 'ed!');
+        res.redirect('/transactions');
+      }
+    });
+  }
+});

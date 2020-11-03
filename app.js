@@ -1013,11 +1013,22 @@ app.post('/my_pets/:po_email/:pet_name', async (req, res) => {
  ** TODO: Change all msg to flash messages.
  */
 app.get('/register', (req, res) => {
-  res.render('register');
+  res.render('register', {isFullTime: false});
 });
 
-app.get('/admin_register', (req, res) => {
-  if (req.user && req.user.type === 0) {
+const isAdmin = (req) => req.user && req.user.type === 0;
+
+const isSuperAdmin = async (req) => {
+  if (isAdmin(req)) {
+    const isSuperAdminQuery = await pool.query('SELECT * FROM pcs_admin WHERE email = $1', [req.user.email]);
+    return isSuperAdminQuery.rows[0].is_super_admin;
+  } else {
+    return false;
+  }
+}
+
+app.get('/admin_register', async (req, res) => {
+  if (await isSuperAdmin(req)) {
     res.render('admin_reg');
   } else {
     req.flash('error', 'Unauthorised action');
@@ -1025,8 +1036,17 @@ app.get('/admin_register', (req, res) => {
   }
 });
 
+app.get('/ft_register', (req, res) => {
+  if (isAdmin(req)) {
+    res.render('register', {isFullTime: true});
+  } else {
+    req.flash('error', 'Unauthorised action');
+    res.redirect('/login_redirect');
+  }
+});
+
 app.post('/admin_register', async (req, res) => {
-  if (req.user && req.user.type === 0) {
+  if (await isSuperAdmin(req)) {
     let { email, name, password1 } = req.body;
     let hashedPw = await bcrypt.hash(password1, 10);
     const queryText = 'SELECT 1 FROM accounts WHERE email = $1';
@@ -1037,9 +1057,9 @@ app.post('/admin_register', async (req, res) => {
       .then((queryRes) => {
         if (queryRes.rows.length > 0) {
           req.flash('error', 'User already exists.');
-          res.render('register');
+          res.redirect('/admin_register');
         } else {
-          console.log('register user');
+          console.log('Insert new admin into db.');
           pool
             .query(
               `INSERT INTO pcs_admin(email, name, password) VALUES($1, $2, $3)`,
@@ -1062,7 +1082,7 @@ app.post('/admin_register', async (req, res) => {
 
 app.post('/register', async (req, res) => {
   console.log(req.body);
-  let { name, email, region, password1, type, address } = req.body;
+  let { name, email, region, password1, isFullTime, address } = req.body;
 
   if (!name || !email || region === '') {
     req.flash('error', 'Please enter all fields');
@@ -1083,18 +1103,15 @@ app.post('/register', async (req, res) => {
           console.log('register user');
           //Not exist yet. Insert into db.
           //Check if address field consists of any alphabet. If not, treat as no address.
-          const hasAddress = /[a-zA-Z]/g.test(address);
+          const hasAddress = (addr) => /[a-zA-Z]/g.test(addr);
+          const queryAddress = hasAddress(address) ? address : null
           const insertText =
-            type == 'pet_owner'
-              ? hasAddress
-                ? `INSERT INTO pet_owner VALUES ($1, $2, $3, $4, $5)`
-                : `INSERT INTO pet_owner(email, name, password, location) VALUES ($1, $2, $3, $4)`
-              : hasAddress
-                ? `INSERT INTO care_taker(email, name, password, location, job, address, max_concurrent_pet_limit) VALUES($1, $2, $3, $4, 'part_timer', $5, 2)`
-                : `INSERT INTO care_taker(email, name, password, location, job, max_concurrent_pet_limit) VALUES($1, $2, $3, $4, 'part_timer', 2)`;
-          createAccountQueryValues = hasAddress
-            ? [email, name, hashedPw, region, address]
-            : [email, name, hashedPw, region];
+            req.body.isFullTime === 'true'
+              ? `INSERT INTO care_taker(email, name, password, location, job, address, max_concurrent_pet_limit) VALUES($1, $2, $3, $4, 'full_timer', $5, 5)`
+              : req.body.type == 'pet_owner'
+                ? `INSERT INTO pet_owner(email, name, password, location, address) VALUES($1, $2, $3, $4, $5)`
+                : `INSERT INTO care_taker(email, name, password, location, job, address, max_concurrent_pet_limit) VALUES($1, $2, $3, $4, 'part_timer', $5, 2)`;
+          createAccountQueryValues = [email, name, hashedPw, region, queryAddress]
           pool
             .query(insertText, createAccountQueryValues)
             .then((result) => {

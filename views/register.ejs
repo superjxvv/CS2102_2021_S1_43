@@ -76,10 +76,13 @@
 <article class="card-body mx-auto" style="max-width: 400px;">
 
 	<h4 class="card-title mt-3 text-center">Create Account</h4>
-	<p class="text-center">Select the type of account to create:</p>
+	
 
 
 	<form action="/register" method="POST" onsubmit="return checkPassword(this)">
+		<input type="hidden" name="isFullTime" value="<%=isFullTime%>">
+		<% if (!isFullTime) {%>
+		<p class="text-center">Select the type of account to create:</p>
 		<div class="form-group input-group">
 			<div class="col-md-12 text-center">
 				<div class="btn-group btn-group-toggle" data-toggle="buttons">
@@ -92,7 +95,8 @@
 				</div>
 			</div>
 		</div>
-
+		<% } %>
+		
 		<div class="form-group input-group">
 			<div class="input-group-prepend">
 				<span class="input-group-text"> <i class="fa fa-user"></i> </span>

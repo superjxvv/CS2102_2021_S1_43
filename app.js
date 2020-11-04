@@ -952,8 +952,8 @@ app.get('/profile/:iden', async (req, res) => {
         sql_query.query.get_ct_prices,
         values
       );
-      console.log(get_ct_trxns.rows);
-      console.log(get_ct_prices.rows);
+      // console.log(get_ct_trxns.rows);
+      // console.log(get_ct_prices.rows);
 
       res.render('./caretaker_profile', {
         title: 'Profile of ' + get_ct_info.rows[0].name,
@@ -1780,6 +1780,7 @@ app.post('/give_review/:action', async (req, res) => {
     const end_date = moment(new Date(req.body.end_date) + 1).format('YYYY-MM-DD');
     const ct_email = req.body.ct_email;
     const values = [rating, review, owner_email, pet_name, start_date, end_date, ct_email];
+    console.log(pet_name);
     await pool.query(sql_query.query.give_review, values, (err, data) => {
       if (err) {
         req.flash('error', err);

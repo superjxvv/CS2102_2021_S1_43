@@ -807,7 +807,8 @@ app.post('/edit_particulars', async (req, res) => {
         values,
         (err, data) => {
           if (err) {
-            res.redirect('/edit_particulars?add=fail');
+            req.flash('error', err);
+            res.redirect('/edit_particulars');
           } else {
             req.flash('success_msg', 'Particulars updated!');
             res.redirect('/edit_particulars');
@@ -816,6 +817,19 @@ app.post('/edit_particulars', async (req, res) => {
       );
     }
   }
+});
+
+app.post('/delete_account', async (req, res) => {
+  await pool.query(sql_query.query.delete_po_account, [req.user.email], (err, data) => {
+    if (err) {
+      req.flash('error', err);
+      res.redirect('/edit_particulars');
+    } else {
+      req.logout();
+      req.flash('success_msg', "Account deleted! We're sad to see you go... :(");
+      res.redirect('/login');
+    }
+  });
 });
 
 app.post('/edit_caretaker_particulars', async (req, res) => {
@@ -952,9 +966,6 @@ app.get('/profile/:iden', async (req, res) => {
         sql_query.query.get_ct_prices,
         values
       );
-      // console.log(get_ct_trxns.rows);
-      // console.log(get_ct_prices.rows);
-
       res.render('./caretaker_profile', {
         title: 'Profile of ' + get_ct_info.rows[0].name,
         get_ct_info: get_ct_info.rows,
@@ -975,16 +986,22 @@ app.get('/my_pet/:po_email/:pet_name', async (req, res) => {
     if (!req.user) {
       res.redirect('/login');
     } else {
-      const po_email = req.params.po_email;
-      const pet_name = req.params.pet_name;
-      const values = [po_email, pet_name];
-      const query = await pool.query(sql_query.query.get_pet_info, values);
-      res.render('./my_pet_profile', {
-        title: 'My Pet ' + query.rows[0].pet_name,
-        query: query.rows,
-        loggedIn: req.user,
-        accountType: req.user.type
-      });
+      if (req.user.type == 1) {
+        const po_email = req.params.po_email;
+        const pet_name = req.params.pet_name;
+        const values = [po_email, pet_name];
+        const query = await pool.query(sql_query.query.get_pet_info, values);
+        res.render('./my_pet_profile', {
+          title: 'My Pet ' + query.rows[0].pet_name,
+          query: query.rows,
+          loggedIn: req.user,
+          accountType: req.user.type
+        });
+      } else {
+        req.flash('error', "You do not have access to view someone else's Pet.");
+        res.redirect('/dashboard');
+      }
+      
     }
   } catch (err) {
     console.error(err.message);
@@ -1746,7 +1763,7 @@ app.get('/give_review/:action', async (req, res) => {
         } else {
           data = [owner_email, ct_email, ct_name.rows[0].name, start_date, end_date, pet_name];
         }
-        res.render('./make_review', {
+        res.render('./give_review', {
           title: 'Give Review',
           data: data,
           moment: moment,
@@ -1780,13 +1797,36 @@ app.post('/give_review/:action', async (req, res) => {
     const end_date = moment(new Date(req.body.end_date) + 1).format('YYYY-MM-DD');
     const ct_email = req.body.ct_email;
     const values = [rating, review, owner_email, pet_name, start_date, end_date, ct_email];
-    console.log(pet_name);
     await pool.query(sql_query.query.give_review, values, (err, data) => {
       if (err) {
         req.flash('error', err);
         res.redirect('/transactions');
       } else {
         req.flash('success_msg', 'Review ' + req.params.action + 'ed!');
+        res.redirect('/transactions');
+      }
+    });
+  }
+});
+
+app.post('/delete_review', async (req, res) => {
+  if (!req.user) {
+    res.redirect('/login');
+  } else {
+    const rating = null;
+    const review = null;
+    const owner_email = req.user.email;
+    const pet_name = req.body.pet_name;
+    const start_date = moment(new Date(req.body.start_date) + 1).format('YYYY-MM-DD');
+    const end_date = moment(new Date(req.body.end_date) + 1).format('YYYY-MM-DD');
+    const ct_email = req.body.ct_email;
+    const values = [rating, review, owner_email, pet_name, start_date, end_date, ct_email];
+    await pool.query(sql_query.query.give_review, values, (err, data) => {
+      if (err) {
+        req.flash('error', err);
+        res.redirect('/transactions');
+      } else {
+        req.flash('success_msg', 'Review deleted!');
         res.redirect('/transactions');
       }
     });

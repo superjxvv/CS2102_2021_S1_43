@@ -62,7 +62,7 @@
                 <div class="card-header">
                     <b>Edit Particulars</b>
                 </div>
-                <form method="POST" action="/edit_particulars" role="form" onsubmit="return validateForm()" id="particulars_form">
+                <form method="POST" role="form" id="particulars_form">
                     <div class="card-body">
                         <div class="form-group row">
                             <label for="po_name" class="col-sm-3 col-form-label">Name: </label>
@@ -131,7 +131,8 @@
                         </div>
                     </div>
                     <div class="card-footer small text-muted">
-                        <button type="submit" class="btn btn-secondary">Finalise Particulars</button>
+                        <button type="submit" class="btn btn-secondary" style="margin: 0px;" onclick="return validateForm()" formaction="/edit_particulars">Finalise Particulars</button>
+                        <button type="submit" class="btn btn-danger float-right" style="margin: 0px;" formaction="/delete_account">Delete Account</button>
                     </div>
                 </form>
             </div>

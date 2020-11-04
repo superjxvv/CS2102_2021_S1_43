@@ -25,6 +25,17 @@
             return false;
         }
     }
+    function deleteEmptyRating() {
+        const rating = document.forms["review_form"]["rating"].value;
+        if (rating == 0) {
+            $(document).Toasts('create', {
+                class: 'bg-danger',
+                title: 'No rating!',
+                body: 'There is no rating to delete.'
+            })
+            return false;
+        }
+    }
 </script>
 
 <body>
@@ -36,7 +47,7 @@
                 <div class="card-header">
                     <b>Give a Review and Rating</b>
                 </div>
-                <form method="POST" action="/give_review/<%= action %>" role="form" id="review_form" onsubmit="return validateRating()">
+                <form method="POST" role="form" id="review_form">
                     <input type='hidden' name='ct_email' value='<%= data[1] %>'>
                     <input type='hidden' name='start_date' value='<%= data[3] %>'>
                     <input type='hidden' name='end_date' value='<%= data[4] %>'>
@@ -89,7 +100,8 @@
                         </div>
                     </div>
                     <div class="card-footer small text-muted">
-                        <button type="submit" class="btn btn-secondary">Submit Review</button>
+                        <button type="submit" class="btn btn-secondary" style="margin: 0px;" formaction="/give_review/<%= action %>" onclick="return validateRating()">Submit Review</button>
+                        <button type="submit" class="btn btn-danger float-right" style="margin: 0px;" formaction="/delete_review" onclick="return deleteEmptyRating()">Delete Review</button>
                     </div>
                 </form>
             </div>

@@ -2,9 +2,56 @@
 <html lang="en">
 
 <head>
+    <script src="/plugins/jquery/jquery.min.js"></script>
+    <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/dist/js/adminlte.min.js"></script>
+    <link rel="stylesheet" href="/dist/css/adminlte.min.css">
     <%- include('./partials/head.ejs') %>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
 </head>
+
+<script>
+    const testAddress = (address) => /[a-zA-Z]/g.test(address);
+    function validateForm() {
+        const address = document.forms["particulars_form"]["address"].value;
+        if (address != "" && !testAddress(address)) {
+            $(document).Toasts('create', {
+                class: 'bg-danger',
+                title: 'Address format invalid!',
+                body: 'Please enter a proper address.'
+            })
+            return false;
+        }
+        const pw1 = document.forms["particulars_form"]["pw1"].value;
+        const pw2 = document.forms["particulars_form"]["pw2"].value;
+        if (pw1 != pw2) {
+            $(document).Toasts('create', {
+                class: 'bg-danger',
+                title: 'Passwords do not match!',
+                body: 'Please re-enter your passwords.'
+            })
+            return false;
+        }
+        const cc_num = document.forms["particulars_form"]["cc_num"].value;
+        if (cc_num != "" && cc_num.length < 8) {
+            $(document).Toasts('create', {
+                class: 'bg-danger',
+                title: 'Credit Card Number invalid!',
+                body: 'Please re-enter your Credit Card Number. Ensure that it is at least 8 digits long.'
+            })
+            return false;
+        }
+        const cc_date = document.forms["particulars_form"]["cc_date"].value;
+        if (!(cc_num == "" && cc_date == "") && (cc_num == "" || cc_date == "")) {
+            $(document).Toasts('create', {
+                class: 'bg-danger',
+                title: 'Missing Credit Card details!',
+                body: 'Please enter both your Credit Card Number and its expiry date.'
+            })
+            return false;
+        }
+    }
+</script>
 
 <body>
     <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn, accountType: accountType}) %>
@@ -13,11 +60,8 @@
             <div class="card" style="width: 60%; margin: auto; margin-top: 5%">
                 <div class="card-header">
                     <b> Edit Particulars</b>
-                    <% if (messages.success_msg) { %>
-                    <i class="fas fa-dice-d20">&nbsp;- <%= messages.success_msg %></i>
-                    <% } %>
                 </div>
-                <form method="post" action="/edit_caretaker_particulars">
+                <form method="POST" role="form" id="particulars_form">
                     <div class="card-body">
                         <div class="form-group row">
                             <label for="ct_name" class="col-sm-3 col-form-label">Name: </label>
@@ -87,17 +131,64 @@
                         </div>
                     </div>
                     <div class="card-footer small text-muted">
-                        <button type="submit" class="btn btn-secondary">Finalise Particulars</button>
+                        <button type="submit" class="btn btn-secondary" style="margin: 0px;" onclick="return validateForm()" formaction="/edit_particulars">Finalise Particulars</button>
+                        <a data-toggle="modal" data-target="#modal-default" class="btn btn-danger float-right" style="margin: 0px; color: azure" formaction="/delete_account">
+                            Delete Account
+                        </a>
                     </div>
                 </form>
             </div>
         </div>
     </div>
+
+    <script>
+        if ("<%= messages.success_msg %>") {
+            $(document).Toasts('create', {
+                class: 'bg-success',
+                title: 'Success',
+                body: "<%= messages.success_msg %>"
+            });
+        }
+        if ("<%= messages.error %>") {
+            $(document).Toasts('create', {
+                class: 'bg-danger',
+                title: 'Error',
+                body: "<%= messages.error %>"
+            });
+        }
+    </script>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/i18n/defaults-*.min.js"></script>
 </body>
+
+<div class="modal fade" id="modal-default">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Confirmation</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="post" action="/delete_account">
+                <div class="modal-body">
+                    <div>
+                        Are you sure you want to delete your account?
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-between small text-muted">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+                    <button type="submit" class="btn btn-danger">Yes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
 
 </html>

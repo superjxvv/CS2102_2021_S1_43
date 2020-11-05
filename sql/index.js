@@ -132,7 +132,8 @@ sql.query = {
   best_ct: 'SELECT * FROM care_taker ORDER BY rating LIMIT 4',
   give_review: 'UPDATE hire SET rating = $1, review_text = $2 WHERE owner_email = $3 AND pet_name = $4 AND start_date = $5 AND end_date = $6 AND ct_email = $7',
   get_one_trxn: 'SELECT * FROM hire WHERE owner_email = $1 AND pet_name = $2 AND start_date = $3 AND end_date = $4 AND ct_email = $5',
-  delete_po_account: 'UPDATE pet_owner SET deleted = true WHERE email = $1'
+  delete_po_account: 'UPDATE pet_owner SET deleted = true WHERE email = $1',
+  delete_ct_account: 'UPDATE care_taker SET deleted = true WHERE email = $1'
 };
 
 module.exports = sql;

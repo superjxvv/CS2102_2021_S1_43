@@ -9,31 +9,40 @@
     <script src="/dist/js/adminlte.min.js"></script>
     <link rel="stylesheet" href="/dist/css/adminlte.min.css">
     <%- include('./partials/head.ejs') %>
+    <script type="module" src="https://unpkg.com/ionicons@5.2.3/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule="" src="https://unpkg.com/ionicons@5.2.3/dist/ionicons/ionicons.js"></script>
 </head>
 
 <body>
     <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn, accountType: accountType}) %>
 
-    <div class="container vert-gap-container">
+    <div class="container vert-gap-container" style="padding-top: 30px">
         <div class="row">
             <h2 class="vert-gap-contents">User Information</h2>
         </div>
 
         <div class="row">
             <h4 class="vert-gap-small-header">My Information&nbsp;</h4>
-            <a href="/edit_caretaker_particulars" class="btn btn-tool btn-sm" style="margin-left: 0px"><ion-icon name="create-outline" style="font-size: 24px; padding-bottom: 0px;"></ion-icon></a>
+            <a href="/edit_caretaker_particulars" class="btn btn-tool btn-sm" style="margin-left: 0px; margin-top: 0px;"><ion-icon name="create-outline" style="font-size: 24px; padding-bottom: 0px;"></ion-icon></a>
         </div>
         <div class="row text-left">
             <div class="card col-sm col-md" id="square-card">
                 <p><b>My Name:</b> <%= my_details[0].name %><br>
                    <b>My Email:</b> <%= my_details[0].email %><br>
                    <b>My Location:</b> <%= my_details[0].location %><br>
-                   <b>My Address:</b> <%= my_details[0].address %><br>
-                   <b>My Bank Account Number: </b> <%= my_details[0].bank_account %><br>
+                    <% if (my_details[0].address) { %>
+                        <b>My Address:</b> <%= my_details[0].address %><br>
+                    <% } %>
+                    <% if (my_details[0].bank_account) { %>
+                        <b>My Bank Account Number: </b> <%= my_details[0].bank_account %><br>
+                    <% } %>
                    <b>My Monthly Pet Days: </b> <%= my_details[0].monthly_pet_days %><br>
                    <b>My Monthly Salary: </b> <%= my_details[0].monthly_salary %><br>
                    <b>My Concurrent Pet Limit: </b> <%= my_details[0].max_concurrent_pet_limit %><br>
                    <b>My Rating:</b> <%= my_details[0].rating %><br>
+                    <% if (!my_details[0].address || !my_details[0].bank_account) { %>
+                        <i>Please fill in missing particulars!</i>
+                    <% } %>
                 </p>
             </div>
         </div>

@@ -820,6 +820,20 @@ app.post('/edit_particulars', async (req, res) => {
 });
 
 app.post('/delete_account', async (req, res) => {
+  console.log(req.user.type);
+  await pool.query(req.user.type == 1 ? sql_query.query.delete_po_account : sql_query.query.delete_ct_account, [req.user.email], (err, data) => {
+    if (err) {
+      req.flash('error', err);
+      res.redirect('/edit_particulars');
+    } else {
+      req.logout();
+      req.flash('success_msg', "Account deleted! We're sad to see you go... :(");
+      res.redirect('/login');
+    }
+  });
+});
+
+app.post('/delete_account', async (req, res) => {
   await pool.query(sql_query.query.delete_po_account, [req.user.email], (err, data) => {
     if (err) {
       req.flash('error', err);
@@ -843,7 +857,7 @@ app.post('/edit_caretaker_particulars', async (req, res) => {
       const email = req.user.email;
       const location = req.body.location;
       const address = req.body.address ? req.body.address : null;
-      const bank_account = req.body.bank_account;
+      const bank_account = req.body.bank_account ? req.body.bank_account : null;
       const password = await bcrypt.hash(pw1, 10);
       const values = [
         email,
@@ -855,8 +869,8 @@ app.post('/edit_caretaker_particulars', async (req, res) => {
       ];
       await pool.query(sql_query.query.update_ct_info, values, (err, data) => {
         if (err) {
-          console.log(err);
-          res.redirect('/edit_caretaker_particulars?add=fail');
+          req.flash('error', err);
+          res.redirect('/edit_caretaker_particulars');
         } else {
           req.flash('success_msg', 'Particulars updated!');
           res.redirect('/edit_caretaker_particulars');
@@ -876,8 +890,8 @@ app.post('/edit_caretaker_particulars', async (req, res) => {
         values,
         (err, data) => {
           if (err) {
-            console.log(err);
-            res.redirect('/edit_caretaker_particulars?add=fail');
+            req.flash('error', err);
+            res.redirect('/edit_caretaker_particulars');
           } else {
             req.flash('success_msg', 'Particulars updated!');
             res.redirect('/edit_caretaker_particulars');

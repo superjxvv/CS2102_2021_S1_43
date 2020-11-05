@@ -36,10 +36,22 @@
                     <% if (my_details[0].bank_account) { %>
                         <b>My Bank Account Number: </b> <%= my_details[0].bank_account %><br>
                     <% } %>
-                   <b>My Monthly Pet Days: </b> <%= my_details[0].monthly_pet_days %><br>
-                   <b>My Monthly Salary: </b> <%= my_details[0].monthly_salary %><br>
+                    <% if (!pet_days) { %>
+                        <b>My Monthly Pet Days: </b> 0<br>
+                    <% } else { %>
+                        <b>My Monthly Pet Days: </b> <%= pet_days %><br>
+                    <% } %>
+                    <% if (!salary) { %>
+                        <b>My Monthly Salary: </b> 0<br>
+                    <% } else { %>
+                        <b>My Monthly Salary: </b> <%= salary %><br>
+                    <% } %>
                    <b>My Concurrent Pet Limit: </b> <%= my_details[0].max_concurrent_pet_limit %><br>
-                   <b>My Rating:</b> <%= my_details[0].rating %><br>
+                    <% if (!my_details[0].rating) { %>
+                        <b>My Rating:</b><i> No Rating Yet!</i><br>
+                    <% } else { %>
+                        <b>My Rating:</b> <%= Number(my_details[0].rating).toFixed(2) %><br>
+                    <% } %>
                     <% if (!my_details[0].address || !my_details[0].bank_account) { %>
                         <i>Please fill in missing particulars!</i>
                     <% } %>

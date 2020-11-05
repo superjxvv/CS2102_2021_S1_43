@@ -28,7 +28,7 @@
 				</nav>
 				<div class="tab-content py-3 px-3 px-sm-0" id="nav-tabContent">
 					<div class="tab-pane fade show active" id="nav-all" role="tabpanel" aria-labelledby="nav-all-tab">
-						<% resAllTrans.forEach(trxn => { console.log(trxn); %>
+						<% resAllTrans.forEach(trxn => { %>
 							<div>
 								<%- include('./partials/each_transaction.ejs', {all: trxn}) %>
 							</div>

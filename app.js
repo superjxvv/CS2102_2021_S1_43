@@ -1799,6 +1799,7 @@ app.post('/give_review/:action', async (req, res) => {
     const values = [rating, review, owner_email, pet_name, start_date, end_date, ct_email];
     await pool.query(sql_query.query.give_review, values, (err, data) => {
       if (err) {
+        console.log(err);
         req.flash('error', err);
         res.redirect('/transactions');
       } else {

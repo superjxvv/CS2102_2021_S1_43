@@ -372,6 +372,61 @@ app.post('/pre-bid', async (req, res) => {
   // }
 });
 
+// app.get('/apply_leave', async (req, res) => {
+//   const values = [req.user.email];
+//   //Dates that this ct is already booked.
+//   const datesCaring = await pool.query(sql_query.query.dates_caring, [
+//     req.user.email,
+//     new Date()
+//   ]);
+//   var datesToDelete = new Set();
+//   for (var i = 0; i < datesCaring.rows.length; i++) {
+//     const usedDate = datesCaring.rows[i];
+//     datesFromRange(usedDate.start_date, usedDate.end_date, datesToDelete);
+//   }
+//   var datesToAllow = new Set();
+//   var isPartTimer = false;
+//   const jobTypeQuery = await pool.query(sql_query.query.get_ct_type, values);
+//   const jobType = jobTypeQuery.rows[0].job;
+//   //Part timer only show available dates
+//   if (jobType == 'part_timer') {
+//     const availability = await pool.query(
+//       sql_query.query.part_timer_availability,
+//       values
+//     );
+//     isPartTimer = true;
+//     for (var i = 0; i < availability.rows.length; i++) {
+//       const canDate = availability.rows[i];
+//       datesFromRange(
+//         canDate.start_date,
+//         canDate.end_date,
+//         datesToAllow,
+//         datesToDelete
+//       );
+//     }
+
+//     //Full timer will disable some dates
+//   } else {
+//     const leave = await pool.query(sql_query.query.full_timer_leave, values);
+//     for (var i = 0; i < leave.rows.length; i++) {
+//       const leaveDate = leave.rows[i];
+//       datesFromRange(leaveDate.start_date, leaveDate.end_date, datesToDelete);
+//     }
+//   }
+
+//   res.render('apply_leave', {
+//     isPartTimer: isPartTimer,
+//     today: new Date().toISOString().slice(0, 10),
+//     latestDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1))
+//       .toISOString()
+//       .slice(0, 10),
+//     blockedDates: Array.from(datesToDelete),
+//     availableDates: Array.from(datesToAllow),
+//     loggedIn: req.user,
+//     accountType: req.user.type
+//   });
+// });
+
 app.get('/caretaker-summary-info', async (req, res) => {
   try {
     //todo: check that user is admin
@@ -1059,15 +1114,12 @@ app.get('/profile/:iden', async (req, res) => {
         sql_query.query.get_ct_trxn,
         values
       );
-      const get_ct_prices = await pool.query(
-        sql_query.query.get_ct_prices,
-        values
-      );
+      const my_pet_types = await pool.query(sql_query.query.all_my_pet_types, values);
       res.render('./caretaker_profile', {
         title: 'Profile of ' + get_ct_info.rows[0].name,
         get_ct_info: get_ct_info.rows,
         get_ct_trxns: get_ct_trxns.rows,
-        get_ct_prices: get_ct_prices.rows,
+        my_pet_types: my_pet_types.rows,
         loggedIn: req.user,
         accountType: req.user.type,
         statusToHuman: statusToHuman

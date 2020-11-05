@@ -42,11 +42,11 @@ CREATE TABLE care_taker(
 );
 
 CREATE VIEW accounts AS (
-  SELECT email, name, password, 1 AS type FROM pet_owner
+  SELECT email, name, password, deleted, 1 AS type FROM pet_owner
   UNION
-  SELECT email, name, password, 2 AS type FROM care_taker
+  SELECT email, name, password, deleted, 2 AS type FROM care_taker
   UNION
-  SELECT email, name, password, 0 AS type FROM pcs_admin
+  SELECT email, name, password, deleted, 0 AS type FROM pcs_admin
 );
 
 CREATE TABLE part_timer(

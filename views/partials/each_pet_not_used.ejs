@@ -1,0 +1,52 @@
+<%- include('../functions') %>
+<div class="card col-12" style="background-color: whitesmoke; text-align: left;">
+    <div class="card-body" style="padding-bottom: 0px; padding-top: 10px;">
+        <div class="row" id="transaction-header">
+            <div class="col-10">
+                <a href="/my_pet/<%= pet.email %>/<%= pet.pet_name %>"><h4>Pet: <%= pet.pet_name %>&nbsp;</h4></a>
+            </div>
+            <div class="col">
+                <a href="/add_pet/edit/<%= pet.email %>/<%= pet.pet_name %>">
+                    <ion-icon name="create-outline" style="font-size: 24px; padding-top: 5px;"></ion-icon>
+                </a>
+            </div>
+            <div class="col">
+                <form method="post" action="/my_pets/<%= pet.email %>/<%= pet.pet_name %>" stye="text-align: right;">
+                    <a data-toggle="modal" href="./partials/delete_pet_partial" data-target="#modal-default" style="margin: 0px; color: azure">
+                        <button type="submit" class="btn btn-tool btn-sm">
+                            <ion-icon name="trash-outline" style="font-size: 24px; padding-top: 13px;"></ion-icon>
+                        </button>
+                    </a>
+                </form>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <p><b>Pet Type:</b> <%= pet.pet_type %></p>
+                <p><b>Special Requirements:</b> <%= pet.special_requirement %></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal-default">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Confirmation</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="/delete_account">
+                    Are you sure you want to delete <%= pet.pet_name %>?
+                </form>
+            </div>
+            <div class="modal-footer justify-content-between small text-muted">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+                <button type="submit" class="btn btn-danger">Yes</button>
+            </div>
+        </div>
+    </div>
+</div>

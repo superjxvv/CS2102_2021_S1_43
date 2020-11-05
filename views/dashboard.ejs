@@ -148,7 +148,7 @@
                             <%= stringToDate(String(trxn.end_date)) %><br>
                             <b>Caretaker:</b> <a href="/profile/<%= trxn.ct_email %>"><%= trxn.ct_name %></a><br>
                             <b>Pet Name:</b> <a href="/my_pet/<%= trxn.owner_email %>/<%= trxn.pet_name %>"><%= trxn.pet_name %></a><br>
-                            <% if (trxn.hire_status == 'completed') { console.log(trxn); %>
+                            <% if (trxn.hire_status == 'completed') { %>
                                 <b>Rating:</b> <%= trxn.rating == null ? 'NA' : trxn.rating %><br>
                                 <b>Review:</b> <%= trxn.review_text == null ? 'NA' : trxn.review_text %><br>
                             <% } %>

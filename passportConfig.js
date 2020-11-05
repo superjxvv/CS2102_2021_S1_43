@@ -25,7 +25,11 @@ function initialize(passport) {
             }
             if (isMatch) {
               //First parameter is error, second parameter is the return.
-              return done(null, user);
+              if (result.rows[0].deleted) {
+                return done(null, false, { message: 'Account has been deleted. If you want to restore your account, please email us!' });
+              } else {
+                return done(null, user);
+              }
             } else {
               return done(null, false, { message: 'Incorrect password' });
             }

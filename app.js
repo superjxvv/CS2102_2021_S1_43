@@ -439,6 +439,25 @@ app.post('/add-pet-type', async (req, res) => {
   );
 });
 
+app.get('/add_pet_type_ct', async (req, res) => {
+  if (!req.user) {
+    res.redirect('/login');
+  } else {
+    const values = [req.user.email];
+    const pet_types = await pool.query(sql_query.query.all_pet_types);
+    const my_pet_types = await pool.query(sql_query.query.all_my_pet_types, values);
+    console.log(my_pet_types);
+    res.render('./add_pet_type_ct', {
+      title: 'Add Pet Type',
+      pet_types: pet_types.rows,
+      query: null,
+      loggedIn: req.user,
+      accountType: req.user.type,
+      my_pet_types: my_pet_types.rows
+    });
+  }
+});
+
 app.get('/edit-pet-type/:name', async (req, res) => {
   try {
     //todo: check that user is admin
@@ -674,7 +693,6 @@ app.get('/dashboard-caretaker-ft', async (req, res) => {
           sql_query.query.ct_salary,
           values
         );
-        console.log(pet_days);
         // const jobTypeQuery = await pool.query(sql_query.query.get_ct_type,
         //   values
         // );
@@ -687,6 +705,7 @@ app.get('/dashboard-caretaker-ft', async (req, res) => {
         // } else {
         //   const pet_limit = 5;
         // }
+        const my_pet_types = await pool.query(sql_query.query.all_my_pet_types, values);
 
         res.render('./dashboard-caretaker-ft', {
           title: 'Dashboard',
@@ -696,7 +715,8 @@ app.get('/dashboard-caretaker-ft', async (req, res) => {
           loggedIn: req.user,
           accountType: account_type,
           pet_days: pet_days.rows[0].num_pet_days,
-          salary: salary.rows[0].total_cost
+          salary: salary.rows[0].total_cost,
+          my_pet_types: my_pet_types.rows
         });
       } else {
         // if is PCSadmin
@@ -748,6 +768,28 @@ app.get('/my_pets', async (req, res) => {
         all_pets: query.rows,
         loggedIn: req.user,
         accountType: req.user.type
+      });
+    }
+  }
+});
+
+app.get('/my_pet_types', async (req, res) => {
+  if (!req.user) {
+    res.redirect('/login');
+  } else {
+    const account_type = req.user.type;
+    const email = req.user.email;
+    if (account_type == 1) {
+      res.redirect('/dashboard');
+    } else {
+      const values = [req.user.email];
+      const query = await pool.query(sql_query.query.all_my_pet_types, values);
+      res.render('./my_pet_types', {
+        title: 'My Pet Types',
+        all_pet_types: query.rows,
+        loggedIn: req.user,
+        accountType: req.user.type,
+        email: email
       });
     }
   }
@@ -984,6 +1026,24 @@ app.post('/add_pet/:action', async (req, res) => {
   }
 });
 
+app.post('/add_pet_type_ct', async (req, res) => {
+  if (!req.user) {
+    res.redirect('/login');
+  } else {
+    const pet_type = req.body.pet_type;
+    const values = [req.user.email, pet_type];
+    await pool.query(sql_query.query.add_pet_type_ct, values, (err) => {
+      if (err) {
+        req.flash('error', err);
+        res.redirect('/add_pet_type_ct'); // check this again
+      } else {
+        req.flash('success_msg', 'Pet Type (' + pet_type + ') is ' + 'added!');
+        res.redirect('/my_pet_types');
+      }
+    });
+  }
+});
+
 app.get('/profile/:iden', async (req, res) => {
   try {
     if (!req.user) {
@@ -1057,6 +1117,23 @@ app.post('/my_pets/:po_email/:pet_name', async (req, res) => {
       } else {
         req.flash('success_msg', req.params.pet_name + ' is deleted.');
         res.redirect('/my_pets');
+      }
+    });
+  }
+});
+
+app.post('/my_pet_types/:ct_email/:pet_type', async (req, res) => {
+  if (!req.user) {
+    res.redirect('/login');
+  } else {
+    const values = [req.params.ct_email, req.params.pet_type];
+    await pool.query(sql_query.query.delete_pet_type_ct, values, (err) => {
+      if (err) {
+        req.flash('error', 'Delete failed.');
+        res.redirect('/my_pet_types');
+      } else {
+        req.flash('success_msg', 'Pet Type (' + req.params.pet_type + ') is deleted.');
+        res.redirect('/my_pet_types');
       }
     });
   }

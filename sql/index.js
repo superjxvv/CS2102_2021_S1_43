@@ -92,6 +92,8 @@ sql.query = {
     'SELECT H.hire_status, H.start_date, H.end_date, H.owner_email, C.name AS ct_name, C.email AS ct_email, P.name AS po_name, H.pet_name, H.rating, H.review_text FROM hire H INNER JOIN care_taker C ON H.ct_email = C.email INNER JOIN pet_owner P ON H.owner_email = P.email WHERE H.owner_email = $1 ORDER BY H.transaction_date DESC',
   all_my_pets:
     'SELECT * FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.email = $1  AND deleted = false ORDER BY O.pet_name',
+  all_my_pet_types:
+    "SELECT c.pet_type AS pet_type, p.base_daily_price AS price FROM can_take_care_of c INNER JOIN pet_type p ON c.pet_type = p.name WHERE c.email = $1 ORDER BY c.pet_type",
   get_pet_info:
     'SELECT * FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.email = $1 AND O.pet_name = $2',
   get_po_info:
@@ -125,12 +127,15 @@ sql.query = {
   payForBid:
     "UPDATE hire SET method_of_payment = $1, hire_status= 'inProgress' WHERE owner_email = $2 AND pet_name = $3 AND ct_email = $4 AND start_date = $5 AND end_date = $6",
   add_pet: 'SELECT "add_pet"($1, $2, $3, $4)',
+  add_pet_type_ct: 'CALL "add_pet_type_ct"($1, $2)',
   update_po_info: 'CALL "edit_po_info"($1, $2, $3, $4, $5, $6, $7)',
   update_po_info_no_pw: 'CALL "edit_po_info_no_pw"($1, $2, $3, $4, $5, $6)',
   update_ct_info: 'CALL "edit_ct_info"($1, $2, $3, $4, $5, $6)',
   update_ct_info_no_pw: 'CALL "edit_ct_info_no_pw"($1, $2, $3, $4, $5)',
   delete_pet:
     'UPDATE own_pet SET deleted = true WHERE pet_name = $1 AND email = $2;',
+  delete_pet_type_ct:
+    'DELETE FROM can_take_care_of WHERE email = $1 AND pet_type = $2;',
   recent_trxn_general_completed:
     "SELECT H.hire_status, H.start_date, H.end_date, C.name AS ct_name, C.email AS ct_email, P.name AS po_name, H.pet_name, H.rating, H.review_text FROM hire H INNER JOIN care_taker C ON H.ct_email = C.email INNER JOIN pet_owner P ON H.owner_email = P.email WHERE H.hire_status = 'completed' AND H.rating IS NOT NULL ORDER BY H.rating DESC, H.transaction_date DESC LIMIT 4",
   best_ct: 'SELECT * FROM care_taker ORDER BY rating LIMIT 4',

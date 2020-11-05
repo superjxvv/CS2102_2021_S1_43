@@ -54,7 +54,24 @@
 </div>
 </div>
 </div>
-	
+<link rel="stylesheet" href="/dist/css/adminlteToast.css">
+<script src="/dist/js/adminlte.min.js"></script>
+<script>
+if ("<%= messages.success_msg %>") {
+    $(document).Toasts('create', {
+            class: 'bg-success',
+            title: 'Success',
+            body: "<%= messages.success_msg %>"
+    });
+  }
+  if ("<%= messages.error %>") {
+    $(document).Toasts('create', {
+            class: 'bg-danger',
+            title: 'Error',
+            body: "<%= messages.error %>"
+    });
+  }
+</script>
 
 </body>
 </html>

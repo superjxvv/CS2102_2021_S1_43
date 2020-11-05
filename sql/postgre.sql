@@ -4,7 +4,9 @@ SET search_path TO pet_care;
 CREATE TABLE pcs_admin(
   email VARCHAR PRIMARY KEY,
   name VARCHAR NOT NULL,
-  password VARCHAR NOT NULL
+  password VARCHAR NOT NULL,
+  is_super_admin BOOLEAN NOT NULL DEFAULT FALSE,
+  deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE pet_owner(
@@ -12,7 +14,8 @@ CREATE TABLE pet_owner(
   name VARCHAR NOT NULL,
   password VARCHAR NOT NULL,
   location VARCHAR NOT NULL,
-  address VARCHAR
+  address VARCHAR,
+  deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE has_credit_card(
@@ -34,15 +37,16 @@ CREATE TABLE care_taker(
   bank_account VARCHAR,
   max_concurrent_pet_limit INTEGER,
   job job_type NOT NULL,
-  address VARCHAR
+  address VARCHAR,
+  deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE VIEW accounts AS (
-  SELECT email, name, password, 1 AS type FROM pet_owner
+  SELECT email, name, password, deleted, 1 AS type FROM pet_owner
   UNION
-  SELECT email, name, password, 2 AS type FROM care_taker
+  SELECT email, name, password, deleted, 2 AS type FROM care_taker
   UNION
-  SELECT email, name, password, 0 AS type FROM pcs_admin
+  SELECT email, name, password, deleted, 0 AS type FROM pcs_admin
 );
 
 CREATE TABLE part_timer(
@@ -78,7 +82,7 @@ CREATE TABLE is_of (
   pet_name VARCHAR NOT NULL,
   owner_email VARCHAR NOT NULL,
   FOREIGN KEY (pet_name, owner_email) REFERENCES own_pet(pet_name, email),
-  PRIMARY KEY (pet_type, pet_name, owner_email)
+  PRIMARY KEY (pet_name, owner_email)
 );
 
 CREATE TABLE date_range (
@@ -107,6 +111,7 @@ CREATE TABLE hire (
   transaction_date DATE NOT NULL,
   rating INTEGER CHECK (rating >= 1 AND rating <= 5),
   review_text VARCHAR,
+  address VARCHAR,
   PRIMARY KEY(owner_email, pet_name, ct_email, start_date, end_date),
   FOREIGN KEY (owner_email, pet_name) REFERENCES own_pet(email, pet_name),
   FOREIGN KEY(start_date, end_date) REFERENCES date_range(start_date, end_date)
@@ -3521,12 +3526,15 @@ insert into indicates_availability (email, start_date, end_date) values ('vbleyt
 insert into indicates_availability (email, start_date, end_date) values ('lgrinov4y@canalblog.com', '2020-10-28', '2022-10-18');
 insert into indicates_availability (email, start_date, end_date) values ('jgeffinger1s@blog.com', '2020-11-13', '2022-10-15');
 
-CREATE OR REPLACE PROCEDURE 
-add_pet(p_name VARCHAR, special_req VARCHAR, po_email VARCHAR, type VARCHAR) AS
+CREATE OR REPLACE FUNCTION 
+add_pet(p_name VARCHAR, special_req VARCHAR, po_email VARCHAR, type VARCHAR) RETURNS NUMERIC AS
 '
+DECLARE exists NUMERIC;
 BEGIN 
-INSERT INTO own_pet (pet_name, special_requirement, email) VALUES (p_name, special_req, po_email) ON CONFLICT (pet_name, email) DO UPDATE SET special_requirement = special_req;
-INSERT INTO is_of (pet_type, pet_name, owner_email) VALUES (type, p_name, po_email) ON CONFLICT (pet_type, pet_name, owner_email) DO NOTHING;
+SELECT COUNT(pet_name) INTO exists FROM own_pet WHERE pet_name = p_name AND email = po_email;
+INSERT INTO own_pet (pet_name, special_requirement, email) VALUES (p_name, special_req, po_email) ON CONFLICT (pet_name, email) DO UPDATE SET special_requirement = special_req, deleted = false;
+INSERT INTO is_of (pet_type, pet_name, owner_email) VALUES (type, p_name, po_email) ON CONFLICT (pet_name, owner_email) DO NOTHING;
+RETURN exists;
 END;
 '
 LANGUAGE plpgsql;
@@ -3570,16 +3578,63 @@ END;
 LANGUAGE plpgsql;
 
 --Add dates into date_range if not exists to prevent foreign key error.
-CREATE OR REPLACE FUNCTION add_date() RETURNS TRIGGER AS 
+--Auto accepts if caretaker is fulltimer
+CREATE OR REPLACE FUNCTION add_hire() RETURNS TRIGGER AS 
 $$ 
 BEGIN 
+  --Check if exceed concurrent pet limit
+  IF (EXISTS(
+  SELECT 1
+  FROM (select one_date::date from generate_series(NEW.start_date, 
+  NEW.end_date, '1 day'::interval) one_date) all_dates, hire
+  WHERE hire.ct_email = NEW.ct_email AND hire.hire_status <> 'rejected' AND hire.hire_status <> 'completed' 
+    AND hire.hire_status <> 'cancelled' AND hire.start_date <= all_dates.one_date AND hire.end_date >= all_dates.one_date
+  GROUP BY all_dates.one_date
+  HAVING COUNT(*) > (SELECT max_concurrent_pet_limit FROM care_taker WHERE email = NEW.ct_email)
+  )) THEN
+    RAISE NOTICE 'Exceed max concurrent';
+    RETURN NULL;
+  END IF;
+
   IF ((NEW.start_date, NEW.end_date) NOT IN (SELECT * FROM date_range)) THEN 
     INSERT INTO date_range(start_date, end_date) VALUES(NEW.start_date, NEW.end_date); 
   END IF;
-  
+  IF (NEW.ct_email IN (SELECT email FROM full_timer)) THEN
+    NEW.hire_status := 'pendingPayment';
+  END IF;
   RETURN NEW; 
 END; 
 $$ 
 LANGUAGE plpgsql;
 
-CREATE TRIGGER hire_add_date BEFORE INSERT OR UPDATE ON hire FOR EACH ROW EXECUTE PROCEDURE add_date();
+CREATE TRIGGER hire_add_hire BEFORE INSERT ON hire FOR EACH ROW EXECUTE PROCEDURE add_hire();
+
+CREATE OR REPLACE FUNCTION update_hire() RETURNS TRIGGER AS 
+$$ 
+BEGIN 
+  IF ((NEW.start_date, NEW.end_date) NOT IN (SELECT * FROM date_range)) THEN 
+    INSERT INTO date_range(start_date, end_date) VALUES(NEW.start_date, NEW.end_date); 
+  END IF;
+  RETURN NEW; 
+END; 
+$$ 
+LANGUAGE plpgsql;
+
+CREATE TRIGGER hire_update_hire BEFORE UPDATE ON hire FOR EACH ROW EXECUTE PROCEDURE update_hire();
+
+
+--Upon inserting into care_taker table, auto insert into respective part_timer or full_timer table.
+CREATE OR REPLACE FUNCTION add_CT() RETURNS TRIGGER AS
+$$
+BEGIN
+  IF (NEW.job = 'part_timer') THEN
+    INSERT INTO part_timer VALUES(NEW.email);
+  ELSE
+    INSERT INTO full_timer VALUES(NEW.email);
+  END IF;
+  RETURN NEW;
+EN
+$$
+LANGUAGE plpgsql;
+
+CREATE TRIGGER add_CT AFTER INSERT ON care_taker FOR EACH ROW EXECUTE PROCEDURE add_CT();

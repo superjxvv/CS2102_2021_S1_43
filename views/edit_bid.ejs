@@ -50,25 +50,27 @@
           <div>
             <h6 class="my-0">Cost per day</h6>
           </div>
-          <span class="text-muted" id="costPerDay">$<%= costPerDay %></span>
+          <span class="text-muted" id="costPerDay">$<%= (Math.round(costPerDay * 100) / 100).toFixed(2) %></span>
         </li>
         <li class="list-group-item d-flex justify-content-between">
           <span>Total (SGD)</span>
-          <strong id="totalCost">$<%= costPerDay * numDays %></strong>
+          <strong id="totalCost">$<%= (Math.round(costPerDay * numDays * 100) / 100).toFixed(2) %></strong>
         </li>
       </ul>
 		</div>
 		<!--Summary end-->
     <div class="col-md-8 order-md-1">
-      <form action="/submit_edit" class="needs-validation" novalidate method="POST">
+      <form action="/submit_edit" class="needs-validation" novalidate method="POST" onsubmit="clearAddr()">
         <div class="row">
           <div class="col-md-7 mb-3">
             <h4 class="mb-3">Change Pet Transfer Method</h4>
             <p>Current method: <%= transferConvert(trans.method_of_pet_transfer) %></p>
             <div class="float-left">
-              <select class="custom-select d-block" name="transferMethod" required> 
-                <option value = "cPickup">Caretaker pickup</option>
-                <option value = "oDeliver">Dropoff at caretaker</option>
+              <select class="custom-select d-block" id="transferMethod" name="transferMethod" required> 
+                <option value = "cPickup" selected>Caretaker pickup</option>
+                <% if (ct_has_address) { %>
+                  <option value = "oDeliver">Dropoff at caretaker</option>
+                <% } %>
                 <option value = "office">Dropoff at Pet Care office.</option>
               </select>
             </div>
@@ -92,15 +94,10 @@
           <div class="mb-3">
             <label for="address"> Full Address</label>
             <% if (addr != null) { %>
-            <div class="card">
-              <div class="card-body">
-                <h6 class="card-subtitle mb-2 text-muted">Change this address in your profile settings.</h6>
-                <p class="card-text"><%= addr %></p>
-                <input type="hidden" name="address" value="<%= addr %>">
-              </div>
-            </div>
+            <input type="text" class="form-control" id="address" name="address" value="<%= addr %>" required>
             <% } else { %>
-            <input type="text" class="form-control" name="address" placeholder="e.g. Blk 154 Telok Blangah Singapore 123456" required>
+            <input type="text" class="form-control" id ="address" name="address" placeholder="e.g. Blk 154 Telok Blangah Singapore 123456" required>
+            <% } %>
             <div class="invalid-feedback">
               Please enter your address.
             </div>
@@ -110,7 +107,6 @@
             <input type="checkbox" class="custom-control-input" id="save-info" name="saveAddress">
             <label class="custom-control-label" for="save-info">Save this address for use next time</label>
           </div>
-          <% } %>
           <hr class="mb-4">
         </div>
         <!--Address end-->
@@ -149,7 +145,9 @@
   <script src="/plugins/bootstrap/js/form-validation.js"></script>
 	<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
 	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-	<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+  <link rel="stylesheet" href="/dist/css/adminlteToast.css">
+  <script src="/dist/js/adminlte.min.js"></script>
 	<script>
 		var today = new Date("<%= today %>");
 		var latestDate = new Date("<%= latestDate %>");
@@ -161,7 +159,14 @@
 		var originalStartDate = new Date("<%= originalStartDate %>");
     var originalEndDate = new Date("<%= originalEndDate %>");
     var costPerDay = parseInt("<%= costPerDay %>");
-
+    const isInvalidDate = (aDate) => {
+				const date = aDate.format('YYYY-MM-DD');
+				if (isPartTimer) {
+					return !(availableDates.has(date) && !blockedDates.has(date));
+				} else {
+					return blockedDates.has(date);
+				}
+			};
 		$('input[name="dates"]').daterangepicker({
 			minDate: today,
 			maxDate: latestDate,
@@ -170,27 +175,70 @@
 			locale: {
     		format: 'DD/MM/YYYY'
   		},
-			isInvalidDate : (aDate) => {
-				const date = aDate.format('YYYY-MM-DD');
-				if (isPartTimer) {
-					return !(availableDates.has(date) && !blockedDates.has(date));
-				} else {
-					return blockedDates.has(date);
-				}
-			}
+			isInvalidDate : isInvalidDate
 		});
-		$('input[name="dates"]').on('apply.daterangepicker', function(ev, picker) {
-			document.getElementById("start_date").value = picker.startDate;
-      document.getElementById("end_date").value = picker.endDate;
-      document.getElementById("side_start_date").innerHTML = picker.startDate.format("DD/MM/YYYY");
-      document.getElementById("side_end_date").innerHTML = picker.endDate.format("DD/MM/YYYY");
-      document.getElementById("totalCost").innerHTML = picker.endDate.diff(picker.startDate, "days") * costPerDay
 
-		});
+    //Dates are in moment
+    function includesInvalidDate(startDate, endDate) {
+      var currDate = startDate;
+      while (currDate.isBefore(endDate) || currDate.isSame(endDate)) {
+        if (isInvalidDate(currDate)) {
+          return false;
+        }
+        currDate.add(1, 'days');
+      }
+      return true;
+    }
+
+    function errorToast(msg) {
+      $(document).Toasts('create', {
+            class: 'bg-danger',
+            title: 'Error',
+            body: msg
+      });
+    }
+
+		$('input[name="dates"]').on('apply.daterangepicker', function(ev, picker) {
+      if (!includesInvalidDate(picker.startDate, picker.endDate)) {
+        errorToast("Please a date range that does not include any disabled date");
+        //Set date to original dates
+        picker.setStartDate(originalStartDate);
+        picker.setEndDate(originalEndDate);
+      } else {
+        document.getElementById("start_date").value = picker.startDate;
+        document.getElementById("end_date").value = picker.endDate;
+        document.getElementById("side_start_date").innerHTML = picker.startDate.format("DD/MM/YYYY");
+        document.getElementById("side_end_date").innerHTML = picker.endDate.format("DD/MM/YYYY");
+        document.getElementById("totalCost").innerHTML = (Math.round(picker.endDate.diff(picker.startDate, "days") * costPerDay * 100) / 100).toFixed(2);
+      }
+    });
+    
+    function clearAddr() {
+      console.log(document.getElementById("transferMethod").value);
+      if (document.getElementById("transferMethod").value != "cPickup") {
+        document.getElementById("address").value = "Blank";
+        $("#save-info").prop("checked", false);
+      }
+    }
+
     $(document).on('change', 'select[name="transferMethod"]', function(){
       $("#addressBlock").toggle(this.value ==="cPickup");
     });
-  
+    
+  if ("<%= messages.success_msg %>") {
+    $(document).Toasts('create', {
+            class: 'bg-success',
+            title: 'Success',
+            body: "<%= messages.success_msg %>"
+    });
+  }
+  if ("<%= messages.error %>") {
+    $(document).Toasts('create', {
+            class: 'bg-danger',
+            title: 'Error',
+            body: "<%= messages.error %>"
+    });
+  }
 	</script>
 </body>
 </html>

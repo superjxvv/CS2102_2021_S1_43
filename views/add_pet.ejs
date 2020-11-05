@@ -2,8 +2,35 @@
 <html lang="en">
 
 <head>
+    <script src="/plugins/jquery/jquery.min.js"></script>
+    <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/dist/js/adminlte.min.js"></script>
+    <link rel="stylesheet" href="/dist/css/adminlte.min.css">
     <%- include('./partials/head.ejs') %>
 </head>
+
+<script>
+    function validateForm() {
+        const pet_name = document.forms["add_pet_form"]["pet_name"].value;
+        const pet_type = document.forms["add_pet_form"]["pet_type"].value;
+        if (pet_name == "") {
+            $(document).Toasts('create', {
+                class: 'bg-danger',
+                title: 'Empty Pet Name!',
+                body: 'Please enter a name for your Pet.'
+            })
+            return false;
+        }
+        if (pet_type == "") {
+            $(document).Toasts('create', {
+                class: 'bg-danger',
+                title: 'Empty Pet Type!',
+                body: 'Please enter a Type for your Pet.'
+            })
+            return false;
+        }
+    }
+</script>
 
 <body>
     <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn, accountType: accountType}) %>
@@ -15,20 +42,20 @@
                     <% const pet_name = query == null ? "" : query[0].pet_name; %>
                     <% const special_req = query == null ? "" : query[0].special_requirement; %>
                     <% const pet_type = query == null ? "" : query[0].pet_type; %>
-                    <% const submit = query == null ? "Add Pet" : "Edit Pets"; %>
+                    <% const submit = query == null ? "Add Pet" : "Edit Pet"; %>
                     <% const type = query == null ? 'add' : 'edit'; %>
                     <i class="fas fa-dice-d20"></i> &nbsp; <b><%= top %></b>
                 </div>
-                <form method="post" action="/add_pet/<%= type %>">
+                <form method="post" action="/add_pet/<%= type %>" name="add_pet_form" onsubmit="return validateForm()">
                     <div class="card-body">
                         <div class="form-group row">
                             <label for="pet_name" class="col-sm-3 col-form-label">Pet Name: </label>
                             <div class="col-sm-9">
                                 <% if (pet_name == "") { %> 
-                                    <input type="text" required="required" class="form-control" placeholder="Name" id="pet_name"
+                                    <input type="text" class="form-control" placeholder="Name" id="pet_name"
                                         name="pet_name" value="<%= pet_name %>">
                                 <% } else { %>
-                                    <input type="text" required="required" class="form-control" placeholder="Name" id="pet_name"
+                                    <input type="text" class="form-control" placeholder="Name" id="pet_name"
                                         name="pet_name" value="<%= pet_name %>" readonly="true">
                                 <% } %>
                             </div>
@@ -44,23 +71,22 @@
                             <label for="pet_type" class="col-sm-3 col-form-label">Pet Type: </label>
                             <div class="col-sm-9">
                                 <% if (pet_type == "") { %> 
-                                    <select id="pet_type" name="pet_type" required="required">
+                                    <select id="pet_type" name="pet_type">
                                         <option selected value="">Select a pet type</option>
                                         <% pet_types.forEach(type => { %>
                                             <option value="<%= type.name %>"><%= type.name %></option>
                                         <% }); %>
                                     </select>
                                 <% } else { %>
-                                    <select id="pet_type" name="pet_type" required="required" readonly="true">
+                                    <select id="pet_type" name="pet_type"readonly="true">
                                         <option selected value="<%= pet_type %>"><%= pet_type %></option>
                                     </select>
                                 <% } %>
-                                
                             </div>
                         </div>
                     </div>
                     <div class="card-footer small text-muted">
-                        <button type="submit" class="btn btn-secondary"><%= submit %></button>
+                        <button type="submit" class="btn btn-secondary" style="margin: 0px;"><%= submit %></button>
                     </div>
                 </form>
             </div>

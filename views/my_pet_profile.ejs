@@ -8,7 +8,7 @@
 <body>
     <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn, accountType: accountType}) %>
 
-    <div class="container vert-gap-container">
+    <div class="container vert-gap-container" style="padding-top: 30px">
         <div class="row">
             <h2 class="vert-gap-contents">My Pet: <%= query[0].pet_name %>&nbsp;</h2>
             <% if (messages.success_msg) { %>

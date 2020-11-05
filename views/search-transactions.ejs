@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caretaker Summary Information</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+        integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/profile_styles.css">
+    <script src="/plugins/jquery/jquery.min.js"></script>
+    <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+    <script src="/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+    <script src="/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+    <script src="/dist/js/adminlte.min.js"></script>
+    <link rel="stylesheet" href="/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+    <script src="/plugins/select2/js/select2.full.min.js"></script>
+    <link rel="stylesheet" href="/plugins/select2/css/select2.min.css">
+    <link rel="stylesheet" href="/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">
+    <script>
+        $(function () {
+            $("#example1").DataTable({
+                "responsive": true,
+                "autoWidth": true,
+                "searching": false,
+                "ordering": false,
+            })
+            let selectedStatus = [];
+            const allStatus = JSON.parse('<%- JSON.stringify(allStatus) %>');
+            const currMonth = JSON.parse('<%- JSON.stringify(currMonth) %>');
+            console.log(currMonth)
+            selectedStatus = JSON.parse('<%- JSON.stringify(selectedStatus) %>') ? JSON.parse('<%- JSON.stringify(selectedStatus) %>') : [];
+            $('.select2').select2({
+                data: allStatus,
+                allowClear: true,
+            })
+            $('.select2').val(selectedStatus);
+            $('.select2').trigger('change.select2');
+            $('.select2').on('change', function (e) {
+                window.location.href = '/search-transactions/' + JSON.stringify($('.select2').val()) + "/" + currMonth;
+            });
+
+            check = () => {
+                if (currMonth == 'true') {
+                    currMonth == 'false'
+                } else {
+                    currMonth == 'true'
+                }
+                window.location.href = '/search-transactions/' + JSON.stringify($('.select2').val()) + '/' + currMonth;
+            };
+        })
+    </script>
+</head>
+
+<body style="background-color: lightgrey;">
+    <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn, accountType: accountType}) %>
+    <h3 style="margin-top: 3%;">Search Transactions</h3>
+    <div class="form-group">
+        <div class="radio">
+            <label>Only show Transactions in current month: </label>
+            <input type="checkbox" name="showCurrentMonth" <% if(currMonth == 'true') {%> checked <%}%> onChange="check()" />
+            </div>
+          </div>
+        <label class="col-sm-3">Filter by Transaction Status: </label>
+        <select class="select2" multiple="multiple" data-placeholder="Filter by status"
+            data-dropdown-css-class="select2-dark" style="width: 100%;">
+        </select>
+        <br/>
+    <div class="card">
+        <div class="card-body">
+            <table id="example1" class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Pet Owner</th>
+                        <th>Pet</th>
+                        <th>Caretaker</th>
+                        <th>Number of pet days</th>
+                        <th>Total cost ($) </th>
+                        <th>Method of pet transfer</th>
+                        <th>Transaction date</th>
+                        <th>Rating</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% selectedHires.forEach(hire => { %> <tr>
+            <td><%= hire.owner_email %></td>
+            <td><%= hire.pet_name %></td>
+            <td><%= hire.ct_email %></td>
+            <td><%= hire.num_pet_days %></td>
+            <td><%= hire.total_cost %></td>
+            <td><%= hire.method_of_pet_transfer %></td>
+            <td><%= new Intl.DateTimeFormat('en-GB', { year: 'numeric', month: 'long', day: '2-digit'}).format(hire.transaction_date) %>
+            </td>
+            <td><%= hire.rating %></td>
+            <% if(hire.hire_status == 'completed') { %>
+            <td>
+                <span class="badge badge-success">Completed</span>
+            </td>
+            <% } else if(hire.hire_status == 'rejected') { %>
+            <td>
+                <span class="badge badge-danger">Rejected</span>
+            </td>
+            <% } else if(hire.hire_status == 'cancelled') { %>
+            <td>
+                <span class="badge badge-danger">Cancelled</span>
+            </td>
+            <% } else if(hire.hire_status == 'pendingAccept') { %>
+            <td>
+                <span class="badge badge-secondary">Pending Accept</span>
+            </td>
+            <% } else if(hire.hire_status == 'pendingPayment') { %>
+            <td>
+                <span class="badge badge-secondary">Pending Payment</span>
+            </td>
+            <% } else if(hire.hire_status == 'paymentMade') { %>
+            <td>
+                <span class="badge badge-info">Payment Made</span>
+            </td>
+            <% } else if(hire.hire_status == 'inProgress') { %>
+            <td>
+                <span class="badge badge-info">In Progress</span>
+            </td>
+            <% } else { %>
+            <td><%= hire.hire_status %></td>
+            <%} %>
+            </tr>
+            <% }) %>
+            </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+
+</html>

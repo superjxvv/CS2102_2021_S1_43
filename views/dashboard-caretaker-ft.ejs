@@ -132,14 +132,19 @@
 
     <div class="container vert-gap-container">
         <div class="row">
-            <h2 class="vert-gap-contents">Transactions&nbsp;</h2>
-            <% if (loggedIn) { %>
+            <h2 class="vert-gap-contents">My Transactions</h2>
+            <% if (get_ct_trxns.length > 4) { %>
             <a href="/transactions" style="padding: 11px">See more</a>
             <% } %>
         </div>
         <div class="row text-left">
-            <% recent_trxn.forEach(trxn => { %>
+            <% if (get_ct_trxns.length == 0) { %>
             <div class="card col-sm col-md" id="square-card" style="margin-bottom: 30px;">
+                <p><i>No Completed Transactions Yet!</i></p>
+            </div>
+            <% } else { %>
+            <% get_ct_trxns.forEach(trxn => { %>
+            <div class="card col-sm col-md" id="square-card">
                 <p><b>Status:</b>
                     <% if (trxn.hire_status == 'completed') { %>
                     <span class="badge badge-success"><%= statusToHuman(trxn.hire_status) %></span><br>
@@ -152,15 +157,16 @@
                     <% } %>
                     <b>Date:</b> <%= stringToDate(String(trxn.start_date)) %> to
                     <%= stringToDate(String(trxn.end_date)) %><br>
-                    <b>Caretaker:</b> <a href="/profile/<%= trxn.ct_email %>"><%= trxn.ct_name %></a><br>
-                    <b>Pet Name:</b> <%= trxn.pet_name %><br>
+                    <b>Pet Owner: </b><%= trxn.po_name %><br>
+                    <b>Pet Type: </b><%= trxn.type %><br>
                     <% if (trxn.hire_status == 'completed') { %>
-                    <b>Rating:</b> <%= trxn.hire_status == null ? 'NA' : trxn.rating %><br>
+                    <b>Rating:</b> <%= trxn.rating == null ? 'NA' : trxn.rating %><br>
                     <b>Review:</b> <%= trxn.review_text == null ? 'NA' : trxn.review_text %><br>
                     <% } %>
                 </p>
             </div>
-            <% }) %>
+            <% }); %>
+            <% } %>
         </div>
     </div>
 

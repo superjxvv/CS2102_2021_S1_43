@@ -736,16 +736,16 @@ app.get('/dashboard-caretaker-ft', async (req, res) => {
           values
         );
         console.log(my_details.rows);
-        const recent_transactions = await pool.query(
-          sql_query.query.recent_trxn_po,
-          values
-        );
         const pet_days = await pool.query(
           sql_query.query.ct_pet_days,
           values
         );
         const salary = await pool.query(
           sql_query.query.ct_salary,
+          values
+        );
+        const get_ct_trxns = await pool.query(
+          sql_query.query.get_ct_trxn,
           values
         );
         // const jobTypeQuery = await pool.query(sql_query.query.get_ct_type,
@@ -764,14 +764,14 @@ app.get('/dashboard-caretaker-ft', async (req, res) => {
 
         res.render('./dashboard-caretaker-ft', {
           title: 'Dashboard',
-          recent_trxn: recent_transactions.rows,
           my_details: my_details.rows,
           statusToHuman: statusToHuman,
           loggedIn: req.user,
           accountType: account_type,
           pet_days: pet_days.rows[0].num_pet_days,
           salary: salary.rows[0].total_cost,
-          my_pet_types: my_pet_types.rows
+          my_pet_types: my_pet_types.rows,
+          get_ct_trxns: get_ct_trxns.rows
         });
       } else {
         // if is PCSadmin

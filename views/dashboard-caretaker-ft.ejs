@@ -37,16 +37,16 @@
                         <b>My Bank Account Number: </b> <%= my_details[0].bank_account %><br>
                     <% } %>
                     <% if (!pet_days) { %>
-                        <b>My Monthly Pet Days: </b> 0<br>
+                        <b>My Pet Days This Month: </b> 0<br>
                     <% } else { %>
-                        <b>My Monthly Pet Days: </b> <%= pet_days %><br>
+                        <b>My Pet Days This Month: </b> <%= pet_days %><br>
                     <% } %>
                     <% if (!salary) { %>
-                        <b>My Monthly Salary: </b> 0<br>
+                        <b>My Salary This Month: </b>$0<br>
                     <% } else { %>
-                        <b>My Monthly Salary: </b> <%= salary %><br>
+                        <b>My Salary This Month: </b>$<%= salary %><br>
                     <% } %>
-                   <b>My Concurrent Pet Limit: </b> <%= my_details[0].max_concurrent_pet_limit %><br>
+                   <b>My Concurrent Pet Limit: </b> 5<br>
                     <% if (!my_details[0].rating) { %>
                         <b>My Rating:</b><i> No Rating Yet!</i><br>
                     <% } else { %>

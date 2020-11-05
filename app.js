@@ -674,6 +674,19 @@ app.get('/dashboard-caretaker-ft', async (req, res) => {
           sql_query.query.ct_salary,
           values
         );
+        console.log(pet_days);
+        // const jobTypeQuery = await pool.query(sql_query.query.get_ct_type,
+        //   values
+        // );
+        // const jobType = jobTypeQuery.rows[0].job;
+        // if (jobType == 'part-timer') {
+        //   var additional_pet_limit = Math.ceil((rating - 3) / 0.5);
+        //   additional_pet_limit = additional_pet_limit > 3 ? 3 : additional_pet_limit;
+        //   additional_pet_limit = additional_pet_limit < 0 ? 0 : additional_pet_limit;
+        //   const pet_limit = 2 + additional_pet_limit;
+        // } else {
+        //   const pet_limit = 5;
+        // }
 
         res.render('./dashboard-caretaker-ft', {
           title: 'Dashboard',

@@ -60,8 +60,8 @@
         </div>
         <div class="row text-left">
             <% if (my_pets.length == 0) { %>
-                <div class="card col-sm col-md" id="square-card">
-                    <p><i>No Pets!</i></p>
+                <div class="card col-sm col-md d-flex" id="square-card">
+                    <p><i>No Pets! &emsp;</i><a href="/add_pet">Add a new pet.</a></p>    
                 </div>
             <% } else { %>
                 <% for (var i = 0; i < 4 && i < my_pets.length; i++) { %>

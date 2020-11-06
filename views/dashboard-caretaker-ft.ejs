@@ -47,10 +47,10 @@
                         <b>My Salary This Month: </b>$<%= salary %><br>
                     <% } %>
                    <b>My Concurrent Pet Limit: </b> 5<br>
-                    <% if (!my_details[0].rating) { %>
+                    <% if (!rating.rows[0].avg_rating) { %>
                         <b>My Rating:</b><i> No Rating Yet!</i><br>
                     <% } else { %>
-                        <b>My Rating:</b> <%= Number(my_details[0].rating).toFixed(2) %><br>
+                        <b>My Rating:</b> <%= Number(rating.rows[0].avg_rating).toFixed(2) %><br>
                     <% } %>
                     <% if (!my_details[0].address || !my_details[0].bank_account) { %>
                         <i>Please fill in missing particulars!</i>
@@ -74,7 +74,7 @@
             <button class="card col-sm col-md" id="square-card">
                 <p>
                     <b>Pet Type:</b> <%= type.pet_type %><br>
-                    <b>Base Daily Price:</b> $<%= type.price %><br>
+                    <b>Base Daily Price:</b> $<%= Number(type.daily_price).toFixed(2) %><br>
                 </p>
             </button>
             <% } %>

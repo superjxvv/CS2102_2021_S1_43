@@ -1024,6 +1024,10 @@ app.get('/dashboard-caretaker-ft', async (req, res) => {
           sql_query.query.ct_salary,
           values
         );
+        const rating = await pool.query(
+          sql_query.query.ct_rating,
+          values
+        );
         const get_ct_trxns = await pool.query(
           sql_query.query.get_ct_trxn,
           values
@@ -1050,6 +1054,7 @@ app.get('/dashboard-caretaker-ft', async (req, res) => {
           accountType: account_type,
           pet_days: pet_days.rows[0].num_pet_days,
           salary: salary.rows[0].total_cost,
+          rating: rating,
           my_pet_types: my_pet_types.rows,
           get_ct_trxns: get_ct_trxns.rows
         });
@@ -1366,7 +1371,24 @@ app.post('/add_pet_type_ct', async (req, res) => {
     res.redirect('/login');
   } else {
     const pet_type = req.body.pet_type;
-    const values = [req.user.email, pet_type];
+    const rating = await pool.query(
+      sql_query.query.ct_rating,
+      [req.user.email]
+    );
+    const rating_num = rating.rows[0].avg_rating;
+    const base_daily_price = await pool.query(
+      sql_query.query.base_daily_price_for_pet,
+      [pet_type]
+    );
+    const base_daily_price_num = base_daily_price.rows[0].base_daily_price;
+    var bonus_multiplier = (rating_num - 3.5) / 1.5 * 0.5;
+    bonus_multiplier = bonus_multiplier > 0 ? bonus_multiplier : 0;
+    const new_price = Number((1 + bonus_multiplier) * base_daily_price_num).toFixed(2);
+    console.log("HERE");
+    console.log(rating_num);
+    console.log(bonus_multiplier);
+    console.log(new_price);
+    const values = [req.user.email, pet_type, new_price];
     await pool.query(sql_query.query.add_pet_type_ct, values, (err) => {
       if (err) {
         req.flash('error', err);

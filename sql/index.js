@@ -77,6 +77,8 @@ sql.query = {
     "SELECT SUM(H.num_pet_days) AS num_pet_days FROM hire H WHERE H.ct_email = $1 AND date_part('month', end_date) = date_part('month', CURRENT_DATE) AND date_part('year', end_date) = date_part('year', CURRENT_DATE) AND H.hire_status = 'completed'",
   ct_salary:
     "SELECT SUM(H.total_cost) AS total_cost FROM hire H WHERE H.ct_email = $1 AND date_part('month', end_date) = date_part('month', CURRENT_DATE) AND date_part('year', end_date) = date_part('year', CURRENT_DATE) AND H.hire_status = 'completed'",
+  ct_rating:
+    "SELECT AVG(H.rating) AS avg_rating FROM hire H WHERE H.ct_email = $1 AND H.hire_status = 'completed'",
   get_ct_by_email:
     "SELECT name, email, location, rating FROM care_taker WHERE email = $1",
   get_po_by_email:
@@ -155,7 +157,7 @@ sql.query = {
   payForBid:
     'CALL pay_for_bid($1, $2, $3, $4, $5, $6)',
   add_pet: 'SELECT "add_pet"($1, $2, $3, $4)',
-  add_pet_type_ct: 'CALL "add_pet_type_ct"($1, $2)',
+  add_pet_type_ct: 'CALL "add_pet_type_ct"($1, $2, $3)',
   update_po_info: 'CALL "edit_po_info"($1, $2, $3, $4, $5, $6, $7)',
   update_po_info_no_pw: 'CALL "edit_po_info_no_pw"($1, $2, $3, $4, $5, $6)',
   update_ct_info: 'CALL "edit_ct_info"($1, $2, $3, $4, $5, $6)',

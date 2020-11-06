@@ -122,12 +122,33 @@
 
         <div class="row">
 					<div class="col-md-4 mb-3">
-						<button class="btn btn-primary btn-lg btn-block" type="submit" style="float:right">Confirm Changes</button>
+						<button class="btn btn-primary btn-lg btn-block" type="submit" style="float:right" name="isCancel" value="false">Confirm Changes</button>
 					</div>
 					<div class="col-md-4 mb-3">
-						<button class="btn btn-danger btn-lg btn-block" type="submit" style="float:right">Cancel Bid</button>
+            <a class="btn btn-danger btn-lg btn-block" style="float:right" style="margin: 0px; color: azure" onclick="return showModal()">Cancel Bid </a>
 					</div>
-				</div>
+        </div>
+        <div class="modal fade" id="modal-default">
+          <div class="modal-dialog">
+              <div class="modal-content">
+                  <div class="modal-header">
+                      <h4 class="modal-title">Confirmation</h4>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                          <span aria-hidden="true">&times;</span>
+                      </button>
+                  </div>
+                      <div class="modal-body">
+                          <div>
+                              Are you sure you want to cancel the bid?
+                          </div>
+                      </div>
+                      <div class="modal-footer justify-content-between small text-muted">
+                          <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+                          <button type="submit" class="btn btn-danger" name="isCancel" value="true">Yes</button>
+                      </div>
+              </div>
+          </div>
+      </div>
 				<!--Pass back original hire data.-->
 				<input type="hidden" name="ct_email" value=<%= trans.ct_email %>>
 				<input type="hidden" name="ori_start_date" value=<%= moment(trans.start_date).format() %>>
@@ -240,6 +261,10 @@
             title: 'Error',
             body: "<%= messages.error %>"
     });
+  }
+
+  function showModal() {
+    $('#modal-default').modal('show');
   }
 	</script>
 </body>

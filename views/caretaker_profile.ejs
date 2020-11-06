@@ -20,7 +20,7 @@
                 <p><b>Name:</b> <%= get_ct_info[0].name %><br>
                     <b>Email:</b> <%= get_ct_info[0].email %><br>
                     <b>Location:</b> <%= get_ct_info[0].location %><br>
-                    <% if (!get_ct_info[0].rating) { %>
+                    <% if (!get_ct_info[0].rating || get_ct_info[0].rating == 0) { %>
                         <b>Rating:</b><i> No Rating Yet!</i><br>
                     <% } else { %> 
                         <b>Rating:</b> <%= Number(get_ct_info[0].rating).toFixed(2) %><br>
@@ -46,7 +46,7 @@
                     <% my_pet_types.forEach(type => { %>
                     <tr>
                         <td style="width:50%"><%= type.pet_type %></th>
-                        <td style="text-align: end;">$<%= type.price %></td>
+                        <td style="text-align: end;">$<%= Number(type.daily_price).toFixed(2) %></td>
                     </tr>
                     <% }); %>
                 </tbody>

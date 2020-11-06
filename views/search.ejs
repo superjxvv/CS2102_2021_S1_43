@@ -45,10 +45,10 @@
       if (urlArray[urlArray.length - 1] == 'search') {
         startDate = new Date()
         endDate = new Date()
-        $('#reservation').daterangepicker({ startDate, endDate, locale: {
+        $('#reservation').daterangepicker({
+          startDate, endDate, locale: {
             format: 'DD/MM/YYYY'
-          } }, function (start, end, label) {
-          window.location.href = '/search/' + start.format('DD-MM-YYYY') + '/' + end.format('DD-MM-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort
+          }
         })
       } else {
         ratingSort = JSON.parse('<%- JSON.stringify(rating) %>');
@@ -61,22 +61,28 @@
           locale: {
             format: 'DD/MM/YYYY'
           }
-        }, function (start, end, label) {
-          window.location.href = '/search/' + start.format('DD-MM-YYYY') + '/' + end.format('DD-MM-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort;
         })
       }
 
-      check = () => {
+      $('#reservation').on('apply.daterangepicker', function (ev, picker) {
+        ev.preventDefault();
+        window.location.href = '/search/' + picker.startDate.format('DD-MM-YYYY') + '/' + picker.endDate.format('DD-MM-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort;
+      });
+
+      check = (event) => {
+        event.preventDefault();
         window.location.href = '/search/' + moment(startDate).format('DD-MM-YYYY') + '/' + moment(endDate).format('DD-MM-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort;
       };
 
       $('.select2').on('select2:select', function (e) {
+        e.preventDefault();
         console.log($('input[name="location"]:checked').val())
         console.log($(this).val());
         window.location.href = '/search/' + moment(startDate).format('DD-MM-YYYY') + '/' + moment(endDate).format('DD-MM-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($(this).val()) + '/' + ratingSort + '/' + priceSort;
       });
 
       $('.select2').on('select2:unselect', function (e) {
+        e.preventDefault();
         console.log($('input[name="location"]:checked').val())
         console.log($(this).val());
         window.location.href = '/search/' + moment(startDate).format('DD-MM-YYYY') + '/' + moment(endDate).format('DD-MM-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($(this).val()) + '/' + ratingSort + '/' + priceSort;
@@ -215,7 +221,7 @@
           <%for(let k = 0; k < location.length; k++) {%>
           <div class="radio">
             <label>
-              <input type="radio" name="location" value="<%=location[k]%>" <% if(location[k] == selectedLocation) {%>checked<%}%> onChange="check()" />
+              <input type="radio" name="location" value="<%=location[k]%>" <% if(location[k] == selectedLocation) {%>checked<%}%> onChange="check(event)" />
               <%=location[k]%> </label>
           </div>
           <%}%>

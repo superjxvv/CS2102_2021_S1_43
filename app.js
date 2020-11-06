@@ -87,17 +87,31 @@ app.get('/search', async (req, res) => {
     );
     console.log(allCareTaker.rows);
     const allPetTypes = await pool.query(sql_query.query.all_pet_types);
-    res.render('search', {
-      careTakers: allCareTaker.rows,
-      selectedLocation: location,
-      petTypes: allPetTypes.rows,
-      selectedPetTypes,
-      rating,
-      price,
-      loggedIn: req.user,
-      accountType: req.user.type,
-      jobTypeToHuman: jobTypeToHuman
-    });
+    if(!req.user) {
+      res.render('search', {
+        careTakers: allCareTaker.rows,
+        selectedLocation: location,
+        petTypes: allPetTypes.rows,
+        selectedPetTypes,
+        rating,
+        price,
+        loggedIn: req.user,
+        accountType: 3,
+        jobTypeToHuman: jobTypeToHuman
+      });
+    } else {
+      res.render('search', {
+        careTakers: allCareTaker.rows,
+        selectedLocation: location,
+        petTypes: allPetTypes.rows,
+        selectedPetTypes,
+        rating,
+        price,
+        loggedIn: req.user,
+        accountType: req.user.type,
+        jobTypeToHuman: jobTypeToHuman
+      });
+    }
   } catch (err) {
     console.error(err.message);
   }
@@ -356,7 +370,6 @@ app.post('/pre-bid', async (req, res) => {
           datesToDelete
         );
       }
-
       //Full timer will disable some dates
     } else {
       const leave = await pool.query(sql_query.query.full_timer_leave, [
@@ -783,7 +796,7 @@ app.get('/pcs-admin-dashboard', async (req, res) => {
     for (var i = 0; i < counts_alldeliverymethods.rowCount; i++) {
       counts_deliverymethods.push(counts_alldeliverymethods.rows[i]['count']);
     }
-    console.log("account type" + req.user.type)
+    let superAdmin = await isSuperAdmin(req);
     res.render('pcs-admin-dashboard', {
       numPetsTakenCareOf: numPetsTakenCareOf.rows[0]['count'],
       numTransaction: numTransaction.rows[0]['count'],
@@ -794,7 +807,8 @@ app.get('/pcs-admin-dashboard', async (req, res) => {
       first4PetTypes: first4PetTypes.rows,
       first4Caretakers: first4Caretakers.rows,
       loggedIn: req.user,
-      accountType: req.user.type
+      accountType: req.user.type,
+      isSuperAdmin: superAdmin
     });
   } catch (err) {
     console.error(err.message);
@@ -1433,7 +1447,12 @@ const isSuperAdmin = async (req) => {
 
 app.get('/admin_register', async (req, res) => {
   if (await isSuperAdmin(req)) {
-    res.render('admin_reg');
+    let superAdmin = await isSuperAdmin(req);
+    res.render('admin_reg', {
+      loggedIn: req.user,
+      accountType: req.user.type,
+      isSuperAdmin: superAdmin
+    });
   } else {
     req.flash('error', 'Unauthorised action');
     res.redirect('/login_redirect');
@@ -1614,8 +1633,7 @@ function(startDate, endDate, outputSet, criteriaSet)
 function datesFromRange(startDate, endDate, outputSet) {
   var startDate = new Date(arguments[0]);
   var endDate = new Date(arguments[1]);
-
-  while (startDate < endDate) {
+  while (startDate <= endDate) {
     if (arguments[3]) {
       if (!arguments[3].has(startDate)) {
         arguments[2].add(startDate);
@@ -1623,6 +1641,7 @@ function datesFromRange(startDate, endDate, outputSet) {
     } else {
       arguments[2].add(startDate);
     }
+    startDate = new Date(startDate);
     startDate.setDate(startDate.getDate() + 1);
   }
 }
@@ -1820,6 +1839,16 @@ app.post('/edit_bid', async (req, res) => {
       ct_email,
       new Date()
     ]);
+    var datesToDelete = new Set();
+
+    //Dates that the pets have already been booked for
+    const petOccupiedDates = await pool.query(sql_query.query.pets_occupied_dates, [
+      req.user.email,
+      originalHire.pet_name,
+      new Date()
+    ]);
+
+    petOccupiedDates.rows.forEach(x => datesFromRange(x.start_date, x.end_date, datesToDelete));
 
     //Address of pet_owner if any
     const addrQuery = await pool.query(sql_query.query.ownerAddress, [
@@ -1827,7 +1856,7 @@ app.post('/edit_bid', async (req, res) => {
     ]);
 
 
-    var datesToDelete = new Set();
+    
 
     const maxConcLimit = ct_Query.rows[0].max_concurrent_pet_limit;
     var concurrentTransactions = new Object()
@@ -1913,70 +1942,81 @@ app.post('/edit_bid', async (req, res) => {
 
 app.post('/submit_edit', async (req, res) => {
   if (req.user) {
-    const owner_email = req.user.email;
-    //Delete old bid
-    await pool.query(sql_query.query.delete_bid, [
-      owner_email,
-      req.body.ct_email,
-      req.body.ori_start_date,
-      req.body.ori_end_date,
-      req.body.pet_name
-    ]);
-    const startDate =
-      req.body.start_date === ''
-        ? new Date(req.body.ori_start_date)
-        : new Date(req.body.start_date);
-    const endDate =
-      req.body.end_date === ''
-        ? new Date(req.body.ori_end_date)
-        : new Date(req.body.end_date);
-    const numDays = diffDays(startDate, endDate) + 1;
-    const address = req.body.transferMethod === 'cPickup'
-      ? req.body.address
-      : req.body.transferMethod === 'oDeliver'
-        ? pool.query(`SELECT address FROM care_taker WHERE email = $1`, [req.body.ct_email]).rows[0].address
-        : null;
-    //Use pet type to server query cost per day to be sure
-    const petTypeQuery = await pool.query(
-      sql_query.query.petTypeFromOwnerAndName,
-      [owner_email, req.body.pet_name]
-    );
-    const petType = petTypeQuery.rows[0].pet_type;
-    //Cost per day for that pet type
-    const costPerDayQuery = await pool.query(
-      sql_query.query.dailyPriceGivenTypeAndCT,
-      [req.body.ct_email, petType]
-    );
-    const costPerDay = costPerDayQuery.rows[0].daily_price;
-    const totalCost = numDays * costPerDay;
-    //Add date range to date range table if not exists
-    await pool.query(
-      'INSERT INTO date_range VALUES($1, $2) ON CONFLICT DO NOTHING',
-      [startDate, endDate]
-    );
-    //Put in replacement bid.
-    queryValues = [
-      owner_email,
-      req.body.pet_name,
-      req.body.ct_email,
-      numDays,
-      totalCost,
-      req.body.transferMethod,
-      startDate,
-      endDate,
-      new Date(),
-      address
-    ];
-    await pool.query(sql_query.query.add_bid, queryValues);
-    //Add address if indicated
-    if (req.body.saveAddress) {
-      await pool.query('UPDATE pet_owner SET address=$1 WHERE email =$2', [
-        req.body.address,
-        owner_email
+    if (req.body.isCancel === "true") {
+      const queryText = `UPDATE hire SET hire_status = 'cancelled' WHERE owner_email = $1 AND ct_email = $2 AND start_date = $3 AND end_date = $4 AND pet_name = $5`;
+      const queryValues = [
+        req.user.email,
+        req.body.ct_email,
+        req.body.ori_start_date,
+        req.body.ori_end_date,
+        req.body.pet_name
+      ];
+      await pool.query(queryText, queryValues);
+      req.flash("success_msg", 'Bid successfully cancelled.');
+      res.redirect('/transactions');
+    } else {
+      const owner_email = req.user.email;
+      //Delete old bid
+      await pool.query(sql_query.query.delete_bid, [
+        owner_email,
+        req.body.ct_email,
+        req.body.ori_start_date,
+        req.body.ori_end_date,
+        req.body.pet_name
       ]);
+
+      const startDate =
+        req.body.start_date === ''
+          ? new Date(req.body.ori_start_date)
+          : new Date(req.body.start_date);
+      const endDate =
+        req.body.end_date === ''
+          ? new Date(req.body.ori_end_date)
+          : new Date(req.body.end_date);
+      const numDays = diffDays(startDate, endDate) + 1;
+      const address = req.body.transferMethod === 'cPickup'
+        ? req.body.address
+        : req.body.transferMethod === 'oDeliver'
+          ? pool.query(`SELECT address FROM care_taker WHERE email = $1`, [req.body.ct_email]).rows[0].address
+          : null;
+      //Use pet type to server query cost per day to be sure
+      const petTypeQuery = await pool.query(
+        sql_query.query.petTypeFromOwnerAndName,
+        [owner_email, req.body.pet_name]
+      );
+      const petType = petTypeQuery.rows[0].pet_type;
+      //Cost per day for that pet type
+      const costPerDayQuery = await pool.query(
+        sql_query.query.dailyPriceGivenTypeAndCT,
+        [req.body.ct_email, petType]
+      );
+      const costPerDay = costPerDayQuery.rows[0].daily_price;
+      const totalCost = numDays * costPerDay;
+      
+      //Put in replacement bid.
+      queryValues = [
+        owner_email,
+        req.body.pet_name,
+        req.body.ct_email,
+        numDays,
+        totalCost,
+        req.body.transferMethod,
+        startDate,
+        endDate,
+        new Date(),
+        address
+      ];
+      await pool.query(sql_query.query.add_bid, queryValues);
+      //Add address if indicated
+      if (req.body.saveAddress) {
+        await pool.query('UPDATE pet_owner SET address=$1 WHERE email =$2', [
+          req.body.address,
+          owner_email
+        ]);
+      }
+      req.flash('success_msg', 'Bid successfully updated.');
+      res.redirect('transactions');
     }
-    req.flash('success_msg', 'Bid successfully updated.');
-    res.redirect('transactions');
   } else {
     req.flash('error', 'Error: User is not authenticated');
     res.redirect('/login');

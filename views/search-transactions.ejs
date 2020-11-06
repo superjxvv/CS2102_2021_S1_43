@@ -30,7 +30,7 @@
             })
             let selectedStatus = [];
             const allStatus = JSON.parse('<%- JSON.stringify(allStatus) %>');
-            const currMonth = JSON.parse('<%- JSON.stringify(currMonth) %>');
+            let currMonth = JSON.parse('<%- JSON.stringify(currMonth) %>');
             console.log(currMonth)
             selectedStatus = JSON.parse('<%- JSON.stringify(selectedStatus) %>') ? JSON.parse('<%- JSON.stringify(selectedStatus) %>') : [];
             $('.select2').select2({
@@ -43,11 +43,12 @@
                 window.location.href = '/search-transactions/' + JSON.stringify($('.select2').val()) + "/" + currMonth;
             });
 
-            check = () => {
+            check = (event) => {
+                event.preventDefault();
                 if (currMonth == 'true') {
-                    currMonth == 'false'
+                    currMonth = 'false'
                 } else {
-                    currMonth == 'true'
+                    currMonth = 'true'
                 }
                 window.location.href = '/search-transactions/' + JSON.stringify($('.select2').val()) + '/' + currMonth;
             };
@@ -61,7 +62,7 @@
     <div class="form-group">
         <div class="radio">
             <label>Only show Transactions in current month: </label>
-            <input type="checkbox" name="showCurrentMonth" <% if(currMonth == 'true') {%> checked <%}%> onChange="check()" />
+            <input type="checkbox" name="showCurrentMonth" <% if(currMonth == 'true') {%> checked <%}%> onChange="check(event)" />
             </div>
           </div>
         <label class="col-sm-3">Filter by Transaction Status: </label>

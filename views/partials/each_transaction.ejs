@@ -1,4 +1,8 @@
 <%- include('../functions') %>
+<% var transfer = all.method_of_pet_transfer; %>
+<% if (transfer == 'office') { transfer = 'Deliver to PetCare office'; } %>
+<% if (transfer == 'oDeliver') { transfer = 'Pet Owner to deliver to address'; } %>
+<% if (transfer == 'cPickup') { transfer = 'Caretaker to pickup'; } %>
 <div class="container vert-gap-card">
     <div class="card" style="background-color: whitesmoke; padding-bottom: 0px;">
         <div class="card-body col-12" style="padding-bottom: 0px; padding-top: 15px;">
@@ -16,9 +20,11 @@
                         <p><b>Pet:</b> <a href="/my_pet/<%= all.owner_email %>/<%= all.pet_name %>"><%= all.pet_name %></a></p>
                     <% } %>
                     <p><b>Caretaker:</b> <a href="/profile/<%= all.ct_email %>"><%= all.ct_name %></a></p>
+                    <p><b>Method of Pet Transfer:</b> <%= transfer %></p>
                 </div>
                 <div class="col col-4">
-                    <% if (all.addr && (all.hire_status == 'completed' || all.hire_status == 'inProgress')) { %>
+                    <% if (all.addr && (all.hire_status == 'completed' || all.hire_status == 'inProgress') 
+                            && accountType == 1 && all.method_of_pet_transfer == 'oDeliver') { %>
                         <p><b>Address:</b> <%= all.addr %></p>
                     <% } %>
                     <p><b>Status:</b> 

@@ -111,7 +111,7 @@ sql.query = {
   all_my_pets:
     'SELECT * FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.email = $1  AND deleted = false ORDER BY O.pet_name',
   all_my_pet_types:
-    'SELECT c.pet_type AS pet_type, p.base_daily_price AS price FROM can_take_care_of c INNER JOIN pet_type p ON c.pet_type = p.name WHERE c.email = $1 ORDER BY c.pet_type',
+    "SELECT * FROM can_take_care_of WHERE email = $1 ORDER BY pet_type ASC",
   get_pet_info:
     'SELECT * FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.email = $1 AND O.pet_name = $2',
   get_po_info:
@@ -139,13 +139,15 @@ sql.query = {
     'SELECT pet_name FROM is_of WHERE owner_email = $1 AND pet_type = $2',
   add_bid:
     "INSERT INTO hire(owner_email, pet_name, ct_email, num_pet_days, total_cost, hire_status, method_of_pet_transfer, start_date, end_date, transaction_date, address) VALUES ($1, $2, $3, $4, $5, 'pendingAccept', $6, $7, $8, $9, $10)",
+  pets_occupied_dates:
+    "SELECT * FROM hire WHERE owner_email = $1 and pet_name = $2 AND start_date >= $3",
   dailyPriceGivenTypeAndCT:
     'SELECT daily_price FROM can_take_care_of WHERE email = $1 AND pet_type = $2',
   ownerAddress: 'SELECT address FROM pet_owner WHERE email = $1',
   petTypeFromOwnerAndName:
     'SELECT pet_type FROM is_of WHERE owner_email = $1 AND pet_name = $2',
   payForBid:
-    "UPDATE hire SET method_of_payment = $1, hire_status= 'inProgress' WHERE owner_email = $2 AND pet_name = $3 AND ct_email = $4 AND start_date = $5 AND end_date = $6",
+    'CALL pay_for_bid($1, $2, $3, $4, $5, $6)',
   add_pet: 'SELECT "add_pet"($1, $2, $3, $4)',
   add_pet_type_ct: 'CALL "add_pet_type_ct"($1, $2)',
   update_po_info: 'CALL "edit_po_info"($1, $2, $3, $4, $5, $6, $7)',

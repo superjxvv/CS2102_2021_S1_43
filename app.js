@@ -1964,6 +1964,7 @@ app.get('/give_review/:action', async (req, res) => {
         const pet_name = req.query.pet_name;
         const ct_name = await pool.query(sql_query.query.get_ct_info, [ct_email]);
         var data = [];
+        
         if (req.params.action == 'edit') {
           const query = await pool.query(
             sql_query.query.get_one_trxn,
@@ -2005,6 +2006,11 @@ app.post('/give_review/:action', async (req, res) => {
     const review = req.body.review == "" ? null : req.body.review;
     const owner_email = req.user.email;
     const pet_name = req.body.pet_name;
+    console.log("!!!");
+    console.log(req.body.start_date);
+    console.log(new Date(req.body.start_date));
+    console.log((new Date(req.body.start_date) + 1));
+    console.log(moment(new Date(req.body.start_date) + 1));
     const start_date = moment(new Date(req.body.start_date) + 1).format('YYYY-MM-DD');
     const end_date = moment(new Date(req.body.end_date) + 1).format('YYYY-MM-DD');
     const ct_email = req.body.ct_email;

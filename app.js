@@ -356,7 +356,6 @@ app.post('/pre-bid', async (req, res) => {
           datesToDelete
         );
       }
-
       //Full timer will disable some dates
     } else {
       const leave = await pool.query(sql_query.query.full_timer_leave, [
@@ -1545,8 +1544,7 @@ function(startDate, endDate, outputSet, criteriaSet)
 function datesFromRange(startDate, endDate, outputSet) {
   var startDate = new Date(arguments[0]);
   var endDate = new Date(arguments[1]);
-
-  while (startDate < endDate) {
+  while (startDate <= endDate) {
     if (arguments[3]) {
       if (!arguments[3].has(startDate)) {
         arguments[2].add(startDate);
@@ -1554,6 +1552,7 @@ function datesFromRange(startDate, endDate, outputSet) {
     } else {
       arguments[2].add(startDate);
     }
+    startDate = new Date(startDate);
     startDate.setDate(startDate.getDate() + 1);
   }
 }

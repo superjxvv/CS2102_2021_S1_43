@@ -1857,70 +1857,81 @@ app.post('/edit_bid', async (req, res) => {
 
 app.post('/submit_edit', async (req, res) => {
   if (req.user) {
-    const owner_email = req.user.email;
-    //Delete old bid
-    await pool.query(sql_query.query.delete_bid, [
-      owner_email,
-      req.body.ct_email,
-      req.body.ori_start_date,
-      req.body.ori_end_date,
-      req.body.pet_name
-    ]);
-    const startDate =
-      req.body.start_date === ''
-        ? new Date(req.body.ori_start_date)
-        : new Date(req.body.start_date);
-    const endDate =
-      req.body.end_date === ''
-        ? new Date(req.body.ori_end_date)
-        : new Date(req.body.end_date);
-    const numDays = diffDays(startDate, endDate) + 1;
-    const address = req.body.transferMethod === 'cPickup'
-      ? req.body.address
-      : req.body.transferMethod === 'oDeliver'
-        ? pool.query(`SELECT address FROM care_taker WHERE email = $1`, [req.body.ct_email]).rows[0].address
-        : null;
-    //Use pet type to server query cost per day to be sure
-    const petTypeQuery = await pool.query(
-      sql_query.query.petTypeFromOwnerAndName,
-      [owner_email, req.body.pet_name]
-    );
-    const petType = petTypeQuery.rows[0].pet_type;
-    //Cost per day for that pet type
-    const costPerDayQuery = await pool.query(
-      sql_query.query.dailyPriceGivenTypeAndCT,
-      [req.body.ct_email, petType]
-    );
-    const costPerDay = costPerDayQuery.rows[0].daily_price;
-    const totalCost = numDays * costPerDay;
-    //Add date range to date range table if not exists
-    await pool.query(
-      'INSERT INTO date_range VALUES($1, $2) ON CONFLICT DO NOTHING',
-      [startDate, endDate]
-    );
-    //Put in replacement bid.
-    queryValues = [
-      owner_email,
-      req.body.pet_name,
-      req.body.ct_email,
-      numDays,
-      totalCost,
-      req.body.transferMethod,
-      startDate,
-      endDate,
-      new Date(),
-      address
-    ];
-    await pool.query(sql_query.query.add_bid, queryValues);
-    //Add address if indicated
-    if (req.body.saveAddress) {
-      await pool.query('UPDATE pet_owner SET address=$1 WHERE email =$2', [
-        req.body.address,
-        owner_email
+    if (req.body.isCancel === "true") {
+      const queryText = `UPDATE hire SET hire_status = 'cancelled' WHERE owner_email = $1 AND ct_email = $2 AND start_date = $3 AND end_date = $4 AND pet_name = $5`;
+      const queryValues = [
+        req.user.email,
+        req.body.ct_email,
+        req.body.ori_start_date,
+        req.body.ori_end_date,
+        req.body.pet_name
+      ];
+      await pool.query(queryText, queryValues);
+      req.flash("success_msg", 'Bid successfully cancelled.');
+      res.redirect('/transactions');
+    } else {
+      const owner_email = req.user.email;
+      //Delete old bid
+      await pool.query(sql_query.query.delete_bid, [
+        owner_email,
+        req.body.ct_email,
+        req.body.ori_start_date,
+        req.body.ori_end_date,
+        req.body.pet_name
       ]);
+
+      const startDate =
+        req.body.start_date === ''
+          ? new Date(req.body.ori_start_date)
+          : new Date(req.body.start_date);
+      const endDate =
+        req.body.end_date === ''
+          ? new Date(req.body.ori_end_date)
+          : new Date(req.body.end_date);
+      const numDays = diffDays(startDate, endDate) + 1;
+      const address = req.body.transferMethod === 'cPickup'
+        ? req.body.address
+        : req.body.transferMethod === 'oDeliver'
+          ? pool.query(`SELECT address FROM care_taker WHERE email = $1`, [req.body.ct_email]).rows[0].address
+          : null;
+      //Use pet type to server query cost per day to be sure
+      const petTypeQuery = await pool.query(
+        sql_query.query.petTypeFromOwnerAndName,
+        [owner_email, req.body.pet_name]
+      );
+      const petType = petTypeQuery.rows[0].pet_type;
+      //Cost per day for that pet type
+      const costPerDayQuery = await pool.query(
+        sql_query.query.dailyPriceGivenTypeAndCT,
+        [req.body.ct_email, petType]
+      );
+      const costPerDay = costPerDayQuery.rows[0].daily_price;
+      const totalCost = numDays * costPerDay;
+      
+      //Put in replacement bid.
+      queryValues = [
+        owner_email,
+        req.body.pet_name,
+        req.body.ct_email,
+        numDays,
+        totalCost,
+        req.body.transferMethod,
+        startDate,
+        endDate,
+        new Date(),
+        address
+      ];
+      await pool.query(sql_query.query.add_bid, queryValues);
+      //Add address if indicated
+      if (req.body.saveAddress) {
+        await pool.query('UPDATE pet_owner SET address=$1 WHERE email =$2', [
+          req.body.address,
+          owner_email
+        ]);
+      }
+      req.flash('success_msg', 'Bid successfully updated.');
+      res.redirect('transactions');
     }
-    req.flash('success_msg', 'Bid successfully updated.');
-    res.redirect('transactions');
   } else {
     req.flash('error', 'Error: User is not authenticated');
     res.redirect('/login');

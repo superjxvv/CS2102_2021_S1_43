@@ -139,7 +139,7 @@ sql.query = {
   petTypeFromOwnerAndName:
     'SELECT pet_type FROM is_of WHERE owner_email = $1 AND pet_name = $2',
   payForBid:
-    "UPDATE hire SET method_of_payment = $1, hire_status= 'inProgress' WHERE owner_email = $2 AND pet_name = $3 AND ct_email = $4 AND start_date = $5 AND end_date = $6",
+    'CALL pay_for_bid($1, $2, $3, $4, $5, $6)',
   add_pet: 'SELECT "add_pet"($1, $2, $3, $4)',
   add_pet_type_ct: 'CALL "add_pet_type_ct"($1, $2)',
   update_po_info: 'CALL "edit_po_info"($1, $2, $3, $4, $5, $6, $7)',

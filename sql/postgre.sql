@@ -3586,6 +3586,22 @@ END;
 '
 LANGUAGE plpgsql;
 
+CREATE OR REPLACE PROCEDURE
+pay_for_bid(payment_method method_of_payment, po_email VARCHAR, petname VARCHAR, caretaker_email VARCHAR, startD DATE, endD DATE) AS
+$$
+BEGIN
+  IF (payment_method = 'cash') THEN
+    UPDATE hire SET method_of_payment = payment_method WHERE owner_email = po_email AND pet_name = petname AND ct_email = caretaker_email
+    AND start_date = startD AND end_date = endD;
+  ELSIF (payment_method = 'creditcard') THEN
+    UPDATE hire SET method_of_payment = payment_method, hire_status = 'paymentMade' WHERE owner_email = po_email AND pet_name = petname AND ct_email = caretaker_email
+    AND start_date = startD AND end_date = endD;
+  END IF;
+END;
+$$
+
+LANGUAGE plpgsql;
+
 --Add dates into date_range if not exists to prevent foreign key error.
 --Auto accepts if caretaker is fulltimer
 CREATE OR REPLACE FUNCTION add_hire() RETURNS TRIGGER AS 

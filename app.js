@@ -94,6 +94,7 @@ app.get('/search', async (req, res) => {
       rating,
       price,
       loggedIn: req.user,
+      accountType: req.user.type
     });
   } catch (err) {
     console.error(err.message);
@@ -104,8 +105,9 @@ app.get(
   '/search/:startDate/:endDate/:location/:petTypes/:rating/:price',
   async (req, res) => {
     try {
-      const startDate = new Date(req.params.startDate) || new Date();
-      const endDate = new Date(req.params.endDate) || new Date();
+      const startDate = new Date(new moment(req.params.startDate, "DD-MM-YYYY")) || new Date();
+      const endDate =
+        new Date(new moment(req.params.endDate, 'DD-MM-YYYY')) || new Date();
       const location = req.params.location;
       const selectedPetTypes = JSON.parse(req.params.petTypes);
       const rating = req.params.rating;
@@ -302,74 +304,86 @@ app.get(
 );
 
 app.post('/pre-bid', async (req, res) => {
-  // if (req.user) {
-  let { ct_email } = req.body;
-  careTakerToBid = await pool.query(sql_query.query.caretaker_to_bid, [
-    ct_email
-  ]);
-  allMyPets = await pool.query(sql_query.query.my_pets_that_can_take_care_of, [
-    req.user.email, //change to req.user.email when ready
-    ct_email
-  ]);
-  //Dates that this ct is already booked.
-  const datesCaring = await pool.query(sql_query.query.dates_caring, [
-    ct_email,
-    new Date()
-  ]);
-  var datesToDelete = new Set();
-  for (var i = 0; i < datesCaring.rows.length; i++) {
-    const usedDate = datesCaring.rows[i];
-    datesFromRange(usedDate.start_date, usedDate.end_date, datesToDelete);
-  }
-  var datesToAllow = new Set();
-  var isPartTimer = false;
-  //Part timer only show available dates
-  if (careTakerToBid.rows[0].job == 'part_timer') {
-    const availability = await pool.query(
-      sql_query.query.part_timer_availability,
-      [ct_email]
-    );
-    isPartTimer = true;
-    for (var i = 0; i < availability.rows.length; i++) {
-      const canDate = availability.rows[i];
-      datesFromRange(
-        canDate.start_date,
-        canDate.end_date,
-        datesToAllow,
-        datesToDelete
-      );
-    }
-
-    //Full timer will disable some dates
-  } else {
-    const leave = await pool.query(sql_query.query.full_timer_leave, [
+  if (req.user) {
+    let { ct_email } = req.body;
+    careTakerToBid = await pool.query(sql_query.query.caretaker_to_bid, [
       ct_email
     ]);
-    for (var i = 0; i < leave.rows.length; i++) {
-      const leaveDate = leave.rows[i];
-      datesFromRange(leaveDate.start_date, leaveDate.end_date, datesToDelete);
+    allMyPets = await pool.query(sql_query.query.my_pets_that_can_take_care_of, [
+      req.user.email, //change to req.user.email when ready
+      ct_email
+    ]);
+    //Dates that this ct is already booked.
+    const datesCaring = await pool.query(sql_query.query.dates_caring, [
+      ct_email,
+      new Date()
+    ]);
+    var datesToDelete = new Set();
+    const maxConcLimit = careTakerToBid.rows[0].max_concurrent_pet_limit;
+    var concurrentTransactions = new Object();
+    //For each date, count number of occurences.
+    for (var i = 0; i < datesCaring.rows.length; i++) {
+      const usedDate = datesCaring.rows[i];
+      countDatesFromRange(
+        usedDate.start_date,
+        usedDate.end_date,
+        concurrentTransactions
+      );
     }
-  }
+    //For each date counted in hashMap concurrentTransactions, add it to datesToDelete if the count > max limit
+    for (var key in concurrentTransactions) {
+      if (concurrentTransactions[key] > maxConcLimit) {
+        datesToDelete.add(key);
+      }
+    }
+    var datesToAllow = new Set();
+    var isPartTimer = false;
+    //Part timer only show available dates
+    if (careTakerToBid.rows[0].job == 'part_timer') {
+      const availability = await pool.query(
+        sql_query.query.part_timer_availability,
+        [ct_email]
+      );
+      isPartTimer = true;
+      for (var i = 0; i < availability.rows.length; i++) {
+        const canDate = availability.rows[i];
+        datesFromRange(
+          canDate.start_date,
+          canDate.end_date,
+          datesToAllow,
+          datesToDelete
+        );
+      }
 
-  res.render('pre-bid', {
-    loggedInUser: req.user,
-    loggedInUserEmail: req.user.email, //remove when req.user ready
-    careTakerToBid: careTakerToBid.rows[0],
-    allMyPets: allMyPets.rows,
-    isPartTimer: isPartTimer,
-    today: new Date().toISOString().slice(0, 10),
-    latestDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1))
-      .toISOString()
-      .slice(0, 10),
-    blockedDates: Array.from(datesToDelete),
-    availableDates: Array.from(datesToAllow),
-    loggedIn: req.user,
-    accountType: req.user.type
-  });
-  // } else {
-  //   req.flash('error', 'Please login before accessing your transactions.');
-  //   res.redirect('/login');
-  // }
+      //Full timer will disable some dates
+    } else {
+      const leave = await pool.query(sql_query.query.full_timer_leave, [
+        ct_email
+      ]);
+      for (var i = 0; i < leave.rows.length; i++) {
+        const leaveDate = leave.rows[i];
+        datesFromRange(leaveDate.start_date, leaveDate.end_date, datesToDelete);
+      }
+    }
+    res.render('pre-bid', {
+      loggedInUser: req.user,
+      loggedInUserEmail: req.user.email, 
+      careTakerToBid: careTakerToBid.rows[0],
+      allMyPets: allMyPets.rows,
+      isPartTimer: isPartTimer,
+      today: new Date().toLocaleString(),
+      latestDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1))
+        .toLocaleString(),
+      blockedDates: Array.from(datesToDelete),
+      availableDates: Array.from(datesToAllow),
+      loggedIn: req.user,
+      accountType: req.user.type,
+      moment: moment
+    });
+  } else {
+    req.flash('error', 'Please login before bidding for care taker.');
+    res.redirect('/login');
+  }
 });
 
 app.get('/caretaker-summary-info', async (req, res) => {
@@ -603,7 +617,7 @@ app.get('/dashboard', async (req, res) => {
         recent_trxn: recent_trxn_completed.rows,
         statusToHuman: statusToHuman,
         loggedIn: req.user,
-        today: new Date().toISOString().slice(0, 10),
+        today: new moment().format('DD-MM-YYYY'),
         accountType: 3
       });
     } else {
@@ -632,7 +646,7 @@ app.get('/dashboard', async (req, res) => {
           my_details: my_details.rows,
           statusToHuman: statusToHuman,
           loggedIn: true,
-          today: new Date().toISOString().slice(0, 10),
+          today: new moment().format('DD-MM-YYYY'),
           accountType: account_type
         });
       } else if (account_type == 2) {

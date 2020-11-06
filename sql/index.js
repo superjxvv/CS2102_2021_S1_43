@@ -77,12 +77,24 @@ sql.query = {
     "SELECT SUM(H.num_pet_days) AS num_pet_days FROM hire H WHERE H.ct_email = $1 AND date_part('month', end_date) = date_part('month', CURRENT_DATE) AND date_part('year', end_date) = date_part('year', CURRENT_DATE) AND H.hire_status = 'completed'",
   ct_salary:
     "SELECT SUM(H.total_cost) AS total_cost FROM hire H WHERE H.ct_email = $1 AND date_part('month', end_date) = date_part('month', CURRENT_DATE) AND date_part('year', end_date) = date_part('year', CURRENT_DATE) AND H.hire_status = 'completed'",
-  
+  get_ct_by_email: 
+  "SELECT name, email, location, rating FROM care_taker WHERE email = $1",
+  get_po_by_email: 
+  "SELECT name, email, location FROM pet_owner WHERE email = $1",
+  get_admin_by_email: 
+  "SELECT name, email, password FROM pcs_admin WHERE email = $1",
+  all_ct_for_manage_users:
+  "SELECT name, email, location, rating FROM care_taker WHERE deleted=false",
+  all_po_for_manage_users:
+  "SELECT name, email, location FROM pet_owner WHERE deleted=false",
   // Insertion
   add_pet_type: 'INSERT INTO pet_type (name, base_daily_price) VALUES($1,$2)',
 
   // Update:
   update_pet_type: 'UPDATE pet_type SET base_daily_price=$2 WHERE name=$1',
+  update_admin: 'UPDATE pcs_admin SET name=$2, password=$3 WHERE email=$1',
+  delete_ct: 'UPDATE care_taker SET deleted=true WHERE email=$1',
+  delete_po: 'UPDATE pet_owner SET deleted=true WHERE email=$1',
 
   // top 4 ratings
   caretaker_top_ratings:

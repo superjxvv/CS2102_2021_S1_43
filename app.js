@@ -87,6 +87,7 @@ app.get('/search', async (req, res) => {
     );
     console.log(allCareTaker.rows);
     const allPetTypes = await pool.query(sql_query.query.all_pet_types);
+    let superAdmin = await isSuperAdmin(req);
     if(!req.user) {
       res.render('search', {
         careTakers: allCareTaker.rows,
@@ -97,7 +98,8 @@ app.get('/search', async (req, res) => {
         price,
         loggedIn: req.user,
         accountType: 3,
-        jobTypeToHuman: jobTypeToHuman
+        jobTypeToHuman: jobTypeToHuman,
+        isSuperAdmin: superAdmin
       });
     } else {
       res.render('search', {
@@ -109,7 +111,8 @@ app.get('/search', async (req, res) => {
         price,
         loggedIn: req.user,
         accountType: req.user.type,
-        jobTypeToHuman: jobTypeToHuman
+        jobTypeToHuman: jobTypeToHuman,
+        isSuperAdmin: superAdmin
       });
     }
   } catch (err) {
@@ -302,6 +305,7 @@ app.get(
         );
       }
       const allPetTypes = await pool.query(sql_query.query.all_pet_types);
+      let superAdmin = await isSuperAdmin(req);
       res.render('search', {
         careTakers: allCareTaker.rows,
         selectedLocation: location,
@@ -311,7 +315,8 @@ app.get(
         price,
         loggedIn: req.user,
         accountType: req.user.type,
-        jobTypeToHuman: jobTypeToHuman
+        jobTypeToHuman: jobTypeToHuman,
+        isSuperAdmin: superAdmin
       });
     } catch (err) {
       console.error(err.message);
@@ -501,6 +506,7 @@ app.get('/manage-users/:type/:status', async (req, res) => {
       }
     }
     console.log(users + "User")
+    let superAdmin = await isSuperAdmin(req);
     if (await isSuperAdmin(req)) {
       res.render('manage-users', {
         users: users.rows,
@@ -508,7 +514,8 @@ app.get('/manage-users/:type/:status', async (req, res) => {
         userStatus: userStatus,
         loggedIn: req.user,
         accountType: req.user.type,
-        superAdmin: true
+        superAdmin: true,
+        isSuperAdmin: superAdmin
       });
     } else {
       res.render('manage-users', {
@@ -517,7 +524,8 @@ app.get('/manage-users/:type/:status', async (req, res) => {
         userStatus: userStatus,
         loggedIn: req.user,
         accountType: req.user.type,
-        superAdmin: false
+        superAdmin: false,
+        isSuperAdmin: superAdmin
       });
     }
   } catch (err) {
@@ -827,7 +835,7 @@ app.get('/search-transactions', async (req, res) => {
       sql_query.query.all_transactions_price_desc_rating_desc
     );
     const allStatus = ['pendingAccept', 'rejected', 'pendingPayment', 'paymentMade', 'inProgress', 'completed', 'cancelled'];
-
+    let superAdmin = await isSuperAdmin(req);
     res.render('search-transactions', {
       loggedInUser: req.user,
       selectedHires: selectedHires.rows,
@@ -839,7 +847,8 @@ app.get('/search-transactions', async (req, res) => {
       totalCost,
       currMonth,
       loggedIn: req.user,
-      accountType: req.user.type
+      accountType: req.user.type,
+      isSuperAdmin: superAdmin
     });
   } catch (err) {
     console.error(err.message);
@@ -872,7 +881,7 @@ app.get('/search-transactions/:status/:currMonth', async (req, res) => {
       }
     }
     const allStatus = ['pendingAccept', 'rejected', 'pendingPayment', 'paymentMade', 'inProgress', 'completed', 'cancelled'];
-
+    let superAdmin = await isSuperAdmin(req);
     res.render('search-transactions', {
       loggedInUser: req.user,
       selectedHires: selectedHires.rows,
@@ -884,7 +893,8 @@ app.get('/search-transactions/:status/:currMonth', async (req, res) => {
       totalCost,
       currMonth,
       loggedIn: req.user,
-      accountType: req.user.type
+      accountType: req.user.type,
+      isSuperAdmin: superAdmin
     });
   } catch (err) {
     console.error(err.message);

@@ -368,7 +368,7 @@ app.post('/pre-bid', async (req, res) => {
     }
     res.render('pre-bid', {
       loggedInUser: req.user,
-      loggedInUserEmail: req.user.email, 
+      loggedInUserEmail: req.user.email,
       careTakerToBid: careTakerToBid.rows[0],
       allMyPets: allMyPets.rows,
       isPartTimer: isPartTimer,
@@ -460,23 +460,37 @@ app.get('/caretaker-summary-info', async (req, res) => {
   }
 });
 
-app.get('/manage-users/:type', async (req, res) => {
+app.get('/manage-users/:type/:status', async (req, res) => {
   try {
     //todo: check that user is admin
     const userType = req.params.type;
+    const userStatus = req.params.status;
     if (userType == "caretaker") {
-      users = await pool.query(
-        sql_query.query.all_ct_for_manage_users
-      );
+      if (userStatus == "active") {
+        users = await pool.query(
+          sql_query.query.active_ct_for_manage_users
+        );
+      } else {
+        users = await pool.query(
+          sql_query.query.inactive_ct_for_manage_users
+        );
+      }
     } else if (userType == "petowner") {
-      users = await pool.query(
-        sql_query.query.all_po_for_manage_users
-      );
+      if (userStatus == "active") {
+        users = await pool.query(
+          sql_query.query.active_po_for_manage_users
+        );
+      } else {
+        users = await pool.query(
+          sql_query.query.inactive_po_for_manage_users
+        );
+      }
     }
     console.log(users + "User")
     res.render('manage-users', {
       users: users.rows,
       userType: userType,
+      userStatus: userStatus,
       loggedIn: req.user,
       accountType: req.user.type
     });
@@ -485,14 +499,19 @@ app.get('/manage-users/:type', async (req, res) => {
   }
 });
 
-app.get('/delete-care-taker/:email', async (req, res) => {
+app.get('/delete-user/:type/:email', async (req, res) => {
   try {
     //todo: check that user is admin
     const email = req.params.email;
-    const caretaker = await pool.query(sql_query.query.get_ct_by_email, [email]);
-    console.log(caretaker.rows[0])
-    res.render('delete-care-taker', {
-      caretaker: caretaker.rows[0],
+    const userType = req.params.type;
+    if (userType == "caretaker") {
+      user = await pool.query(sql_query.query.get_ct_by_email, [email]);
+    } else if (userType == "petowner") {
+      user = await pool.query(sql_query.query.get_po_by_email, [email]);
+    }
+    res.render('delete-user', {
+      user: user.rows[0],
+      userType: userType,
       loggedIn: req.user,
       accountType: req.user.type
     });
@@ -512,25 +531,10 @@ app.post('/delete-care-taker', async (req, res) => {
       if (err) {
         console.log(err)
       } else {
-        res.redirect('/manage-users/caretaker');
+        res.redirect('/manage-users/caretaker/inactive');
       }
     }
   );
-});
-
-app.get('/delete-pet-owner/:email', async (req, res) => {
-  try {
-    //todo: check that user is admin
-    const email = req.params.email;
-    const petowner = await pool.query(sql_query.query.get_po_by_email, [email]);
-    res.render('delete-pet-owner', {
-      petowner: petowner.rows[0],
-      loggedIn: req.user,
-      accountType: req.user.type
-    });
-  } catch (err) {
-    console.error(err.message);
-  }
 });
 
 app.post('/delete-pet-owner', async (req, res) => {
@@ -544,10 +548,63 @@ app.post('/delete-pet-owner', async (req, res) => {
       if (err) {
         console.log(err)
       } else {
-        res.redirect('/manage-users/petowner');
+        res.redirect('/manage-users/petowner/inactive');
       }
     }
   );
+});
+
+app.get('/reactivate-user/:type/:email', async (req, res) => {
+  try {
+    //todo: check that user is admin
+    const email = req.params.email;
+    const userType = req.params.type;
+    if (userType == "caretaker") {
+      user = await pool.query(sql_query.query.get_ct_by_email, [email]);
+    } else if (userType == "petowner") {
+      user = await pool.query(sql_query.query.get_po_by_email, [email]);
+    }
+    res.render('reactivate-user', {
+      user: user.rows[0],
+      userType: userType,
+      loggedIn: req.user,
+      accountType: req.user.type
+    });
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
+app.post('/reactivate-user/:type', async (req, res) => {
+  //todo: check that user is admin
+  var email = req.body.email;
+  const userType = req.params.type;
+
+  if (userType == "petowner") {
+    await pool.query(
+      sql_query.query.reactivate_po,
+      [email],
+      (err, data) => {
+        if (err) {
+          console.log(err)
+        } else {
+          res.redirect('/manage-users/petowner/active');
+        }
+      }
+    );
+  } else if (userType == "caretaker") {
+    await pool.query(
+      sql_query.query.reactivate_ct,
+      [email],
+      (err, data) => {
+        if (err) {
+          console.log(err)
+        } else {
+          res.redirect('/manage-users/caretaker/active');
+        }
+      }
+    );
+  }
 });
 
 app.get('/pcs-admin-profile/:email', async (req, res) => {
@@ -1690,7 +1747,7 @@ app.post('/submit_bid', async (req, res) => {
       new Date(),
       address
     ];
-    
+
     //Add bid to hire table
     await pool.query(sql_query.query.add_bid, queryValues);
     //Add address if indicated
@@ -1750,6 +1807,16 @@ app.post('/edit_bid', async (req, res) => {
       ct_email,
       new Date()
     ]);
+    var datesToDelete = new Set();
+
+    //Dates that the pets have already been booked for
+    const petOccupiedDates = await pool.query(sql_query.query.pets_occupied_dates, [
+      req.user.email,
+      originalHire.pet_name,
+      new Date()
+    ]);
+
+    petOccupiedDates.rows.forEach(x => datesFromRange(x.start_date, x.end_date, datesToDelete));
 
     //Address of pet_owner if any
     const addrQuery = await pool.query(sql_query.query.ownerAddress, [
@@ -1757,7 +1824,7 @@ app.post('/edit_bid', async (req, res) => {
     ]);
 
 
-    var datesToDelete = new Set();
+    
 
     const maxConcLimit = ct_Query.rows[0].max_concurrent_pet_limit;
     var concurrentTransactions = new Object()
@@ -1843,70 +1910,81 @@ app.post('/edit_bid', async (req, res) => {
 
 app.post('/submit_edit', async (req, res) => {
   if (req.user) {
-    const owner_email = req.user.email;
-    //Delete old bid
-    await pool.query(sql_query.query.delete_bid, [
-      owner_email,
-      req.body.ct_email,
-      req.body.ori_start_date,
-      req.body.ori_end_date,
-      req.body.pet_name
-    ]);
-    const startDate =
-      req.body.start_date === ''
-        ? new Date(req.body.ori_start_date)
-        : new Date(req.body.start_date);
-    const endDate =
-      req.body.end_date === ''
-        ? new Date(req.body.ori_end_date)
-        : new Date(req.body.end_date);
-    const numDays = diffDays(startDate, endDate) + 1;
-    const address = req.body.transferMethod === 'cPickup'
-      ? req.body.address
-      : req.body.transferMethod === 'oDeliver'
-        ? pool.query(`SELECT address FROM care_taker WHERE email = $1`, [req.body.ct_email]).rows[0].address
-        : null;
-    //Use pet type to server query cost per day to be sure
-    const petTypeQuery = await pool.query(
-      sql_query.query.petTypeFromOwnerAndName,
-      [owner_email, req.body.pet_name]
-    );
-    const petType = petTypeQuery.rows[0].pet_type;
-    //Cost per day for that pet type
-    const costPerDayQuery = await pool.query(
-      sql_query.query.dailyPriceGivenTypeAndCT,
-      [req.body.ct_email, petType]
-    );
-    const costPerDay = costPerDayQuery.rows[0].daily_price;
-    const totalCost = numDays * costPerDay;
-    //Add date range to date range table if not exists
-    await pool.query(
-      'INSERT INTO date_range VALUES($1, $2) ON CONFLICT DO NOTHING',
-      [startDate, endDate]
-    );
-    //Put in replacement bid.
-    queryValues = [
-      owner_email,
-      req.body.pet_name,
-      req.body.ct_email,
-      numDays,
-      totalCost,
-      req.body.transferMethod,
-      startDate,
-      endDate,
-      new Date(),
-      address
-    ];
-    await pool.query(sql_query.query.add_bid, queryValues);
-    //Add address if indicated
-    if (req.body.saveAddress) {
-      await pool.query('UPDATE pet_owner SET address=$1 WHERE email =$2', [
-        req.body.address,
-        owner_email
+    if (req.body.isCancel === "true") {
+      const queryText = `UPDATE hire SET hire_status = 'cancelled' WHERE owner_email = $1 AND ct_email = $2 AND start_date = $3 AND end_date = $4 AND pet_name = $5`;
+      const queryValues = [
+        req.user.email,
+        req.body.ct_email,
+        req.body.ori_start_date,
+        req.body.ori_end_date,
+        req.body.pet_name
+      ];
+      await pool.query(queryText, queryValues);
+      req.flash("success_msg", 'Bid successfully cancelled.');
+      res.redirect('/transactions');
+    } else {
+      const owner_email = req.user.email;
+      //Delete old bid
+      await pool.query(sql_query.query.delete_bid, [
+        owner_email,
+        req.body.ct_email,
+        req.body.ori_start_date,
+        req.body.ori_end_date,
+        req.body.pet_name
       ]);
+
+      const startDate =
+        req.body.start_date === ''
+          ? new Date(req.body.ori_start_date)
+          : new Date(req.body.start_date);
+      const endDate =
+        req.body.end_date === ''
+          ? new Date(req.body.ori_end_date)
+          : new Date(req.body.end_date);
+      const numDays = diffDays(startDate, endDate) + 1;
+      const address = req.body.transferMethod === 'cPickup'
+        ? req.body.address
+        : req.body.transferMethod === 'oDeliver'
+          ? pool.query(`SELECT address FROM care_taker WHERE email = $1`, [req.body.ct_email]).rows[0].address
+          : null;
+      //Use pet type to server query cost per day to be sure
+      const petTypeQuery = await pool.query(
+        sql_query.query.petTypeFromOwnerAndName,
+        [owner_email, req.body.pet_name]
+      );
+      const petType = petTypeQuery.rows[0].pet_type;
+      //Cost per day for that pet type
+      const costPerDayQuery = await pool.query(
+        sql_query.query.dailyPriceGivenTypeAndCT,
+        [req.body.ct_email, petType]
+      );
+      const costPerDay = costPerDayQuery.rows[0].daily_price;
+      const totalCost = numDays * costPerDay;
+      
+      //Put in replacement bid.
+      queryValues = [
+        owner_email,
+        req.body.pet_name,
+        req.body.ct_email,
+        numDays,
+        totalCost,
+        req.body.transferMethod,
+        startDate,
+        endDate,
+        new Date(),
+        address
+      ];
+      await pool.query(sql_query.query.add_bid, queryValues);
+      //Add address if indicated
+      if (req.body.saveAddress) {
+        await pool.query('UPDATE pet_owner SET address=$1 WHERE email =$2', [
+          req.body.address,
+          owner_email
+        ]);
+      }
+      req.flash('success_msg', 'Bid successfully updated.');
+      res.redirect('transactions');
     }
-    req.flash('success_msg', 'Bid successfully updated.');
-    res.redirect('transactions');
   } else {
     req.flash('error', 'Error: User is not authenticated');
     res.redirect('/login');

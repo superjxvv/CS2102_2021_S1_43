@@ -20,65 +20,22 @@
     <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
     <script>
         $(function () {
-            $('#example1 tfoot th').each(function () {
-                var title = $(this).text();
-                $(this).html('<input type="text" placeholder="Search ' + title + '" style="width: 100%;"/>');
-            });
+            userType = JSON.parse('<%- JSON.stringify(userType) %>');
+            userStatus = JSON.parse('<%- JSON.stringify(userStatus) %>');
 
             $("#example1").DataTable({
                 "responsive": true,
                 "autoWidth": false,
-                initComplete: function () {
-                    // Apply the search
-                    this.api().columns().every(function () {
-                        var that = this;
-
-                        $('input', this.footer()).on('keyup change clear', function () {
-                            if (that.search() !== this.value) {
-                                that
-                                    .search(this.value)
-                                    .draw();
-                            }
-                        });
-                    });
-
-                    var r = $('#example1 tfoot tr');
-                    r.find('th').each(function () {
-                        $(this).css('padding', 8);
-                    });
-                    $('#example1 thead').append(r);
-                }
+                "searching": false,
             });
 
-            $('#example1 tfoot th').each(function () {
-                var title = $(this).text();
-                $(this).html('<input type="text" placeholder="Search ' + title + '" style="width: 100%;"/>');
-            });
+            check = () => {
+                window.location.href = '/manage-users/' + $('input[name="userType"]:checked').val() + '/' + userStatus;
+            };
 
-            $("#example2").DataTable({
-                "responsive": true,
-                "autoWidth": false,
-                initComplete: function () {
-                    // Apply the search
-                    this.api().columns().every(function () {
-                        var that = this;
-
-                        $('input', this.footer()).on('keyup change clear', function () {
-                            if (that.search() !== this.value) {
-                                that
-                                    .search(this.value)
-                                    .draw();
-                            }
-                        });
-                    });
-
-                    var r = $('#example2 tfoot tr');
-                    r.find('th').each(function () {
-                        $(this).css('padding', 8);
-                    });
-                    $('#example2 thead').append(r);
-                }
-            });
+            checkStatus = () => {
+                window.location.href = '/manage-users/' + userType + '/' + $('input[name="status"]:checked').val();
+            };
         });
     </script>
 </head>
@@ -90,79 +47,115 @@
             <h3 class="card-title">Manage Users</h3>
         </div>
 
+        <h5>
+            Filter by:
+        </h5>
+        <div class="form-group">
+            <h6>User type</h6>
+            <div class="radio">
+                <label>
+                    <input type="radio" name="userType" value="caretaker" <% if(userType == "caretaker") {%>checked<%}%> onChange="check()" />
+                Caretaker </label>
+                <label>
+                    <input type="radio" name="userType" value="petowner"  <% if(userType == "petowner") {%>checked<%}%> onChange="check()" />
+                Pet Owner </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <h6>User status</h6>
+            <div class="radio">
+                <label>
+                    <input type="radio" name="status" value="active" <% if(userStatus == "active") {%>checked<%}%> onChange="checkStatus()" />
+                Active </label>
+                <label>
+                    <input type="radio" name="status" value="inactive"  <% if(userStatus == "inactive") {%>checked<%}%> onChange="checkStatus()" />
+                Inactive </label>
+            </div>
+          </div>
+
         <div class="card-body">
-            <% if(userType == 'caretaker') { %>
             <table id="example1" class="table table-bordered table-striped">
                 <thead>
+                    <% if(userType == 'caretaker') { %> <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Location</th>
+                    <th>Rating</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                    </tr>
+                    <% } else if(userType == 'petowner') { %>
                     <tr>
                         <th>Name</th>
                         <th>Email</th>
                         <th>Location</th>
-                        <th>Rating</th>
+                        <th>Status</th>
                         <th>Actions</th>
                     </tr>
-                </thead>
-                <tbody>
-                    <% users.forEach(careTaker => { %>
-                    <tr>
-                        <td><%= careTaker.name %></td>
-                        <td><%= careTaker.email %></td>
-                        <td><%= careTaker.location %></td>
-                        <td><%= careTaker.rating %></td>
-                        <td>
-                            <a href="/delete-care-taker/<%=careTaker.email%>" class="text-muted">
-                                <i class="fas fa-user-times"></i>
-                            </a>
-                        </td>
-                    </tr>
-                    <% }) %>
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Location</th>
-                        <th>Rating</th>
-                        <th>Actions</th>
-                    </tr>
-                </tfoot>
-            </table>
-            <% } else if(userType == 'petowner') { %>
-                <table id="example2" class="table table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Location</th>
-                            <th>Actions</th>
-                        </tr>
+                    <% } %>
                     </thead>
                     <tbody>
+                        <% if(userType == 'caretaker') { %>
+                        <% users.forEach(careTaker => { %>
+                        <tr>
+                            <td><%= careTaker.name %></td>
+                            <td><%= careTaker.email %></td>
+                            <td><%= careTaker.location %></td>
+                            <td><%= careTaker.rating %></td>
+                            <% if (careTaker.deleted) { %>
+                            <td>
+                                <span class="badge badge-danger">Inactive</span>
+                            </td>
+                            <td>
+                                <a href="/reactivate-user/caretaker/<%=careTaker.email%>" class="text-muted">
+                                    <i class="fas fa-user-plus"> Reactivate</i>
+                                </a>
+                            </td>
+                            <% } else { %>
+                            <td>
+                                <span class="badge badge-success">Active</span>
+                            </td>
+                            <td>
+                                <a href="/delete-user/caretaker/<%=careTaker.email%>" class="text-muted">
+                                    <i class="fas fa-user-times"> Deactivate</i>
+                                </a>
+                            </td>
+                            <% } %>
+                        </tr>
+                        <% }) %>
+                        <% } else if(userType == 'petowner') { %>
                         <% users.forEach(petowner => { %>
                         <tr>
                             <td><%= petowner.name %></td>
                             <td><%= petowner.email %></td>
                             <td><%= petowner.location %></td>
+                            <% if (petowner.deleted) { %>
                             <td>
-                                <a href="/delete-pet-owner/<%=petowner.email%>" class="text-muted">
-                                    <i class="fas fa-user-times"></i>
+                                <span class="badge badge-danger">Inactive</span>
+                            </td>
+                            <td>
+                                <a href="/reactivate-user/petowner/<%=petowner.email%>" class="text-muted">
+                                    <i class="fas fa-user-plus"> Reactivate</i>
                                 </a>
                             </td>
+                            <% } else { %>
+                            <td>
+                                <span class="badge badge-success">Active</span>
+                            </td>
+                            <td>
+                                <a href="/delete-user/petowner/<%=petowner.email%>" class="text-muted">
+                                    <i class="fas fa-user-times"> Deactivate</i>
+                                </a>
+                            </td>
+                            <% } %>
                         </tr>
                         <% }) %>
+                        <% } %>
                     </tbody>
-                    <tfoot>
-                        <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Location</th>
-                            <th>Actions</th>
-                        </tr>
-                    </tfoot>
-                </table>
-            <% } %>
+                    </table>
+            </div>
         </div>
-    </div>
 </body>
 
 </html>

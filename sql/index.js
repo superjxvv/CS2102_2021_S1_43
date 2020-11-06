@@ -78,15 +78,19 @@ sql.query = {
   ct_salary:
     "SELECT SUM(H.total_cost) AS total_cost FROM hire H WHERE H.ct_email = $1 AND date_part('month', end_date) = date_part('month', CURRENT_DATE) AND date_part('year', end_date) = date_part('year', CURRENT_DATE) AND H.hire_status = 'completed'",
   get_ct_by_email:
-    'SELECT name, email, location, rating FROM care_taker WHERE email = $1',
+    "SELECT name, email, location, rating FROM care_taker WHERE email = $1",
   get_po_by_email:
-    'SELECT name, email, location FROM pet_owner WHERE email = $1',
+    "SELECT name, email, location FROM pet_owner WHERE email = $1",
   get_admin_by_email:
-    'SELECT name, email, password FROM pcs_admin WHERE email = $1',
-  all_ct_for_manage_users:
-    'SELECT name, email, location, rating FROM care_taker WHERE deleted=false',
-  all_po_for_manage_users:
-    'SELECT name, email, location FROM pet_owner WHERE deleted=false',
+    "SELECT name, email, password FROM pcs_admin WHERE email = $1",
+  active_ct_for_manage_users:
+    "SELECT name, email, location, rating, deleted FROM care_taker WHERE deleted=false",
+  active_po_for_manage_users:
+    "SELECT name, email, location, deleted FROM pet_owner WHERE deleted=false",
+  inactive_ct_for_manage_users:
+    "SELECT name, email, location, rating, deleted FROM care_taker WHERE deleted=true",
+  inactive_po_for_manage_users:
+    "SELECT name, email, location, deleted FROM pet_owner WHERE deleted=true",
   // Insertion
   add_pet_type: 'INSERT INTO pet_type (name, base_daily_price) VALUES($1,$2)',
 
@@ -95,6 +99,8 @@ sql.query = {
   update_admin: 'UPDATE pcs_admin SET name=$2, password=$3 WHERE email=$1',
   delete_ct: 'UPDATE care_taker SET deleted=true WHERE email=$1',
   delete_po: 'UPDATE pet_owner SET deleted=true WHERE email=$1',
+  reactivate_ct: 'UPDATE care_taker SET deleted=false WHERE email=$1',
+  reactivate_po: 'UPDATE pet_owner SET deleted=false WHERE email=$1',
 
   // top 4 ratings
   caretaker_top_ratings:
@@ -133,13 +139,15 @@ sql.query = {
     'SELECT pet_name FROM is_of WHERE owner_email = $1 AND pet_type = $2',
   add_bid:
     "INSERT INTO hire(owner_email, pet_name, ct_email, num_pet_days, total_cost, hire_status, method_of_pet_transfer, start_date, end_date, transaction_date, address) VALUES ($1, $2, $3, $4, $5, 'pendingAccept', $6, $7, $8, $9, $10)",
+  pets_occupied_dates:
+    "SELECT * FROM hire WHERE owner_email = $1 and pet_name = $2 AND start_date >= $3",
   dailyPriceGivenTypeAndCT:
     'SELECT daily_price FROM can_take_care_of WHERE email = $1 AND pet_type = $2',
   ownerAddress: 'SELECT address FROM pet_owner WHERE email = $1',
   petTypeFromOwnerAndName:
     'SELECT pet_type FROM is_of WHERE owner_email = $1 AND pet_name = $2',
   payForBid:
-    "UPDATE hire SET method_of_payment = $1, hire_status= 'inProgress' WHERE owner_email = $2 AND pet_name = $3 AND ct_email = $4 AND start_date = $5 AND end_date = $6",
+    'CALL pay_for_bid($1, $2, $3, $4, $5, $6)',
   add_pet: 'SELECT "add_pet"($1, $2, $3, $4)',
   add_pet_type_ct: 'CALL "add_pet_type_ct"($1, $2)',
   update_po_info: 'CALL "edit_po_info"($1, $2, $3, $4, $5, $6, $7)',

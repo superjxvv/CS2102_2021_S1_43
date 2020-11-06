@@ -488,13 +488,25 @@ app.get('/manage-users/:type/:status', async (req, res) => {
       }
     }
     console.log(users + "User")
-    res.render('manage-users', {
-      users: users.rows,
-      userType: userType,
-      userStatus: userStatus,
-      loggedIn: req.user,
-      accountType: req.user.type
-    });
+    if (await isSuperAdmin(req)) {
+      res.render('manage-users', {
+        users: users.rows,
+        userType: userType,
+        userStatus: userStatus,
+        loggedIn: req.user,
+        accountType: req.user.type,
+        superAdmin: true
+      });
+    } else {
+      res.render('manage-users', {
+        users: users.rows,
+        userType: userType,
+        userStatus: userStatus,
+        loggedIn: req.user,
+        accountType: req.user.type,
+        superAdmin: false
+      });
+    }
   } catch (err) {
     console.error(err.message);
   }

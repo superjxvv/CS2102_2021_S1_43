@@ -111,7 +111,7 @@ sql.query = {
   all_my_pets:
     'SELECT * FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.email = $1  AND deleted = false ORDER BY O.pet_name',
   all_my_pet_types:
-    'SELECT c.pet_type AS pet_type, p.base_daily_price AS price FROM can_take_care_of c INNER JOIN pet_type p ON c.pet_type = p.name WHERE c.email = $1 ORDER BY c.pet_type',
+    "SELECT * FROM can_take_care_of WHERE email = $1 ORDER BY pet_type ASC",
   get_pet_info:
     'SELECT * FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.email = $1 AND O.pet_name = $2',
   get_po_info:

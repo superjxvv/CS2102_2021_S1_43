@@ -53,6 +53,7 @@
 </head>
 
 <body>
+	<%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn, accountType: accountType, isSuperAdmin: isSuperAdmin}) %>
 <br>
 <br>
 <br>
@@ -95,7 +96,7 @@
 		</div> <!-- form-group// -->                                      
 		<div class="form-group">
 			<button type="submit" class="btn btn-primary btn-block"> Create Account  </button>
-		</div> <!-- form-group// -->                                                                  
+		</div> <!-- form-group// -->
 	</form>
 </article>
 </div> <!-- card.// -->

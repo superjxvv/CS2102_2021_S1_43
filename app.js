@@ -784,7 +784,7 @@ app.get('/pcs-admin-dashboard', async (req, res) => {
     for (var i = 0; i < counts_alldeliverymethods.rowCount; i++) {
       counts_deliverymethods.push(counts_alldeliverymethods.rows[i]['count']);
     }
-    console.log("account type" + req.user.type)
+    let superAdmin = await isSuperAdmin(req);
     res.render('pcs-admin-dashboard', {
       numPetsTakenCareOf: numPetsTakenCareOf.rows[0]['count'],
       numTransaction: numTransaction.rows[0]['count'],
@@ -795,7 +795,8 @@ app.get('/pcs-admin-dashboard', async (req, res) => {
       first4PetTypes: first4PetTypes.rows,
       first4Caretakers: first4Caretakers.rows,
       loggedIn: req.user,
-      accountType: req.user.type
+      accountType: req.user.type,
+      isSuperAdmin: superAdmin
     });
   } catch (err) {
     console.error(err.message);
@@ -1434,7 +1435,12 @@ const isSuperAdmin = async (req) => {
 
 app.get('/admin_register', async (req, res) => {
   if (await isSuperAdmin(req)) {
-    res.render('admin_reg');
+    let superAdmin = await isSuperAdmin(req);
+    res.render('admin_reg', {
+      loggedIn: req.user,
+      accountType: req.user.type,
+      isSuperAdmin: superAdmin
+    });
   } else {
     req.flash('error', 'Unauthorised action');
     res.redirect('/login_redirect');

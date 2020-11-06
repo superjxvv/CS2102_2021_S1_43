@@ -367,7 +367,7 @@ app.post('/pre-bid', async (req, res) => {
     }
     res.render('pre-bid', {
       loggedInUser: req.user,
-      loggedInUserEmail: req.user.email, 
+      loggedInUserEmail: req.user.email,
       careTakerToBid: careTakerToBid.rows[0],
       allMyPets: allMyPets.rows,
       isPartTimer: isPartTimer,
@@ -458,23 +458,37 @@ app.get('/caretaker-summary-info', async (req, res) => {
   }
 });
 
-app.get('/manage-users/:type', async (req, res) => {
+app.get('/manage-users/:type/:status', async (req, res) => {
   try {
     //todo: check that user is admin
     const userType = req.params.type;
+    const userStatus = req.params.status;
     if (userType == "caretaker") {
-      users = await pool.query(
-        sql_query.query.all_ct_for_manage_users
-      );
+      if (userStatus == "active") {
+        users = await pool.query(
+          sql_query.query.active_ct_for_manage_users
+        );
+      } else {
+        users = await pool.query(
+          sql_query.query.inactive_ct_for_manage_users
+        );
+      }
     } else if (userType == "petowner") {
-      users = await pool.query(
-        sql_query.query.all_po_for_manage_users
-      );
+      if (userStatus == "active") {
+        users = await pool.query(
+          sql_query.query.active_po_for_manage_users
+        );
+      } else {
+        users = await pool.query(
+          sql_query.query.inactive_po_for_manage_users
+        );
+      }
     }
     console.log(users + "User")
     res.render('manage-users', {
       users: users.rows,
       userType: userType,
+      userStatus: userStatus,
       loggedIn: req.user,
       accountType: req.user.type
     });
@@ -483,14 +497,19 @@ app.get('/manage-users/:type', async (req, res) => {
   }
 });
 
-app.get('/delete-care-taker/:email', async (req, res) => {
+app.get('/delete-user/:type/:email', async (req, res) => {
   try {
     //todo: check that user is admin
     const email = req.params.email;
-    const caretaker = await pool.query(sql_query.query.get_ct_by_email, [email]);
-    console.log(caretaker.rows[0])
-    res.render('delete-care-taker', {
-      caretaker: caretaker.rows[0],
+    const userType = req.params.type;
+    if (userType == "caretaker") {
+      user = await pool.query(sql_query.query.get_ct_by_email, [email]);
+    } else if (userType == "petowner") {
+      user = await pool.query(sql_query.query.get_po_by_email, [email]);
+    }
+    res.render('delete-user', {
+      user: user.rows[0],
+      userType: userType,
       loggedIn: req.user,
       accountType: req.user.type
     });
@@ -510,25 +529,10 @@ app.post('/delete-care-taker', async (req, res) => {
       if (err) {
         console.log(err)
       } else {
-        res.redirect('/manage-users/caretaker');
+        res.redirect('/manage-users/caretaker/inactive');
       }
     }
   );
-});
-
-app.get('/delete-pet-owner/:email', async (req, res) => {
-  try {
-    //todo: check that user is admin
-    const email = req.params.email;
-    const petowner = await pool.query(sql_query.query.get_po_by_email, [email]);
-    res.render('delete-pet-owner', {
-      petowner: petowner.rows[0],
-      loggedIn: req.user,
-      accountType: req.user.type
-    });
-  } catch (err) {
-    console.error(err.message);
-  }
 });
 
 app.post('/delete-pet-owner', async (req, res) => {
@@ -542,10 +546,63 @@ app.post('/delete-pet-owner', async (req, res) => {
       if (err) {
         console.log(err)
       } else {
-        res.redirect('/manage-users/petowner');
+        res.redirect('/manage-users/petowner/inactive');
       }
     }
   );
+});
+
+app.get('/reactivate-user/:type/:email', async (req, res) => {
+  try {
+    //todo: check that user is admin
+    const email = req.params.email;
+    const userType = req.params.type;
+    if (userType == "caretaker") {
+      user = await pool.query(sql_query.query.get_ct_by_email, [email]);
+    } else if (userType == "petowner") {
+      user = await pool.query(sql_query.query.get_po_by_email, [email]);
+    }
+    res.render('reactivate-user', {
+      user: user.rows[0],
+      userType: userType,
+      loggedIn: req.user,
+      accountType: req.user.type
+    });
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
+app.post('/reactivate-user/:type', async (req, res) => {
+  //todo: check that user is admin
+  var email = req.body.email;
+  const userType = req.params.type;
+
+  if (userType == "petowner") {
+    await pool.query(
+      sql_query.query.reactivate_po,
+      [email],
+      (err, data) => {
+        if (err) {
+          console.log(err)
+        } else {
+          res.redirect('/manage-users/petowner/active');
+        }
+      }
+    );
+  } else if (userType == "caretaker") {
+    await pool.query(
+      sql_query.query.reactivate_ct,
+      [email],
+      (err, data) => {
+        if (err) {
+          console.log(err)
+        } else {
+          res.redirect('/manage-users/caretaker/active');
+        }
+      }
+    );
+  }
 });
 
 app.get('/pcs-admin-profile/:email', async (req, res) => {
@@ -1692,7 +1749,7 @@ app.post('/submit_bid', async (req, res) => {
       new Date(),
       address
     ];
-    
+
     //Add bid to hire table
     await pool.query(sql_query.query.add_bid, queryValues);
     //Add address if indicated

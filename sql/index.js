@@ -91,6 +91,10 @@ sql.query = {
     "SELECT name, email, location, rating, deleted FROM care_taker WHERE deleted=true",
   inactive_po_for_manage_users:
     "SELECT name, email, location, deleted FROM pet_owner WHERE deleted=true",
+  inactive_admin_for_manage_users:
+    "SELECT name, email, is_super_admin, deleted FROM pcs_admin WHERE deleted=true",
+  active_admin_for_manage_users:
+    "SELECT name, email, is_super_admin, deleted FROM pcs_admin WHERE deleted=false",
   // Insertion
   add_pet_type: 'INSERT INTO pet_type (name, base_daily_price) VALUES($1,$2)',
 
@@ -99,8 +103,10 @@ sql.query = {
   update_admin: 'UPDATE pcs_admin SET name=$2, password=$3 WHERE email=$1',
   delete_ct: 'UPDATE care_taker SET deleted=true WHERE email=$1',
   delete_po: 'UPDATE pet_owner SET deleted=true WHERE email=$1',
+  delete_admin: 'UPDATE pcs_admin SET deleted=true WHERE email=$1',
   reactivate_ct: 'UPDATE care_taker SET deleted=false WHERE email=$1',
   reactivate_po: 'UPDATE pet_owner SET deleted=false WHERE email=$1',
+  reactivate_admin: 'UPDATE pcs_admin SET deleted=false WHERE email=$1',
 
   // top 4 ratings
   caretaker_top_ratings:

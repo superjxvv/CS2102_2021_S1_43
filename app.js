@@ -504,6 +504,16 @@ app.get('/manage-users/:type/:status', async (req, res) => {
           sql_query.query.inactive_po_for_manage_users
         );
       }
+    } else if (userType == "admin") {
+      if (userStatus == "active") {
+        users = await pool.query(
+          sql_query.query.active_admin_for_manage_users
+        );
+      } else {
+        users = await pool.query(
+          sql_query.query.inactive_admin_for_manage_users
+        );
+      }
     }
     console.log(users + "User")
     let superAdmin = await isSuperAdmin(req);
@@ -542,6 +552,8 @@ app.get('/delete-user/:type/:email', async (req, res) => {
       user = await pool.query(sql_query.query.get_ct_by_email, [email]);
     } else if (userType == "petowner") {
       user = await pool.query(sql_query.query.get_po_by_email, [email]);
+    } else {
+      user = await pool.query(sql_query.query.get_admin_by_email, [email]);
     }
     res.render('delete-user', {
       user: user.rows[0],
@@ -588,6 +600,23 @@ app.post('/delete-pet-owner', async (req, res) => {
   );
 });
 
+app.post('/delete-admin', async (req, res) => {
+  //todo: check that user is admin
+  var email = req.body.email;
+
+  await pool.query(
+    sql_query.query.delete_admin,
+    [email],
+    (err, data) => {
+      if (err) {
+        console.log(err)
+      } else {
+        res.redirect('/manage-users/admin/inactive');
+      }
+    }
+  );
+});
+
 app.get('/reactivate-user/:type/:email', async (req, res) => {
   try {
     //todo: check that user is admin
@@ -597,6 +626,8 @@ app.get('/reactivate-user/:type/:email', async (req, res) => {
       user = await pool.query(sql_query.query.get_ct_by_email, [email]);
     } else if (userType == "petowner") {
       user = await pool.query(sql_query.query.get_po_by_email, [email]);
+    } else {
+      user = await pool.query(sql_query.query.get_admin_by_email, [email]);
     }
     res.render('reactivate-user', {
       user: user.rows[0],
@@ -635,6 +666,18 @@ app.post('/reactivate-user/:type', async (req, res) => {
           console.log(err)
         } else {
           res.redirect('/manage-users/caretaker/active');
+        }
+      }
+    );
+  } else {
+    await pool.query(
+      sql_query.query.reactivate_admin,
+      [email],
+      (err, data) => {
+        if (err) {
+          console.log(err)
+        } else {
+          res.redirect('/manage-users/admin/active');
         }
       }
     );

@@ -1102,6 +1102,7 @@ app.post('/add_pet_type_ct', async (req, res) => {
 app.get('/profile/:iden', async (req, res) => {
   try {
     if (!req.user) {
+      req.flash("Please login to view user profiles.")
       res.redirect('/login');
     } else {
       const ct_email = req.params.iden;
@@ -1519,7 +1520,7 @@ const testAddress = (address) => /[a-zA-Z]/g.test(address);
 app.post('/submit_bid', async (req, res) => {
   if (req.user) {
     const owner_email = req.user.email;
-    console.log(req.body);
+    console.log("submit_bid req", req.body);
     //Convert DD/MM/YYYY to js Date then get difference between dates as numdays
     const num_days = diffDays(
       moment(req.body.start_date, 'DD/MM/YYYY').toDate(),
@@ -1545,12 +1546,12 @@ app.post('/submit_bid', async (req, res) => {
       num_days,
       num_days * dailyPriceQuery.rows[0].daily_price,
       req.body.transferMethod,
-      req.body.start_date,
-      req.body.end_date,
+      moment(req.body.start_date, 'DD/MM/YYYY').toDate(),
+      moment(req.body.end_date, 'DD/MM/YYYY').toDate(),
       new Date(),
       address  
     ];
-
+    
     //Add bid to hire table
     await pool.query(sql_query.query.add_bid, queryValues);
     //Add address if indicated

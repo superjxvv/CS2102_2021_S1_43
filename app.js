@@ -87,17 +87,31 @@ app.get('/search', async (req, res) => {
     );
     console.log(allCareTaker.rows);
     const allPetTypes = await pool.query(sql_query.query.all_pet_types);
-    res.render('search', {
-      careTakers: allCareTaker.rows,
-      selectedLocation: location,
-      petTypes: allPetTypes.rows,
-      selectedPetTypes,
-      rating,
-      price,
-      loggedIn: req.user,
-      accountType: req.user.type,
-      jobTypeToHuman: jobTypeToHuman
-    });
+    if(!req.user) {
+      res.render('search', {
+        careTakers: allCareTaker.rows,
+        selectedLocation: location,
+        petTypes: allPetTypes.rows,
+        selectedPetTypes,
+        rating,
+        price,
+        loggedIn: req.user,
+        accountType: 3,
+        jobTypeToHuman: jobTypeToHuman
+      });
+    } else {
+      res.render('search', {
+        careTakers: allCareTaker.rows,
+        selectedLocation: location,
+        petTypes: allPetTypes.rows,
+        selectedPetTypes,
+        rating,
+        price,
+        loggedIn: req.user,
+        accountType: req.user.type,
+        jobTypeToHuman: jobTypeToHuman
+      });
+    }
   } catch (err) {
     console.error(err.message);
   }

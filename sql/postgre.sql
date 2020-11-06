@@ -3670,3 +3670,36 @@ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS add_ct ON pet_care.care_taker;
 
 CREATE TRIGGER add_CT AFTER INSERT ON care_taker FOR EACH ROW EXECUTE PROCEDURE add_CT();
+
+CREATE OR REPLACE FUNCTION increase_daily_price() RETURNS TRIGGER AS
+$$
+DECLARE total_trxn NUMERIC;
+DECLARE total_rating NUMERIC;
+BEGIN
+SELECT COUNT(*) INTO total_trxn
+FROM hire H1
+WHERE H1.ct_email = NEW.ct_email 
+AND H1.owner_email = NEW.owner_email
+AND H1.pet_name = NEW.pet_name
+AND H1.start_date = NEW.start_date
+AND H1.end_date = NEW.end_date
+AND H1.rating IS NOT NULL;
+SELECT SUM(H2.rating) INTO total_rating 
+FROM hire H2
+WHERE H2.ct_email = NEW.ct_email 
+AND H2.owner_email = NEW.owner_email
+AND H2.pet_name = NEW.pet_name
+AND H2.start_date = NEW.start_date
+AND H2.end_date = NEW.end_date
+AND H2.rating IS NOT NULL;
+UPDATE care_taker
+SET rating = total_rating / total_trxn
+WHERE email = NEW.ct_email ;
+RETURN NEW;
+END;
+$$
+LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS increase_daily_price ON pet_care.hire;
+
+CREATE TRIGGER increase_daily_price AFTER UPDATE ON hire FOR EACH ROW EXECUTE PROCEDURE increase_daily_price();

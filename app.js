@@ -1028,8 +1028,8 @@ app.get('/dashboard-caretaker-ft', async (req, res) => {
           sql_query.query.ct_rating,
           values
         );
-        const get_ct_trxns = await pool.query(
-          sql_query.query.get_ct_trxn,
+        const get_4_ct_trxns = await pool.query(
+          sql_query.query.get_4_ct_trxns,
           values
         );
         // const jobTypeQuery = await pool.query(sql_query.query.get_ct_type,
@@ -1056,7 +1056,7 @@ app.get('/dashboard-caretaker-ft', async (req, res) => {
           salary: salary.rows[0].total_cost,
           rating: rating,
           my_pet_types: my_pet_types.rows,
-          get_ct_trxns: get_ct_trxns.rows
+          get_ct_trxns: get_4_ct_trxns.rows
         });
       } else {
         // if is PCSadmin
@@ -1396,6 +1396,34 @@ app.post('/add_pet_type_ct', async (req, res) => {
       } else {
         req.flash('success_msg', 'Pet Type (' + pet_type + ') is ' + 'added!');
         res.redirect('/my_pet_types');
+      }
+    });
+  }
+});
+
+app.post('/payment_received', async (req, res) => {
+  if (!req.user) {
+    res.redirect('/login');
+  } else {
+    console.log("HERE");
+    const owner_email = req.body.owner_email;
+    const pet_name = req.body.pet_name;
+    const ct_email = req.body.ct_email;
+    const start_date = req.body.start_date;
+    const end_date = req.body.end_date;
+    console.log(owner_email);
+    console.log(pet_name);
+    console.log(ct_email);
+    console.log(start_date);
+    console.log(end_date);
+    const values = [owner_email, pet_name, ct_email, start_date, end_date];
+    await pool.query(sql_query.query.receive_payment, values, (err) => {
+      if (err) {
+        req.flash('error', err);
+        res.redirect('/transactions_ct'); // check this again
+      } else {
+        req.flash('success_msg', 'Confirmation of payment!');
+        res.redirect('/transactions_ct');
       }
     });
   }
@@ -2186,7 +2214,10 @@ const statusToHuman = (status) => {
     return 'Completed';
   } else if (status === 'cancelled') {
     return 'Cancelled';
-  } else {
+  } else if (status === 'paymentMade') {
+    return 'Payment Made';
+  } 
+  else {
     return 'Pending Payment';
   }
 };

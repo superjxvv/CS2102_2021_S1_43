@@ -88,7 +88,7 @@ app.get('/search', async (req, res) => {
     console.log(allCareTaker.rows);
     const allPetTypes = await pool.query(sql_query.query.all_pet_types);
     let superAdmin = await isSuperAdmin(req);
-    if(!req.user) {
+    if (!req.user) {
       res.render('search', {
         careTakers: allCareTaker.rows,
         selectedLocation: location,
@@ -1471,7 +1471,11 @@ app.get('/admin_register', async (req, res) => {
 
 app.get('/ft_register', (req, res) => {
   if (isAdmin(req)) {
-    res.render('register', { isFullTime: true });
+    res.render('register', {
+      isFullTime: true,
+      loggedIn: req.user,
+      accountType: req.user.type
+    });
   } else {
     req.flash('error', 'Unauthorised action');
     res.redirect('/login_redirect');
@@ -1866,7 +1870,7 @@ app.post('/edit_bid', async (req, res) => {
     ]);
 
 
-    
+
 
     const maxConcLimit = ct_Query.rows[0].max_concurrent_pet_limit;
     var concurrentTransactions = new Object()
@@ -2002,7 +2006,7 @@ app.post('/submit_edit', async (req, res) => {
       );
       const costPerDay = costPerDayQuery.rows[0].daily_price;
       const totalCost = numDays * costPerDay;
-      
+
       //Put in replacement bid.
       queryValues = [
         owner_email,

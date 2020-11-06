@@ -152,10 +152,12 @@
 		var today = new Date("<%= today %>");
 		var latestDate = new Date("<%= latestDate %>");
 		var isPartTimer = "<%= isPartTimer %>" == "true"
-		var blockedDates = <%- JSON.stringify(blockedDates) %>;
+    var blockedDates = <%- JSON.stringify(blockedDates) %>;
+    blockedDates = blockedDates.map((date) => { return new moment(date).format('YYYY-MM-DD') });
 		blockedDates = new Set(blockedDates);
 		var availableDates = <%- JSON.stringify(availableDates) %>;
-		availableDates = new Set(availableDates);
+    availableDates = availableDates.map((date) => { return new moment(date).format('YYYY-MM-DD') });
+    availableDates = new Set(availableDates);
 		var originalStartDate = new Date("<%= originalStartDate %>");
     var originalEndDate = new Date("<%= originalEndDate %>");
     var costPerDay = parseInt("<%= costPerDay %>");

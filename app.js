@@ -88,7 +88,6 @@ app.get('/search', async (req, res) => {
     console.log(allCareTaker.rows);
     const allPetTypes = await pool.query(sql_query.query.all_pet_types);
     res.render('search', {
-      loggedInUser: req.user,
       careTakers: allCareTaker.rows,
       selectedLocation: location,
       petTypes: allPetTypes.rows,
@@ -290,7 +289,6 @@ app.get(
       }
       const allPetTypes = await pool.query(sql_query.query.all_pet_types);
       res.render('search', {
-        loggedInUser: req.user,
         careTakers: allCareTaker.rows,
         selectedLocation: location,
         petTypes: allPetTypes.rows,
@@ -337,7 +335,7 @@ app.post('/pre-bid', async (req, res) => {
     //For each date counted in hashMap concurrentTransactions, add it to datesToDelete if the count > max limit
     for (var key in concurrentTransactions) {
       if (concurrentTransactions[key] >= maxConcLimit) {
-        datesToDelete.add(key);
+        datesToDelete.add(new Date(key));
       }
     }
     var datesToAllow = new Set();
@@ -1545,21 +1543,18 @@ If a date is in criteria set it won't be added to output set.
 function(startDate, endDate, outputSet, criteriaSet)
 */
 function datesFromRange(startDate, endDate, outputSet) {
-  var startDate = arguments[0].toISOString();
-  var endDate = arguments[1].toISOString();
-  var dateMove = new Date(startDate);
-  var strDate = startDate;
+  var startDate = new Date(arguments[0]);
+  var endDate = new Date(arguments[1]);
 
-  while (strDate < endDate) {
-    var strDate = dateMove.toISOString().slice(0, 10);
+  while (startDate < endDate) {
     if (arguments[3]) {
-      if (!arguments[3].has(strDate)) {
-        arguments[2].add(strDate);
+      if (!arguments[3].has(startDate)) {
+        arguments[2].add(startDate);
       }
     } else {
-      arguments[2].add(strDate);
+      arguments[2].add(startDate);
     }
-    dateMove.setDate(dateMove.getDate() + 1);
+    startDate.setDate(startDate.getDate() + 1);
   }
 }
 
@@ -1567,20 +1562,16 @@ function datesFromRange(startDate, endDate, outputSet) {
 Sums up the counts of each date occuring.
  */
 function countDatesFromRange(startDate, endDate, hashMap) {
-  var startDate = startDate.toISOString();
-  var endDate = endDate.toISOString();
-  var dateMove = new Date(startDate);
-  var strDate = startDate;
+  var startDate = new Date(startDate);
+  var endDate = new Date(endDate);
 
-  while (strDate < endDate) {
-    var strDate = dateMove.toISOString().slice(0, 10);
-    if (strDate in hashMap) {
-      hashMap[strDate] += 1
+  while (startDate <= endDate) {
+    if (startDate in hashMap) {
+      hashMap[startDate] += 1;
     } else {
-      hashMap[strDate] = 1;
+      hashMap[startDate] = 1;
     }
-    dateMove.setDate(dateMove.getDate() + 1);
-
+    startDate.setDate(startDate.getDate() + 1);
   }
 }
 
@@ -1589,15 +1580,11 @@ function countDatesFromRange(startDate, endDate, hashMap) {
 Removes dates within a particular range from the set.
 */
 function removeDatesFromRange(startDate, endDate, outputSet) {
-  var startDate = arguments[0].toISOString();
-  var endDate = arguments[1].toISOString();
-  var dateMove = new Date(startDate);
-  var strDate = startDate;
-
-  while (strDate < endDate) {
-    var strDate = dateMove.toISOString().slice(0, 10);
-    arguments[2].delete(strDate);
-    dateMove.setDate(dateMove.getDate() + 1);
+  var startDate = new Date(arguments[0]);
+  var endDate = new Date(arguments[1]);
+  while (startDate < endDate) {
+    arguments[2].delete(startDate);
+    startDate.setDate(startDate.getDate() + 1);
   }
 }
 
@@ -1783,7 +1770,7 @@ app.post('/edit_bid', async (req, res) => {
     //For each date counted in hashMap concurrentTransactions, add it to datesToDelete if the count > max limit
     for (var key in concurrentTransactions) {
       if (concurrentTransactions[key] >= maxConcLimit) {
-        datesToDelete.add(key);
+        datesToDelete.add(new Date(key));
       }
     }
 

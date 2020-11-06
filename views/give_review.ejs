@@ -51,6 +51,10 @@
                     <b>Give a Review and Rating</b>
                 </div>
                 <form method="POST" role="form" id="review_form">
+                    <input type='hidden' name='ct_email' value='<%= data[1] %>'>
+                    <input type='hidden' name='start_date' value='<%= data[3] %>'>
+                    <input type='hidden' name='end_date' value='<%= data[4] %>'>
+                    <input type='hidden' name='pet_name' value='<%= data[5] %>'>
                     <input type='hidden' name='len' value='<%= data.length %>'>
                     <div class="card-body">
                         <div class="form-group row">

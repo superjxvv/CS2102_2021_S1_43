@@ -1965,6 +1965,7 @@ app.get('/give_review/:action', async (req, res) => {
         const pet_name = req.query.pet_name;
         const ct_name = await pool.query(sql_query.query.get_ct_info, [ct_email]);
         var data = [];
+        
         if (req.params.action == 'edit') {
           const query = await pool.query(
             sql_query.query.get_one_trxn,

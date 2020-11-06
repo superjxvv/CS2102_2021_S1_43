@@ -58,6 +58,43 @@
                             <input type="hidden" name="pet_name" value=<%=all.pet_name %>>
                             <button type="submit" class="btn btn-success">Payment Received</input>
                         </form>
+
+                    <% } else if (all.hire_status == 'paymentMade') { %>
+                    <form method="POST" action="/start_taking_care">
+                        <input type="hidden" name="owner_email" value=<%=all.owner_email %>>
+                        <input type="hidden" name="ct_email" value=<%=all.ct_email %>>
+                        <input type="hidden" name="start_date" value=<%=moment(all.start_date).format() %>>
+                        <input type="hidden" name="end_date" value=<%=moment(all.end_date).format() %>>
+                        <input type="hidden" name="pet_name" value=<%=all.pet_name %>>
+                        <button type="submit" class="btn btn-success">Start</input>
+                    </form>
+
+                    <% } else if (all.hire_status == 'inProgress') { %>
+                        <form method="POST" action="/done_taking_care">
+                            <input type="hidden" name="owner_email" value=<%=all.owner_email %>>
+                            <input type="hidden" name="ct_email" value=<%=all.ct_email %>>
+                            <input type="hidden" name="start_date" value=<%=moment(all.start_date).format() %>>
+                            <input type="hidden" name="end_date" value=<%=moment(all.end_date).format() %>>
+                            <input type="hidden" name="pet_name" value=<%=all.pet_name %>>
+                            <button type="submit" class="btn btn-success">Completed</input>
+                        </form>
+                    <% } else if (all.hire_status == 'pendingAccept') { %>
+                        <form method="POST" action="/accept_bid">
+                            <input type="hidden" name="owner_email" value=<%=all.owner_email %>>
+                            <input type="hidden" name="ct_email" value=<%=all.ct_email %>>
+                            <input type="hidden" name="start_date" value=<%=moment(all.start_date).format() %>>
+                            <input type="hidden" name="end_date" value=<%=moment(all.end_date).format() %>>
+                            <input type="hidden" name="pet_name" value=<%=all.pet_name %>>
+                            <button type="submit" class="btn btn-success">Accept Bid</input>
+                        </form>
+                        <form method="POST" action="/reject_bid">
+                            <input type="hidden" name="owner_email" value=<%=all.owner_email %>>
+                            <input type="hidden" name="ct_email" value=<%=all.ct_email %>>
+                            <input type="hidden" name="start_date" value=<%=moment(all.start_date).format() %>>
+                            <input type="hidden" name="end_date" value=<%=moment(all.end_date).format() %>>
+                            <input type="hidden" name="pet_name" value=<%=all.pet_name %>>
+                            <button type="submit" class="btn btn-danger">Reject Bid</input>
+                        </form>
                     <% } %>
                 </div>
             </div>

@@ -179,7 +179,15 @@ sql.query = {
   delete_po_account: 'UPDATE pet_owner SET deleted = true WHERE email = $1',
   delete_ct_account: 'UPDATE care_taker SET deleted = true WHERE email = $1',
   receive_payment:
-    "UPDATE hire SET hire_status = 'paymentMade' WHERE owner_email = $1 AND pet_name = $2 AND ct_email = $3 AND start_date = $4 AND end_date = $5"
+    "UPDATE hire SET hire_status = 'paymentMade' WHERE owner_email = $1 AND pet_name = $2 AND ct_email = $3 AND start_date = $4 AND end_date = $5",
+  start_taking_care:
+    "UPDATE hire SET hire_status = 'inProgress' WHERE owner_email = $1 AND pet_name = $2 AND ct_email = $3 AND start_date = $4 AND end_date = $5",
+  done_taking_care:
+    "UPDATE hire SET hire_status = 'completed' WHERE owner_email = $1 AND pet_name = $2 AND ct_email = $3 AND start_date = $4 AND end_date = $5",
+  accept_bid:
+    "UPDATE hire SET hire_status = 'pendingPayment' WHERE owner_email = $1 AND pet_name = $2 AND ct_email = $3 AND start_date = $4 AND end_date = $5",
+  reject_bid:
+    "UPDATE hire SET hire_status = 'rejected' WHERE owner_email = $1 AND pet_name = $2 AND ct_email = $3 AND start_date = $4 AND end_date = $5"
 };
 
 module.exports = sql;

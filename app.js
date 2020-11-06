@@ -1405,17 +1405,11 @@ app.post('/payment_received', async (req, res) => {
   if (!req.user) {
     res.redirect('/login');
   } else {
-    console.log("HERE");
     const owner_email = req.body.owner_email;
     const pet_name = req.body.pet_name;
     const ct_email = req.body.ct_email;
     const start_date = req.body.start_date;
     const end_date = req.body.end_date;
-    console.log(owner_email);
-    console.log(pet_name);
-    console.log(ct_email);
-    console.log(start_date);
-    console.log(end_date);
     const values = [owner_email, pet_name, ct_email, start_date, end_date];
     await pool.query(sql_query.query.receive_payment, values, (err) => {
       if (err) {
@@ -1423,6 +1417,94 @@ app.post('/payment_received', async (req, res) => {
         res.redirect('/transactions_ct'); // check this again
       } else {
         req.flash('success_msg', 'Confirmation of payment!');
+        res.redirect('/transactions_ct');
+      }
+    });
+  }
+});
+
+app.post('/start_taking_care', async (req, res) => {
+  if (!req.user) {
+    res.redirect('/login');
+  } else {
+    const owner_email = req.body.owner_email;
+    const pet_name = req.body.pet_name;
+    const ct_email = req.body.ct_email;
+    const start_date = req.body.start_date;
+    const end_date = req.body.end_date;
+    const values = [owner_email, pet_name, ct_email, start_date, end_date];
+    await pool.query(sql_query.query.start_taking_care, values, (err) => {
+      if (err) {
+        req.flash('error', err);
+        res.redirect('/transactions_ct'); // check this again
+      } else {
+        req.flash('success_msg', 'Take good care of it!');
+        res.redirect('/transactions_ct');
+      }
+    });
+  }
+});
+
+app.post('/done_taking_care', async (req, res) => {
+  if (!req.user) {
+    res.redirect('/login');
+  } else {
+    const owner_email = req.body.owner_email;
+    const pet_name = req.body.pet_name;
+    const ct_email = req.body.ct_email;
+    const start_date = req.body.start_date;
+    const end_date = req.body.end_date;
+    const values = [owner_email, pet_name, ct_email, start_date, end_date];
+    await pool.query(sql_query.query.done_taking_care, values, (err) => {
+      if (err) {
+        req.flash('error', err);
+        res.redirect('/transactions_ct'); // check this again
+      } else {
+        req.flash('success_msg', 'Transaction completed, great job!');
+        res.redirect('/transactions_ct');
+      }
+    });
+  }
+});
+
+app.post('/accept_bid', async (req, res) => {
+  if (!req.user) {
+    res.redirect('/login');
+  } else {
+    const owner_email = req.body.owner_email;
+    const pet_name = req.body.pet_name;
+    const ct_email = req.body.ct_email;
+    const start_date = req.body.start_date;
+    const end_date = req.body.end_date;
+    const values = [owner_email, pet_name, ct_email, start_date, end_date];
+    await pool.query(sql_query.query.accept_bid, values, (err) => {
+      if (err) {
+        req.flash('error', err);
+        res.redirect('/transactions_ct'); // check this again
+      } else {
+        req.flash('success_msg', 'Bid accepted!');
+        res.redirect('/transactions_ct');
+      }
+    });
+  }
+});
+
+app.post('/reject_bid', async (req, res) => {
+  if (!req.user) {
+    res.redirect('/login');
+  } else {
+    const owner_email = req.body.owner_email;
+    const pet_name = req.body.pet_name;
+    const ct_email = req.body.ct_email;
+    const start_date = req.body.start_date;
+    const end_date = req.body.end_date;
+    const values = [owner_email, pet_name, ct_email, start_date, end_date];
+    await pool.query(sql_query.query.reject_bid, values, (err) => {
+      if (err) {
+        req.flash('error', err);
+        res.redirect('/transactions_ct'); // check this again
+      } else {
+        req.flash('success_msg', 'Bid rejected!');
         res.redirect('/transactions_ct');
       }
     });

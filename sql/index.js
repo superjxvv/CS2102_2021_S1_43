@@ -122,7 +122,7 @@ sql.query = {
     'SELECT * FROM hire WHERE owner_email = $1 AND ct_email = $2 AND start_date = $3 AND end_date = $4 AND pet_name = $5',
   get_ct_type: 'SELECT job FROM care_taker WHERE email = $1',
   dates_caring:
-    'SELECT start_date, end_date FROM hire WHERE ct_email = $1 AND start_date >= $2',
+    "SELECT start_date, end_date FROM hire WHERE ct_email = $1 AND start_date >= $2 AND (hire_status = 'pendingPayment' OR hire_status = 'paymentMade' OR hire_status = 'inProgress')",
   part_timer_availability:
     'SELECT start_date, end_date FROM indicates_availability WHERE email = $1',
   full_timer_leave:

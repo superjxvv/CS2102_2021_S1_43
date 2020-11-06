@@ -88,7 +88,6 @@ app.get('/search', async (req, res) => {
     console.log(allCareTaker.rows);
     const allPetTypes = await pool.query(sql_query.query.all_pet_types);
     res.render('search', {
-      loggedInUser: req.user,
       careTakers: allCareTaker.rows,
       selectedLocation: location,
       petTypes: allPetTypes.rows,
@@ -290,7 +289,6 @@ app.get(
       }
       const allPetTypes = await pool.query(sql_query.query.all_pet_types);
       res.render('search', {
-        loggedInUser: req.user,
         careTakers: allCareTaker.rows,
         selectedLocation: location,
         petTypes: allPetTypes.rows,
@@ -337,7 +335,7 @@ app.post('/pre-bid', async (req, res) => {
     //For each date counted in hashMap concurrentTransactions, add it to datesToDelete if the count > max limit
     for (var key in concurrentTransactions) {
       if (concurrentTransactions[key] >= maxConcLimit) {
-        datesToDelete.add(key);
+        datesToDelete.add(new Date(key));
       }
     }
     var datesToAllow = new Set();
@@ -371,7 +369,7 @@ app.post('/pre-bid', async (req, res) => {
     }
     res.render('pre-bid', {
       loggedInUser: req.user,
-      loggedInUserEmail: req.user.email, 
+      loggedInUserEmail: req.user.email,
       careTakerToBid: careTakerToBid.rows[0],
       allMyPets: allMyPets.rows,
       isPartTimer: isPartTimer,
@@ -463,23 +461,37 @@ app.get('/caretaker-summary-info', async (req, res) => {
   }
 });
 
-app.get('/manage-users/:type', async (req, res) => {
+app.get('/manage-users/:type/:status', async (req, res) => {
   try {
     //todo: check that user is admin
     const userType = req.params.type;
+    const userStatus = req.params.status;
     if (userType == "caretaker") {
-      users = await pool.query(
-        sql_query.query.all_ct_for_manage_users
-      );
+      if (userStatus == "active") {
+        users = await pool.query(
+          sql_query.query.active_ct_for_manage_users
+        );
+      } else {
+        users = await pool.query(
+          sql_query.query.inactive_ct_for_manage_users
+        );
+      }
     } else if (userType == "petowner") {
-      users = await pool.query(
-        sql_query.query.all_po_for_manage_users
-      );
+      if (userStatus == "active") {
+        users = await pool.query(
+          sql_query.query.active_po_for_manage_users
+        );
+      } else {
+        users = await pool.query(
+          sql_query.query.inactive_po_for_manage_users
+        );
+      }
     }
     console.log(users + "User")
     res.render('manage-users', {
       users: users.rows,
       userType: userType,
+      userStatus: userStatus,
       loggedIn: req.user,
       accountType: req.user.type
     });
@@ -488,14 +500,19 @@ app.get('/manage-users/:type', async (req, res) => {
   }
 });
 
-app.get('/delete-care-taker/:email', async (req, res) => {
+app.get('/delete-user/:type/:email', async (req, res) => {
   try {
     //todo: check that user is admin
     const email = req.params.email;
-    const caretaker = await pool.query(sql_query.query.get_ct_by_email, [email]);
-    console.log(caretaker.rows[0])
-    res.render('delete-care-taker', {
-      caretaker: caretaker.rows[0],
+    const userType = req.params.type;
+    if (userType == "caretaker") {
+      user = await pool.query(sql_query.query.get_ct_by_email, [email]);
+    } else if (userType == "petowner") {
+      user = await pool.query(sql_query.query.get_po_by_email, [email]);
+    }
+    res.render('delete-user', {
+      user: user.rows[0],
+      userType: userType,
       loggedIn: req.user,
       accountType: req.user.type
     });
@@ -515,25 +532,10 @@ app.post('/delete-care-taker', async (req, res) => {
       if (err) {
         console.log(err)
       } else {
-        res.redirect('/manage-users/caretaker');
+        res.redirect('/manage-users/caretaker/inactive');
       }
     }
   );
-});
-
-app.get('/delete-pet-owner/:email', async (req, res) => {
-  try {
-    //todo: check that user is admin
-    const email = req.params.email;
-    const petowner = await pool.query(sql_query.query.get_po_by_email, [email]);
-    res.render('delete-pet-owner', {
-      petowner: petowner.rows[0],
-      loggedIn: req.user,
-      accountType: req.user.type
-    });
-  } catch (err) {
-    console.error(err.message);
-  }
 });
 
 app.post('/delete-pet-owner', async (req, res) => {
@@ -547,10 +549,63 @@ app.post('/delete-pet-owner', async (req, res) => {
       if (err) {
         console.log(err)
       } else {
-        res.redirect('/manage-users/petowner');
+        res.redirect('/manage-users/petowner/inactive');
       }
     }
   );
+});
+
+app.get('/reactivate-user/:type/:email', async (req, res) => {
+  try {
+    //todo: check that user is admin
+    const email = req.params.email;
+    const userType = req.params.type;
+    if (userType == "caretaker") {
+      user = await pool.query(sql_query.query.get_ct_by_email, [email]);
+    } else if (userType == "petowner") {
+      user = await pool.query(sql_query.query.get_po_by_email, [email]);
+    }
+    res.render('reactivate-user', {
+      user: user.rows[0],
+      userType: userType,
+      loggedIn: req.user,
+      accountType: req.user.type
+    });
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
+app.post('/reactivate-user/:type', async (req, res) => {
+  //todo: check that user is admin
+  var email = req.body.email;
+  const userType = req.params.type;
+
+  if (userType == "petowner") {
+    await pool.query(
+      sql_query.query.reactivate_po,
+      [email],
+      (err, data) => {
+        if (err) {
+          console.log(err)
+        } else {
+          res.redirect('/manage-users/petowner/active');
+        }
+      }
+    );
+  } else if (userType == "caretaker") {
+    await pool.query(
+      sql_query.query.reactivate_ct,
+      [email],
+      (err, data) => {
+        if (err) {
+          console.log(err)
+        } else {
+          res.redirect('/manage-users/caretaker/active');
+        }
+      }
+    );
+  }
 });
 
 app.get('/pcs-admin-profile/:email', async (req, res) => {
@@ -1545,21 +1600,18 @@ If a date is in criteria set it won't be added to output set.
 function(startDate, endDate, outputSet, criteriaSet)
 */
 function datesFromRange(startDate, endDate, outputSet) {
-  var startDate = arguments[0].toISOString();
-  var endDate = arguments[1].toISOString();
-  var dateMove = new Date(startDate);
-  var strDate = startDate;
+  var startDate = new Date(arguments[0]);
+  var endDate = new Date(arguments[1]);
 
-  while (strDate < endDate) {
-    var strDate = dateMove.toISOString().slice(0, 10);
+  while (startDate < endDate) {
     if (arguments[3]) {
-      if (!arguments[3].has(strDate)) {
-        arguments[2].add(strDate);
+      if (!arguments[3].has(startDate)) {
+        arguments[2].add(startDate);
       }
     } else {
-      arguments[2].add(strDate);
+      arguments[2].add(startDate);
     }
-    dateMove.setDate(dateMove.getDate() + 1);
+    startDate.setDate(startDate.getDate() + 1);
   }
 }
 
@@ -1567,20 +1619,16 @@ function datesFromRange(startDate, endDate, outputSet) {
 Sums up the counts of each date occuring.
  */
 function countDatesFromRange(startDate, endDate, hashMap) {
-  var startDate = startDate.toISOString();
-  var endDate = endDate.toISOString();
-  var dateMove = new Date(startDate);
-  var strDate = startDate;
+  var startDate = new Date(startDate);
+  var endDate = new Date(endDate);
 
-  while (strDate < endDate) {
-    var strDate = dateMove.toISOString().slice(0, 10);
-    if (strDate in hashMap) {
-      hashMap[strDate] += 1
+  while (startDate <= endDate) {
+    if (startDate in hashMap) {
+      hashMap[startDate] += 1;
     } else {
-      hashMap[strDate] = 1;
+      hashMap[startDate] = 1;
     }
-    dateMove.setDate(dateMove.getDate() + 1);
-
+    startDate.setDate(startDate.getDate() + 1);
   }
 }
 
@@ -1589,15 +1637,11 @@ function countDatesFromRange(startDate, endDate, hashMap) {
 Removes dates within a particular range from the set.
 */
 function removeDatesFromRange(startDate, endDate, outputSet) {
-  var startDate = arguments[0].toISOString();
-  var endDate = arguments[1].toISOString();
-  var dateMove = new Date(startDate);
-  var strDate = startDate;
-
-  while (strDate < endDate) {
-    var strDate = dateMove.toISOString().slice(0, 10);
-    arguments[2].delete(strDate);
-    dateMove.setDate(dateMove.getDate() + 1);
+  var startDate = new Date(arguments[0]);
+  var endDate = new Date(arguments[1]);
+  while (startDate < endDate) {
+    arguments[2].delete(startDate);
+    startDate.setDate(startDate.getDate() + 1);
   }
 }
 
@@ -1704,7 +1748,7 @@ app.post('/submit_bid', async (req, res) => {
       new Date(),
       address
     ];
-    
+
     //Add bid to hire table
     await pool.query(sql_query.query.add_bid, queryValues);
     //Add address if indicated
@@ -1793,7 +1837,7 @@ app.post('/edit_bid', async (req, res) => {
     //For each date counted in hashMap concurrentTransactions, add it to datesToDelete if the count > max limit
     for (var key in concurrentTransactions) {
       if (concurrentTransactions[key] >= maxConcLimit) {
-        datesToDelete.add(key);
+        datesToDelete.add(new Date(key));
       }
     }
 

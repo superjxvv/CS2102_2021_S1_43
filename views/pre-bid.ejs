@@ -39,8 +39,10 @@
       var latestDate = new Date("<%= latestDate %>");
       var isPartTimer = "<%= isPartTimer %>" == "true";
       var blockedDates = JSON.parse('<%- JSON.stringify(blockedDates) %>');
+      blockedDates = blockedDates.map((date) => { return new moment(date).format('YYYY-MM-DD') });
       blockedDates = new Set(blockedDates);
       var availableDates = JSON.parse('<%- JSON.stringify(availableDates) %>');
+      availableDates = availableDates.map((date) => { return new moment(date).format('YYYY-MM-DD') });
       availableDates = new Set(availableDates);
       const isInvalidDate = (aDate) => {
         const date = aDate.format('YYYY-MM-DD');
@@ -50,9 +52,22 @@
           return blockedDates.has(date);
         }
       };
+
+      const getStartDate = () => {
+        var currDate = new moment(today);
+        while (currDate.isBefore(latestDate)) {
+          if (isInvalidDate(currDate)) {
+            currDate.add(1, 'days')
+          } else {
+            return currDate
+          }
+        }
+        return undefined;
+      }
+
       $('input[name="dates"]').daterangepicker({
-        startDate: getStartDate(),
-        endDate: getStartDate(),
+        startDate: (getStartDate()),
+        endDate: (getStartDate()),
         minDate: today,
         maxDate: latestDate,
         autoUpdateInput: false,
@@ -62,21 +77,6 @@
         },
         isInvalidDate: isInvalidDate
       });
-
-      // console.log(getStartDate())
-
-      function getStartDate() {
-        var currDate = new moment(today);
-        while (currDate.isBefore(latestDate)) {
-          console.log(isInvalidDate(currDate));
-          if(isInvalidDate(currDate)) {
-            currDate.add(1, 'days')
-          } else {
-            return currDate
-          }
-        }
-        return undefined;
-      }
 
       //Dates are in moment
       function includesInvalidDate(startDate, endDate) {

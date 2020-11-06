@@ -1764,6 +1764,16 @@ app.post('/edit_bid', async (req, res) => {
       ct_email,
       new Date()
     ]);
+    var datesToDelete = new Set();
+
+    //Dates that the pets have already been booked for
+    const petOccupiedDates = await pool.query(sql_query.query.pets_occupied_dates, [
+      req.user.email,
+      originalHire.pet_name,
+      new Date()
+    ]);
+
+    petOccupiedDates.rows.forEach(x => datesFromRange(x.start_date, x.end_date, datesToDelete));
 
     //Address of pet_owner if any
     const addrQuery = await pool.query(sql_query.query.ownerAddress, [
@@ -1771,7 +1781,7 @@ app.post('/edit_bid', async (req, res) => {
     ]);
 
 
-    var datesToDelete = new Set();
+    
 
     const maxConcLimit = ct_Query.rows[0].max_concurrent_pet_limit;
     var concurrentTransactions = new Object()

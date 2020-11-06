@@ -133,6 +133,8 @@ sql.query = {
     'SELECT pet_name FROM is_of WHERE owner_email = $1 AND pet_type = $2',
   add_bid:
     "INSERT INTO hire(owner_email, pet_name, ct_email, num_pet_days, total_cost, hire_status, method_of_pet_transfer, start_date, end_date, transaction_date, address) VALUES ($1, $2, $3, $4, $5, 'pendingAccept', $6, $7, $8, $9, $10)",
+  pets_occupied_dates:
+    "SELECT * FROM hire WHERE owner_email = $1 and pet_name = $2 AND start_date >= $3",
   dailyPriceGivenTypeAndCT:
     'SELECT daily_price FROM can_take_care_of WHERE email = $1 AND pet_type = $2',
   ownerAddress: 'SELECT address FROM pet_owner WHERE email = $1',

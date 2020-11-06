@@ -72,8 +72,12 @@ sql.query = {
   filter_transactions_status_price_desc_rating_desc:
     'SELECT H.owner_email, H.pet_name, H.ct_email, H.num_pet_days, H.total_cost, H.hire_status, H.method_of_pet_transfer, H.transaction_date, H.rating FROM hire H WHERE H.hire_status IN (SELECT UNNEST($1::hire_status[]) AS H2) ORDER BY rating desc, total_cost desc',
   filter_currmonth_transactions_status_price_desc_rating_desc:
-    "SELECT H.owner_email, H.pet_name, H.ct_email, H.num_pet_days, H.total_cost, H.hire_status, H.method_of_pet_transfer, H.transaction_date, H.rating FROM hire H WHERE H.hire_status IN (SELECT UNNEST($1::hire_status[]) AS H2) AND date_part('month', transaction_date) = date_part('month', CURRENT_DATE) AND date_part('year', transaction_date) = date_part('year', CURRENT_DATE) ORDER BY rating desc, total_cost desc",
-
+  "SELECT H.owner_email, H.pet_name, H.ct_email, H.num_pet_days, H.total_cost, H.hire_status, H.method_of_pet_transfer, H.transaction_date, H.rating FROM hire H WHERE H.hire_status IN (SELECT UNNEST($1::hire_status[]) AS H2) AND date_part('month', transaction_date) = date_part('month', CURRENT_DATE) AND date_part('year', transaction_date) = date_part('year', CURRENT_DATE) ORDER BY rating desc, total_cost desc",
+  ct_pet_days:
+    "SELECT SUM(H.num_pet_days) AS num_pet_days FROM hire H WHERE H.ct_email = $1 AND date_part('month', end_date) = date_part('month', CURRENT_DATE) AND date_part('year', end_date) = date_part('year', CURRENT_DATE) AND H.hire_status = 'completed'",
+  ct_salary:
+    "SELECT SUM(H.total_cost) AS total_cost FROM hire H WHERE H.ct_email = $1 AND date_part('month', end_date) = date_part('month', CURRENT_DATE) AND date_part('year', end_date) = date_part('year', CURRENT_DATE) AND H.hire_status = 'completed'",
+  
   // Insertion
   add_pet_type: 'INSERT INTO pet_type (name, base_daily_price) VALUES($1,$2)',
 
@@ -88,6 +92,8 @@ sql.query = {
     'SELECT H.hire_status, H.start_date, H.end_date, H.owner_email, C.name AS ct_name, C.email AS ct_email, P.name AS po_name, H.pet_name, H.rating, H.review_text FROM hire H INNER JOIN care_taker C ON H.ct_email = C.email INNER JOIN pet_owner P ON H.owner_email = P.email WHERE H.owner_email = $1 ORDER BY H.transaction_date DESC',
   all_my_pets:
     'SELECT * FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.email = $1  AND deleted = false ORDER BY O.pet_name',
+  all_my_pet_types:
+    "SELECT c.pet_type AS pet_type, p.base_daily_price AS price FROM can_take_care_of c INNER JOIN pet_type p ON c.pet_type = p.name WHERE c.email = $1 ORDER BY c.pet_type",
   get_pet_info:
     'SELECT * FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.email = $1 AND O.pet_name = $2',
   get_po_info:
@@ -95,6 +101,8 @@ sql.query = {
   get_ct_info: 'SELECT * FROM care_taker WHERE email = $1',
   get_my_trxn:
     "SELECT C.email AS ct_email, C.name as ct_name, H.address as addr, H.rating as trxn_rating, *, CASE WHEN H.hire_status = 'pendingAccept' THEN 1 ELSE 2 END AS button FROM hire H INNER JOIN care_taker C ON H.ct_email = C.email INNER JOIN own_pet O ON H.pet_name = O.pet_name AND H.owner_email = O.email WHERE H.owner_email = $1 ORDER BY transaction_date DESC, start_date DESC, end_date DESC",
+  get_all_ct_trxns:
+    "SELECT C.email AS ct_email, C.name as ct_name, H.address as addr, H.rating as trxn_rating, *, CASE WHEN H.hire_status = 'pendingAccept' THEN 1 ELSE 2 END AS button, H.owner_email AS owner_email, H.review_text AS review_text, I.pet_type AS pet_type FROM hire H INNER JOIN care_taker C ON H.ct_email = C.email INNER JOIN own_pet O ON H.pet_name = O.pet_name AND H.owner_email = O.email INNER JOIN is_of I ON H.pet_name = I.pet_name AND H.owner_email = I.owner_email WHERE H.ct_email = $1 ORDER BY transaction_date DESC, start_date DESC, end_date DESC",
   get_ct_trxn:
     "SELECT C.name AS ct_name, C.email AS ct_email, H.hire_status, H.start_date, H.end_date, H.rating, H.review_text, P.name AS po_name, I.pet_type AS type, H.pet_name FROM care_taker C INNER JOIN hire H ON C.email = H.ct_email INNER JOIN pet_owner P ON P.email = H.owner_email INNER JOIN is_of I ON I.owner_email = P.email AND I.pet_name = H.pet_name WHERE C.email = $1 AND H.hire_status = 'completed' ORDER BY H.transaction_date DESC LIMIT 4",
   get_ct_prices: 'SELECT * FROM can_take_care_of WHERE email = $1',
@@ -121,20 +129,22 @@ sql.query = {
   payForBid:
     "UPDATE hire SET method_of_payment = $1, hire_status= 'inProgress' WHERE owner_email = $2 AND pet_name = $3 AND ct_email = $4 AND start_date = $5 AND end_date = $6",
   add_pet: 'SELECT "add_pet"($1, $2, $3, $4)',
+  add_pet_type_ct: 'CALL "add_pet_type_ct"($1, $2)',
   update_po_info: 'CALL "edit_po_info"($1, $2, $3, $4, $5, $6, $7)',
   update_po_info_no_pw: 'CALL "edit_po_info_no_pw"($1, $2, $3, $4, $5, $6)',
   update_ct_info: 'CALL "edit_ct_info"($1, $2, $3, $4, $5, $6)',
   update_ct_info_no_pw: 'CALL "edit_ct_info_no_pw"($1, $2, $3, $4, $5)',
   delete_pet:
     'UPDATE own_pet SET deleted = true WHERE pet_name = $1 AND email = $2;',
+  delete_pet_type_ct:
+    'DELETE FROM can_take_care_of WHERE email = $1 AND pet_type = $2;',
   recent_trxn_general_completed:
     "SELECT H.hire_status, H.start_date, H.end_date, C.name AS ct_name, C.email AS ct_email, P.name AS po_name, H.pet_name, H.rating, H.review_text FROM hire H INNER JOIN care_taker C ON H.ct_email = C.email INNER JOIN pet_owner P ON H.owner_email = P.email WHERE H.hire_status = 'completed' AND H.rating IS NOT NULL ORDER BY H.rating DESC, H.transaction_date DESC LIMIT 4",
   best_ct: 'SELECT * FROM care_taker ORDER BY rating LIMIT 4',
-  give_review:
-    'UPDATE hire SET rating = $1, review_text = $2 WHERE owner_email = $3 AND pet_name = $4 AND start_date = $5 AND end_date = $6 AND ct_email = $7',
-  get_one_trxn:
-    'SELECT * FROM hire WHERE owner_email = $1 AND pet_name = $2 AND start_date = $3 AND end_date = $4 AND ct_email = $5',
-  delete_po_account: 'UPDATE pet_owner SET deleted = true WHERE email = $1'
+  give_review: 'UPDATE hire SET rating = $1, review_text = $2 WHERE owner_email = $3 AND pet_name = $4 AND start_date = $5 AND end_date = $6 AND ct_email = $7',
+  get_one_trxn: 'SELECT * FROM hire WHERE owner_email = $1 AND pet_name = $2 AND start_date = $3 AND end_date = $4 AND ct_email = $5',
+  delete_po_account: 'UPDATE pet_owner SET deleted = true WHERE email = $1',
+  delete_ct_account: 'UPDATE care_taker SET deleted = true WHERE email = $1'
 };
 
 module.exports = sql;

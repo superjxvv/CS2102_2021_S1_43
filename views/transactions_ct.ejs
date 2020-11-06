@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>PetCare | <%= title %></title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- CSS only -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+    <!-- JS, Popper.js, and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+</head>
+<body>
+	<%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn, accountType: accountType}) %>
+	<br>
+	<br>
+	<div class="container">
+		<div class="row">
+			<div class="col-12 " style="margin-bottom: 30px;">
+				<nav>
+					<div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
+						<a class="nav-item nav-link active" id="nav-all-tab" data-toggle="tab" href="#nav-all" role="tab" aria-controls="nav-all" aria-selected="true">All Cares</a>
+						<a class="nav-item nav-link" id="nav-ongoing-tab" data-toggle="tab" href="#nav-ongoing" role="tab" aria-controls="nav-ongoing" aria-selected="false">Ongoing Cares</a>
+						<a class="nav-item nav-link" id="nav-past-tab" data-toggle="tab" href="#nav-past" role="tab" aria-controls="nav-past" aria-selected="false">Past Cares</a>
+					</div>
+				</nav>
+				<div class="tab-content py-3 px-3 px-sm-0" id="nav-tabContent">
+					<div class="tab-pane fade show active" id="nav-all" role="tabpanel" aria-labelledby="nav-all-tab">
+						<% resAllTrans.forEach(trxn => { %>
+							<div>
+								<%- include('./partials/each_transaction_ct.ejs', {all: trxn}) %>
+							</div>
+						<% }) %>
+					</div>
+					<div class="tab-pane fade" id="nav-ongoing" role="tabpanel" aria-labelledby="nav-ongoing-tab">
+						<% resOngoingTrans.forEach(trxn => { %>
+							<div>
+								<%- include('./partials/each_transaction_ct.ejs', {all: trxn}) %>
+							</div>
+						<% }) %>
+					</div>
+					<div class="tab-pane fade " id="nav-past" role="tabpanel" aria-labelledby="nav-past-tab">
+						<% resPastTrans.forEach(trxn => { %>
+							<div>
+								<%- include('./partials/each_transaction_ct.ejs', {all: trxn}) %>
+							</div>
+						<% }) %>
+					</div>
+				</div>
+			</div>
+		</div>
+</div>
+</div>
+</div>
+<link rel="stylesheet" href="/dist/css/adminlteToast.css">
+<script src="/dist/js/adminlte.min.js"></script>
+<script>
+if ("<%= messages.success_msg %>") {
+    $(document).Toasts('create', {
+            class: 'bg-success',
+            title: 'Success',
+            body: "<%= messages.success_msg %>"
+    });
+  }
+  if ("<%= messages.error %>") {
+    $(document).Toasts('create', {
+            class: 'bg-danger',
+            title: 'Error',
+            body: "<%= messages.error %>"
+    });
+  }
+</script>
+
+</body>
+</html>

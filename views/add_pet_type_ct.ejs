@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script src="/plugins/jquery/jquery.min.js"></script>
+    <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/dist/js/adminlte.min.js"></script>
+    <link rel="stylesheet" href="/dist/css/adminlte.min.css">
+    <%- include('./partials/head.ejs') %>
+</head>
+
+<script>
+    function validateForm() {
+        const pet_type = document.forms["add_pet_type_form"]["pet_type"].value;
+        if (pet_type == "") {
+            $(document).Toasts('create', {
+                class: 'bg-danger',
+                title: 'Empty Pet Type!',
+                body: 'Please enter a Pet Type.'
+            })
+            return false;
+        }
+    }
+</script>
+
+<body>
+    <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn, accountType: accountType}) %>
+    <div id="content-wrapper">
+        <div class="container-fluid">
+            <div class="card" style="width: 60%; margin: auto; margin-top: 5%">
+                <div class="card-header">
+                    <% const top = "Add Pet Type"; %>
+                    <% const submit = "Add Pet Type"; %>
+                    <i class="fas fa-dice-d20"></i> &nbsp; <b><%= top %></b>
+                </div>
+                <form method="post" action="/add_pet_type_ct" name="add_pet_type_form" onsubmit="return validateForm()">
+                    <div class="card-body">
+                        <div class="form-group row">
+                            <label for="pet_type" class="col-sm-3 col-form-label">Pet Type: </label>
+                            <div class="col-sm-9">
+                                <select id="pet_type" name="pet_type">
+                                    <option selected value="">Select a pet type</option>
+                                    <% pet_types.forEach(type => { %>
+                                        <% var exists = false; %>
+                                        <% for (var i = 0; i < my_pet_types.length; i++) { %>
+                                            <% if (type.name == my_pet_types[i].pet_type) { %>
+                                                <% exists = true; break; %>
+                                            <% } %>
+                                        <% } %>
+                                        <% if (!exists) { %>
+                                            <option value="<%= type.name %>"><%= type.name %></option>
+                                        <% } %>
+                                    <% }); %>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer small text-muted">
+                        <button type="submit" class="btn btn-secondary" style="margin: 0px;"><%= submit %></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -59,9 +59,9 @@
             <% } %>
         </div>
         <div class="row text-left">
-            <% if (recent_trxn.length == 0) { %>
+            <% if (my_pets.length == 0) { %>
                 <div class="card col-sm col-md" id="square-card">
-                    <p><i>No Transactions!</i></p>
+                    <p><i>No Pets!</i></p>
                 </div>
             <% } else { %>
                 <% for (var i = 0; i < 4 && i < my_pets.length; i++) { %>
@@ -128,7 +128,7 @@
         <div class="row text-left">
             <% if (recent_trxn.length == 0) { %>
                 <div class="card col-sm col-md" id="square-card" style="margin-bottom: 30px;">
-                    <p><i>No Transactions!</i></p>
+                    <p><i>No Completed Transactions Yet!</i></p>
                 </div>
             <% } else { %>
                 <% for (var i = 0; i < 4 && i < recent_trxn.length; i++) { %>

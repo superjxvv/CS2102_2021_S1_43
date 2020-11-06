@@ -17,13 +17,13 @@
         
         <div class="row text-left">
             <div class="card col-sm col-md" id="square-card" style="margin-bottom: 15px;">
-                <p><b>My Name:</b> <%= get_ct_info[0].name %><br>
-                    <b>My Email:</b> <%= get_ct_info[0].email %><br>
-                    <b>My Location:</b> <%= get_ct_info[0].location %><br>
+                <p><b>Name:</b> <%= get_ct_info[0].name %><br>
+                    <b>Email:</b> <%= get_ct_info[0].email %><br>
+                    <b>Location:</b> <%= get_ct_info[0].location %><br>
                     <% if (!get_ct_info[0].rating) { %>
-                        <b>My Rating:</b><i> No Rating Yet!</i><br>
+                        <b>Rating:</b><i> No Rating Yet!</i><br>
                     <% } else { %> 
-                        <b>My Rating:</b> <%= Number(get_ct_info[0].rating).toFixed(2) %><br>
+                        <b>Rating:</b> <%= Number(get_ct_info[0].rating).toFixed(2) %><br>
                     <% } %>
                 </p>
             </div>
@@ -32,16 +32,24 @@
 
     <div class="container vert-gap-container">
         <div class="row">
-            <h2 class="vert-gap-contents">Prices Per Pet Type</h2>
+            <h2 class="vert-gap-contents">Pet Types</h2>
         </div>
         <div class="table-responsive">
             <table class="table">
-                <% get_ct_prices.forEach(type => { %>
+                <thead>
                     <tr>
-                        <th style="width:50%"><%= type.pet_type %></th>
-                        <td style="text-align: end;"><%= type.daily_price %></td>
+                        <th style="width:50%">Type</th>
+                        <th style="text-align: end;">Base Daily Price</th>
                     </tr>
-                <% }); %>
+                </thead>
+                <tbody>
+                    <% my_pet_types.forEach(type => { %>
+                    <tr>
+                        <td style="width:50%"><%= type.pet_type %></th>
+                        <td style="text-align: end;">$<%= type.price %></td>
+                    </tr>
+                    <% }); %>
+                </tbody>
             </table>
         </div>
     </div>

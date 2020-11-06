@@ -3540,6 +3540,15 @@ END;
 LANGUAGE plpgsql;
 
 CREATE OR REPLACE PROCEDURE 
+add_pet_type_ct(ct_email VARCHAR, type VARCHAR) AS
+'
+BEGIN 
+INSERT INTO can_take_care_of (email, daily_price, pet_type) VALUES (ct_email, 0, type);
+END;
+'
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE PROCEDURE 
 edit_po_info(po_email VARCHAR, po_name VARCHAR, po_pw VARCHAR, po_loc VARCHAR, po_addr VARCHAR, cc_num VARCHAR, cc_exp VARCHAR) AS
 '
 BEGIN 

@@ -42,7 +42,17 @@
       blockedDates = new Set(blockedDates);
       var availableDates = JSON.parse('<%- JSON.stringify(availableDates) %>');
       availableDates = new Set(availableDates);
+      const isInvalidDate = (aDate) => {
+        const date = aDate.format('YYYY-MM-DD');
+        if (isPartTimer) {
+          return !availableDates.has(date) || blockedDates.has(date);
+        } else {
+          return blockedDates.has(date);
+        }
+      };
       $('input[name="dates"]').daterangepicker({
+        startDate: getStartDate(),
+        endDate: getStartDate(),
         minDate: today,
         maxDate: latestDate,
         autoUpdateInput: false,
@@ -50,15 +60,43 @@
         locale: {
           format: 'DD/MM/YYYY'
         },
-        isInvalidDate: (aDate) => {
-          const date = aDate.format('YYYY-MM-DD');
-          if (isPartTimer) {
-            return !(availableDates.has(date) || blockedDates.has(date));
+        isInvalidDate: isInvalidDate
+      });
+
+      // console.log(getStartDate())
+
+      function getStartDate() {
+        var currDate = new moment(today);
+        while (currDate.isBefore(latestDate)) {
+          console.log(isInvalidDate(currDate));
+          if(isInvalidDate(currDate)) {
+            currDate.add(1, 'days')
           } else {
-            return blockedDates.has(date);
+            return currDate
           }
         }
-      });
+        return undefined;
+      }
+
+      //Dates are in moment
+      function includesInvalidDate(startDate, endDate) {
+        var currDate = new moment(startDate);
+        while (currDate.isBefore(endDate) || currDate.isSame(endDate)) {
+          if (isInvalidDate(currDate)) {
+            return false;
+          }
+          currDate.add(1, 'days');
+        }
+        return true;
+      }
+
+      function errorToast(msg) {
+        $(document).Toasts('create', {
+          class: 'bg-danger',
+          title: 'Error',
+          body: msg
+        });
+      }
 
       $('.select2').on('change', function (e) {
         console.log($('.select2').val());
@@ -67,9 +105,19 @@
       });
 
       $('input[name="dates"]').on('apply.daterangepicker', function (ev, picker) {
-        document.getElementById("start_date").value = picker.startDate
-        document.getElementById("end_date").value = picker.endDate
-        $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+        if (!includesInvalidDate(picker.startDate, picker.endDate)) {
+          errorToast("Please a date range that does not include any disabled date");
+          picker.setStartDate(today);
+          picker.setEndDate(today);
+          document.getElementById("start_date").value = "";
+          document.getElementById("end_date").value = "";
+        } else {
+          console.log(picker.startDate)
+          console.log(picker.endDate)
+          document.getElementById("start_date").value = picker.startDate;
+          document.getElementById("end_date").value = picker.endDate;
+          $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+        }
       });
     })
 
@@ -89,10 +137,9 @@
   </script>
 </head>
 
-<body class="hold-transition sidebar-mini layout-fixed">
-  <%- include('./partials/top-nav-bar.ejs') %>
-  <%- include('./partials/side-nav-bar.ejs', {loggedInUser: loggedInUser}) %>
-  <div class="content-wrapper">
+<body>
+  <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn, accountType: accountType}) %>
+  <div>
     <!-- Content Header (Page header) -->
     <div class="content-header">
       <div class="container-fluid">

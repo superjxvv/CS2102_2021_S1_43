@@ -45,26 +45,41 @@
       if (urlArray[urlArray.length - 1] == 'search') {
         startDate = new Date()
         endDate = new Date()
-        $('#reservation').daterangepicker({ startDate, endDate }, function (start, end, label) {
-          window.location.href = '/search/' + start.format('MM-DD-YYYY') + '/' + end.format('MM-DD-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort
+        $('#reservation').daterangepicker({ startDate, endDate, locale: {
+            format: 'DD/MM/YYYY'
+          } }, function (start, end, label) {
+          window.location.href = '/search/' + start.format('DD-MM-YYYY') + '/' + end.format('DD-MM-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort
         })
       } else {
         ratingSort = JSON.parse('<%- JSON.stringify(rating) %>');
         priceSort = JSON.parse('<%- JSON.stringify(price) %>');
-        startDate = new Date(urlArray[urlArray.length - 6])
-        endDate = new Date(urlArray[urlArray.length - 5])
-        $('#reservation').daterangepicker({ startDate, endDate }, function (start, end, label) {
-          window.location.href = '/search/' + start.format('MM-DD-YYYY') + '/' + end.format('MM-DD-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort;
+        startDate = new moment(urlArray[urlArray.length - 6], 'DD-MM-YYYY')
+        endDate = new moment(urlArray[urlArray.length - 5], 'DD-MM-YYYY')
+        $('#reservation').daterangepicker({
+          startDate,
+          endDate,
+          locale: {
+            format: 'DD/MM/YYYY'
+          }
+        }, function (start, end, label) {
+          window.location.href = '/search/' + start.format('DD-MM-YYYY') + '/' + end.format('DD-MM-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort;
         })
       }
 
       check = () => {
-        window.location.href = '/search/' + moment(startDate).format('MM-DD-YYYY') + '/' + moment(endDate).format('MM-DD-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort;
+        window.location.href = '/search/' + moment(startDate).format('DD-MM-YYYY') + '/' + moment(endDate).format('DD-MM-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort;
       };
 
-      $('.select2').on('change', function (e) {
+      $('.select2').on('select2:select', function (e) {
         console.log($('input[name="location"]:checked').val())
-        window.location.href = '/search/' + moment(startDate).format('MM-DD-YYYY') + '/' + moment(endDate).format('MM-DD-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort;
+        console.log($(this).val());
+        window.location.href = '/search/' + moment(startDate).format('DD-MM-YYYY') + '/' + moment(endDate).format('DD-MM-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($(this).val()) + '/' + ratingSort + '/' + priceSort;
+      });
+
+      $('.select2').on('select2:unselect', function (e) {
+        console.log($('input[name="location"]:checked').val())
+        console.log($(this).val());
+        window.location.href = '/search/' + moment(startDate).format('DD-MM-YYYY') + '/' + moment(endDate).format('DD-MM-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($(this).val()) + '/' + ratingSort + '/' + priceSort;
       });
 
       // $("input[data-bootstrap-switch]").each(function () {
@@ -76,10 +91,10 @@
           event.preventDefault()
           if (state) {
             ratingSort = 'DESC'
-            window.location.href = '/search/' + moment(startDate).format('MM-DD-YYYY') + '/' + moment(endDate).format('MM-DD-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort;
+            window.location.href = '/search/' + moment(startDate).format('DD-MM-YYYY') + '/' + moment(endDate).format('DD-MM-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort;
           } else {
             ratingSort = 'ASC'
-            window.location.href = '/search/' + moment(startDate).format('MM-DD-YYYY') + '/' + moment(endDate).format('MM-DD-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort;
+            window.location.href = '/search/' + moment(startDate).format('DD-MM-YYYY') + '/' + moment(endDate).format('DD-MM-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort;
           }
         }
       });
@@ -89,10 +104,10 @@
           event.preventDefault()
           if (state) {
             priceSort = 'DESC'
-            window.location.href = '/search/' + moment(startDate).format('MM-DD-YYYY') + '/' + moment(endDate).format('MM-DD-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort;
+            window.location.href = '/search/' + moment(startDate).format('DD-MM-YYYY') + '/' + moment(endDate).format('DD-MM-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort;
           } else {
             priceSort = 'ASC'
-            window.location.href = '/search/' + moment(startDate).format('MM-DD-YYYY') + '/' + moment(endDate).format('MM-DD-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort;
+            window.location.href = '/search/' + moment(startDate).format('DD-MM-YYYY') + '/' + moment(endDate).format('DD-MM-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort;
           }
         }
       });
@@ -101,10 +116,9 @@
   </script>
 </head>
 
-<body class="hold-transition sidebar-mini layout-fixed">
-  <%- include('./partials/top-nav-bar.ejs') %>
-  <%- include('./partials/side-nav-bar.ejs', {loggedInUser: loggedInUser}) %>
-  <div class="content-wrapper">
+<body>
+  <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn, accountType: accountType}) %>
+  <div>
     <!-- Content Header (Page header) -->
     <div class="content-header">
       <div class="container-fluid">

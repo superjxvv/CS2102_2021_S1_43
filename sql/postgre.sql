@@ -3616,6 +3616,8 @@ END;
 $$ 
 LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS hire_add_hire ON pet_care.hire;
+
 CREATE TRIGGER hire_add_hire BEFORE INSERT ON hire FOR EACH ROW EXECUTE PROCEDURE add_hire();
 
 CREATE OR REPLACE FUNCTION update_hire() RETURNS TRIGGER AS 
@@ -3628,6 +3630,8 @@ BEGIN
 END; 
 $$ 
 LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS hire_update_hire ON pet_care.hire;
 
 CREATE TRIGGER hire_update_hire BEFORE UPDATE ON hire FOR EACH ROW EXECUTE PROCEDURE update_hire();
 
@@ -3642,8 +3646,10 @@ BEGIN
     INSERT INTO full_timer VALUES(NEW.email);
   END IF;
   RETURN NEW;
-EN
+END
 $$
 LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS add_ct ON pet_care.care_taker;
 
 CREATE TRIGGER add_CT AFTER INSERT ON care_taker FOR EACH ROW EXECUTE PROCEDURE add_CT();

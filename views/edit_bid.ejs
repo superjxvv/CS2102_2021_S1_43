@@ -180,7 +180,7 @@
 
     //Dates are in moment
     function includesInvalidDate(startDate, endDate) {
-      var currDate = startDate;
+      var currDate = new moment(startDate);
       while (currDate.isBefore(endDate) || currDate.isSame(endDate)) {
         if (isInvalidDate(currDate)) {
           return false;

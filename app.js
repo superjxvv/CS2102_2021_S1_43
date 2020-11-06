@@ -70,6 +70,8 @@ app.get('/', async (req, res) => {
   res.redirect('/dashboard');
 });
 
+const jobTypeToHuman = (jobType) => jobType === 'part_timer' ? 'Part Timer' : 'Full Timer';
+
 app.get('/search', async (req, res) => {
   try {
     const startDate = new Date();
@@ -94,7 +96,8 @@ app.get('/search', async (req, res) => {
       rating,
       price,
       loggedIn: req.user,
-      accountType: req.user.type
+      accountType: req.user.type,
+      jobTypeToHuman: jobTypeToHuman
     });
   } catch (err) {
     console.error(err.message);
@@ -295,7 +298,8 @@ app.get(
         rating,
         price,
         loggedIn: req.user,
-        accountType: req.user.type
+        accountType: req.user.type,
+        jobTypeToHuman: jobTypeToHuman
       });
     } catch (err) {
       console.error(err.message);
@@ -378,7 +382,8 @@ app.post('/pre-bid', async (req, res) => {
       availableDates: Array.from(datesToAllow),
       loggedIn: req.user,
       accountType: req.user.type,
-      moment: moment
+      moment: moment,
+      jobTypeToHuman: jobTypeToHuman
     });
   } else {
     req.flash('error', 'Please login before bidding for care taker.');
@@ -1115,21 +1120,28 @@ app.post('/add_pet_type_ct', async (req, res) => {
 
 app.get('/profile/:iden', async (req, res) => {
   try {
+    const ct_email = req.params.iden;
+    const values = [ct_email];
+    const get_ct_info = await pool.query(
+      sql_query.query.get_ct_info,
+      values
+    );
+    const get_ct_trxns = await pool.query(
+      sql_query.query.get_ct_trxn,
+      values
+    );
+    const my_pet_types = await pool.query(sql_query.query.all_my_pet_types, values);
     if (!req.user) {
-      req.flash("Please login to view user profiles.")
-      res.redirect('/login');
+      res.render('./caretaker_profile', {
+        title: 'Profile of ' + get_ct_info.rows[0].name,
+        get_ct_info: get_ct_info.rows,
+        get_ct_trxns: get_ct_trxns.rows,
+        my_pet_types: my_pet_types.rows,
+        loggedIn: req.user,
+        accountType: 3,
+        statusToHuman: statusToHuman
+      });
     } else {
-      const ct_email = req.params.iden;
-      const values = [ct_email];
-      const get_ct_info = await pool.query(
-        sql_query.query.get_ct_info,
-        values
-      );
-      const get_ct_trxns = await pool.query(
-        sql_query.query.get_ct_trxn,
-        values
-      );
-      const my_pet_types = await pool.query(sql_query.query.all_my_pet_types, values);
       res.render('./caretaker_profile', {
         title: 'Profile of ' + get_ct_info.rows[0].name,
         get_ct_info: get_ct_info.rows,
@@ -1138,7 +1150,7 @@ app.get('/profile/:iden', async (req, res) => {
         loggedIn: req.user,
         accountType: req.user.type,
         statusToHuman: statusToHuman
-      });
+      })
     }
   } catch (err) {
     console.error(err.message);

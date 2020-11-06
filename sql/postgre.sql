@@ -3596,7 +3596,7 @@ BEGIN
   SELECT 1
   FROM (select one_date::date from generate_series(NEW.start_date, 
   NEW.end_date, '1 day'::interval) one_date) all_dates, hire
-  WHERE hire.ct_email = NEW.ct_email AND hire.hire_status <> 'rejected' AND hire.hire_status <> 'completed' 
+  WHERE hire.ct_email = NEW.ct_email AND hire.hire_status <> 'rejected' AND hire.hire_status <> 'completed' AND hire.hire_status <> 'pendingAccept'
     AND hire.hire_status <> 'cancelled' AND hire.start_date <= all_dates.one_date AND hire.end_date >= all_dates.one_date
   GROUP BY all_dates.one_date
   HAVING COUNT(*) > (SELECT max_concurrent_pet_limit FROM care_taker WHERE email = NEW.ct_email)
@@ -3619,6 +3619,23 @@ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS hire_add_hire ON pet_care.hire;
 
 CREATE TRIGGER hire_add_hire BEFORE INSERT ON hire FOR EACH ROW EXECUTE PROCEDURE add_hire();
+
+--Check that the pet type of pet in hire can be taken care of by CT
+CREATE OR REPLACE FUNCTION check_can_take_care_of() RETURNS TRIGGER AS 
+$$
+BEGIN
+  --Query what pet type it is and if it is in can_take_care_of
+  IF ((SELECT pet_type FROM is_of I WHERE I.owner_email = NEW.owner_email AND I.pet_name = NEW.pet_name) IN (SELECT pet_type FROM can_take_care_of WHERE email = NEW.ct_email)) THEN
+    RETURN NEW;
+  END IF;
+  RETURN NULL;
+END;
+$$
+LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS hire_can_take_care_of ON pet_care.hire;
+
+CREATE TRIGGER hire_can_take_care_of BEFORE INSERT ON hire FOR EACH ROW EXECUTE PROCEDURE check_can_take_care_of();
 
 CREATE OR REPLACE FUNCTION update_hire() RETURNS TRIGGER AS 
 $$ 

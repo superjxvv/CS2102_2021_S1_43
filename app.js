@@ -1865,16 +1865,62 @@ const statusToHuman = (status) => {
 app.get('/transactions', (req, res) => {
   if (req.user) {
     const userEmail = [req.user.email];
+    if (req.user.type == 2) {
+      res.redirect('/transactions_ct');
+    } else {
+      //To accomodate for caretakers
+      const allTransactions =
+        req.user.type === 1
+          ? sql_query.query.get_my_trxn
+          : sql_query.query.get_all_ct_trxns;
+
+      pool
+        .query(allTransactions, userEmail)
+        .then((queryRes) => {
+          res.render('transactions', {
+            name: req.user.name,
+            resAllTrans: queryRes.rows,
+            accType: req.user.type,
+            resOngoingTrans: queryRes.rows.filter(
+              (x) =>
+                x.hire_status != 'completed' &&
+                x.hire_status != 'rejected' &&
+                x.hire_status != 'cancelled'
+            ),
+            resPastTrans: queryRes.rows.filter(
+              (x) =>
+                x.hire_status == 'completed' ||
+                x.hire_status == 'rejected' ||
+                x.hire_status == 'cancelled'
+            ),
+            moment: moment,
+            title: 'Transactions',
+            statusToHuman: statusToHuman,
+            loggedIn: req.user,
+            accountType: req.user.type
+          });
+        })
+        .catch((err) => console.error(err.stack));
+    }
+  } else {
+    req.flash('error', 'Please login before accessing your transactions.');
+    res.redirect('/login');
+  }
+});
+
+app.get('/transactions_ct', (req, res) => {
+  if (req.user) {
+    const userEmail = [req.user.email];
     //To accomodate for caretakers
     const allTransactions =
       req.user.type === 1
         ? sql_query.query.get_my_trxn
-        : sql_query.query.get_ct_trxn;
+        : sql_query.query.get_all_ct_trxns;
 
     pool
       .query(allTransactions, userEmail)
       .then((queryRes) => {
-        res.render('transactions', {
+        res.render('transactions_ct', {
           name: req.user.name,
           resAllTrans: queryRes.rows,
           accType: req.user.type,

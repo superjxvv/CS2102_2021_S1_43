@@ -1,0 +1,39 @@
+<%- include('../functions') %>
+<div class="container vert-gap-card">
+    <div class="card" style="background-color: whitesmoke; padding-bottom: 0px;">
+        <div class="card-body col-12" style="padding-bottom: 0px; padding-top: 15px;">
+            <div class="row" id="transaction-header">
+                <div class="col">
+                    <h4>Transaction Date: <%= stringToDate(String(all.transaction_date)) %></h4>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col col-5">
+                    <p><b>Date:</b> From <%= stringToDate(String(all.start_date)) %> to <%= stringToDate(String(all.end_date)) %></p>
+                    <% if (all.deleted || accountType != 1) { %>
+                        <p><b>Pet:</b> <%= all.pet_name %></a></p>
+                    <% } else { %> 
+                        <p><b>Pet:</b> <a href="/my_pet/<%= all.owner_email %>/<%= all.pet_name %>"><%= all.pet_name %></a></p>
+                    <% } %>
+                    <p><b>Caretaker:</b> <a href="/profile/<%= all.ct_email %>"><%= all.ct_name %></a></p>
+                </div>
+                <div class="col col-4">
+                    <% if (all.addr && (all.hire_status == 'completed' || all.hire_status == 'inProgress')) { %>
+                        <p><b>Address:</b> <%= all.addr %></p>
+                    <% } %>
+                    <p><b>Status:</b> 
+                    <% if (all.hire_status == 'completed') { %>
+                        <span class="badge badge-success"><%= statusToHuman(all.hire_status) %></span><br>
+                    <% } else if (all.hire_status == 'cancelled' || all.hire_status == 'rejected') { %>
+                        <span class="badge badge-danger"><%= statusToHuman(all.hire_status) %></span><br>
+                    <% } else if (all.hire_status == 'pendingPayment') { %>
+                        <span class="badge badge-warning"><%= statusToHuman(all.hire_status) %></span><br>
+                    <% } else { %>
+                        <span class="badge badge-info"><%= statusToHuman(all.hire_status) %></span><br>
+                    <% } %></p>
+                    <p><b>Total Cost:</b> $<%= (Math.round(all.total_cost * 100) / 100).toFixed(2) %></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

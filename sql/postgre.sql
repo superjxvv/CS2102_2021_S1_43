@@ -3596,7 +3596,7 @@ BEGIN
   SELECT 1
   FROM (select one_date::date from generate_series(NEW.start_date, 
   NEW.end_date, '1 day'::interval) one_date) all_dates, hire
-  WHERE hire.ct_email = NEW.ct_email AND hire.hire_status <> 'rejected' AND hire.hire_status <> 'completed' 
+  WHERE hire.ct_email = NEW.ct_email AND hire.hire_status <> 'rejected' AND hire.hire_status <> 'completed' AND hire.hire_status <> 'pendingAccept'
     AND hire.hire_status <> 'cancelled' AND hire.start_date <= all_dates.one_date AND hire.end_date >= all_dates.one_date
   GROUP BY all_dates.one_date
   HAVING COUNT(*) > (SELECT max_concurrent_pet_limit FROM care_taker WHERE email = NEW.ct_email)
@@ -3619,6 +3619,23 @@ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS hire_add_hire ON pet_care.hire;
 
 CREATE TRIGGER hire_add_hire BEFORE INSERT ON hire FOR EACH ROW EXECUTE PROCEDURE add_hire();
+
+--Check that the pet type of pet in hire can be taken care of by CT
+CREATE OR REPLACE FUNCTION check_can_take_care_of() RETURNS TRIGGER AS 
+$$
+BEGIN
+  --Query what pet type it is and if it is in can_take_care_of
+  IF ((SELECT pet_type FROM is_of I WHERE I.owner_email = NEW.owner_email AND I.pet_name = NEW.pet_name) IN (SELECT pet_type FROM can_take_care_of WHERE email = NEW.ct_email)) THEN
+    RETURN NEW;
+  END IF;
+  RETURN NULL;
+END;
+$$
+LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS hire_can_take_care_of ON pet_care.hire;
+
+CREATE TRIGGER hire_can_take_care_of BEFORE INSERT ON hire FOR EACH ROW EXECUTE PROCEDURE check_can_take_care_of();
 
 CREATE OR REPLACE FUNCTION update_hire() RETURNS TRIGGER AS 
 $$ 
@@ -3653,3 +3670,36 @@ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS add_ct ON pet_care.care_taker;
 
 CREATE TRIGGER add_CT AFTER INSERT ON care_taker FOR EACH ROW EXECUTE PROCEDURE add_CT();
+
+CREATE OR REPLACE FUNCTION increase_daily_price() RETURNS TRIGGER AS
+$$
+DECLARE total_trxn NUMERIC;
+DECLARE total_rating NUMERIC;
+BEGIN
+SELECT COUNT(*) INTO total_trxn
+FROM hire H1
+WHERE H1.ct_email = NEW.ct_email 
+AND H1.owner_email = NEW.owner_email
+AND H1.pet_name = NEW.pet_name
+AND H1.start_date = NEW.start_date
+AND H1.end_date = NEW.end_date
+AND H1.rating IS NOT NULL;
+SELECT SUM(H2.rating) INTO total_rating 
+FROM hire H2
+WHERE H2.ct_email = NEW.ct_email 
+AND H2.owner_email = NEW.owner_email
+AND H2.pet_name = NEW.pet_name
+AND H2.start_date = NEW.start_date
+AND H2.end_date = NEW.end_date
+AND H2.rating IS NOT NULL;
+UPDATE care_taker
+SET rating = total_rating / total_trxn
+WHERE email = NEW.ct_email ;
+RETURN NEW;
+END;
+$$
+LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS increase_daily_price ON pet_care.hire;
+
+CREATE TRIGGER increase_daily_price AFTER UPDATE ON hire FOR EACH ROW EXECUTE PROCEDURE increase_daily_price();

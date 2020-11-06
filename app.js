@@ -70,6 +70,8 @@ app.get('/', async (req, res) => {
   res.redirect('/dashboard');
 });
 
+const jobTypeToHuman = (jobType) => jobType === 'part_timer' ? 'Part Timer' : 'Full Timer';
+
 app.get('/search', async (req, res) => {
   try {
     const startDate = new Date();
@@ -86,7 +88,6 @@ app.get('/search', async (req, res) => {
     console.log(allCareTaker.rows);
     const allPetTypes = await pool.query(sql_query.query.all_pet_types);
     res.render('search', {
-      loggedInUser: req.user,
       careTakers: allCareTaker.rows,
       selectedLocation: location,
       petTypes: allPetTypes.rows,
@@ -94,7 +95,8 @@ app.get('/search', async (req, res) => {
       rating,
       price,
       loggedIn: req.user,
-      accountType: req.user.type
+      accountType: req.user.type,
+      jobTypeToHuman: jobTypeToHuman
     });
   } catch (err) {
     console.error(err.message);
@@ -287,7 +289,6 @@ app.get(
       }
       const allPetTypes = await pool.query(sql_query.query.all_pet_types);
       res.render('search', {
-        loggedInUser: req.user,
         careTakers: allCareTaker.rows,
         selectedLocation: location,
         petTypes: allPetTypes.rows,
@@ -295,7 +296,8 @@ app.get(
         rating,
         price,
         loggedIn: req.user,
-        accountType: req.user.type
+        accountType: req.user.type,
+        jobTypeToHuman: jobTypeToHuman
       });
     } catch (err) {
       console.error(err.message);
@@ -333,7 +335,7 @@ app.post('/pre-bid', async (req, res) => {
     //For each date counted in hashMap concurrentTransactions, add it to datesToDelete if the count > max limit
     for (var key in concurrentTransactions) {
       if (concurrentTransactions[key] >= maxConcLimit) {
-        datesToDelete.add(key);
+        datesToDelete.add(new Date(key));
       }
     }
     var datesToAllow = new Set();
@@ -378,7 +380,8 @@ app.post('/pre-bid', async (req, res) => {
       availableDates: Array.from(datesToAllow),
       loggedIn: req.user,
       accountType: req.user.type,
-      moment: moment
+      moment: moment,
+      jobTypeToHuman: jobTypeToHuman
     });
   } else {
     req.flash('error', 'Please login before bidding for care taker.');
@@ -1299,21 +1302,28 @@ app.post('/add_pet_type_ct', async (req, res) => {
 
 app.get('/profile/:iden', async (req, res) => {
   try {
+    const ct_email = req.params.iden;
+    const values = [ct_email];
+    const get_ct_info = await pool.query(
+      sql_query.query.get_ct_info,
+      values
+    );
+    const get_ct_trxns = await pool.query(
+      sql_query.query.get_ct_trxn,
+      values
+    );
+    const my_pet_types = await pool.query(sql_query.query.all_my_pet_types, values);
     if (!req.user) {
-      req.flash("Please login to view user profiles.")
-      res.redirect('/login');
+      res.render('./caretaker_profile', {
+        title: 'Profile of ' + get_ct_info.rows[0].name,
+        get_ct_info: get_ct_info.rows,
+        get_ct_trxns: get_ct_trxns.rows,
+        my_pet_types: my_pet_types.rows,
+        loggedIn: req.user,
+        accountType: 3,
+        statusToHuman: statusToHuman
+      });
     } else {
-      const ct_email = req.params.iden;
-      const values = [ct_email];
-      const get_ct_info = await pool.query(
-        sql_query.query.get_ct_info,
-        values
-      );
-      const get_ct_trxns = await pool.query(
-        sql_query.query.get_ct_trxn,
-        values
-      );
-      const my_pet_types = await pool.query(sql_query.query.all_my_pet_types, values);
       res.render('./caretaker_profile', {
         title: 'Profile of ' + get_ct_info.rows[0].name,
         get_ct_info: get_ct_info.rows,
@@ -1322,7 +1332,7 @@ app.get('/profile/:iden', async (req, res) => {
         loggedIn: req.user,
         accountType: req.user.type,
         statusToHuman: statusToHuman
-      });
+      })
     }
   } catch (err) {
     console.error(err.message);
@@ -1590,21 +1600,18 @@ If a date is in criteria set it won't be added to output set.
 function(startDate, endDate, outputSet, criteriaSet)
 */
 function datesFromRange(startDate, endDate, outputSet) {
-  var startDate = arguments[0].toISOString();
-  var endDate = arguments[1].toISOString();
-  var dateMove = new Date(startDate);
-  var strDate = startDate;
+  var startDate = new Date(arguments[0]);
+  var endDate = new Date(arguments[1]);
 
-  while (strDate < endDate) {
-    var strDate = dateMove.toISOString().slice(0, 10);
+  while (startDate < endDate) {
     if (arguments[3]) {
-      if (!arguments[3].has(strDate)) {
-        arguments[2].add(strDate);
+      if (!arguments[3].has(startDate)) {
+        arguments[2].add(startDate);
       }
     } else {
-      arguments[2].add(strDate);
+      arguments[2].add(startDate);
     }
-    dateMove.setDate(dateMove.getDate() + 1);
+    startDate.setDate(startDate.getDate() + 1);
   }
 }
 
@@ -1612,20 +1619,16 @@ function datesFromRange(startDate, endDate, outputSet) {
 Sums up the counts of each date occuring.
  */
 function countDatesFromRange(startDate, endDate, hashMap) {
-  var startDate = startDate.toISOString();
-  var endDate = endDate.toISOString();
-  var dateMove = new Date(startDate);
-  var strDate = startDate;
+  var startDate = new Date(startDate);
+  var endDate = new Date(endDate);
 
-  while (strDate < endDate) {
-    var strDate = dateMove.toISOString().slice(0, 10);
-    if (strDate in hashMap) {
-      hashMap[strDate] += 1
+  while (startDate <= endDate) {
+    if (startDate in hashMap) {
+      hashMap[startDate] += 1;
     } else {
-      hashMap[strDate] = 1;
+      hashMap[startDate] = 1;
     }
-    dateMove.setDate(dateMove.getDate() + 1);
-
+    startDate.setDate(startDate.getDate() + 1);
   }
 }
 
@@ -1634,15 +1637,11 @@ function countDatesFromRange(startDate, endDate, hashMap) {
 Removes dates within a particular range from the set.
 */
 function removeDatesFromRange(startDate, endDate, outputSet) {
-  var startDate = arguments[0].toISOString();
-  var endDate = arguments[1].toISOString();
-  var dateMove = new Date(startDate);
-  var strDate = startDate;
-
-  while (strDate < endDate) {
-    var strDate = dateMove.toISOString().slice(0, 10);
-    arguments[2].delete(strDate);
-    dateMove.setDate(dateMove.getDate() + 1);
+  var startDate = new Date(arguments[0]);
+  var endDate = new Date(arguments[1]);
+  while (startDate < endDate) {
+    arguments[2].delete(startDate);
+    startDate.setDate(startDate.getDate() + 1);
   }
 }
 
@@ -1828,7 +1827,7 @@ app.post('/edit_bid', async (req, res) => {
     //For each date counted in hashMap concurrentTransactions, add it to datesToDelete if the count > max limit
     for (var key in concurrentTransactions) {
       if (concurrentTransactions[key] >= maxConcLimit) {
-        datesToDelete.add(key);
+        datesToDelete.add(new Date(key));
       }
     }
 

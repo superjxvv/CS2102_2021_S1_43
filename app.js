@@ -15,6 +15,7 @@ const { exception } = require('console');
 const e = require('express');
 const { send } = require('process');
 const sql = require('./sql');
+var cron = require('node-cron');
 initializePassport(passport);
 // -------------------------------------
 
@@ -64,6 +65,11 @@ pool.on('connect', (client) => {
 
 app.listen(process.env.PORT || 3000, () => {
   console.log('server has started on port 3000');
+});
+
+//Schedule wipe monthly salary and pet days
+cron.schedule('* * * 1 *', () => {
+  pool.query(sql_query.query.monthly_wipe, [])
 });
 
 app.get('/', async (req, res) => {

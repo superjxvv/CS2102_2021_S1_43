@@ -1099,7 +1099,9 @@ app.get('/my_pets', async (req, res) => {
         title: 'My Pets',
         all_pets: query.rows,
         loggedIn: req.user,
-        accountType: req.user.type
+        accountType: req.user.type,
+        restore: false,
+        data: false
       });
     }
   }
@@ -1197,8 +1199,8 @@ app.post('/edit_particulars', async (req, res) => {
       const email = req.user.email;
       const location = req.body.location;
       const address = req.body.address ? req.body.address : null;
-      const cc_num = req.body.cc_num;
-      const cc_date = req.body.cc_date;
+      const cc_num = req.body.cc_num ? req.body.cc_num : null;
+      const cc_date = req.body.cc_date ? req.body.cc_date : null;
       var values = [email, name, location, address, cc_num, cc_date];
       await pool.query(
         sql_query.query.update_po_info_no_pw,
@@ -1218,7 +1220,6 @@ app.post('/edit_particulars', async (req, res) => {
 });
 
 app.post('/delete_account', async (req, res) => {
-  console.log(req.user.type);
   await pool.query(req.user.type == 1 ? sql_query.query.delete_po_account : sql_query.query.delete_ct_account, [req.user.email], (err, data) => {
     if (err) {
       req.flash('error', err);
@@ -1343,17 +1344,40 @@ app.post('/add_pet/:action', async (req, res) => {
     const pet_type = req.body.pet_type;
     var action = req.params.action;
     const values = [pet_name, special_req, req.user.email, pet_type];
-    await pool.query(sql_query.query.add_pet, values, (err, data) => {
+    await pool.query(sql_query.query.add_pet, values, async (err, data) => {
       if (err) {
+        console.log(err);
         req.flash('error', err);
-        res.redirect('/add_pet'); // check this again
+        res.redirect('/add_pet');
       } else {
-        console.log(data.rows[0]);
-        if (data.rows[0].add_pet == 1) {
-          action = 'restor';
+        if (data.rows.length > 0 && action != 'restore') {
+          const query = await pool.query(sql_query.query.all_my_pets, [req.user.email]);
+          var split_arr = data.rows[0].add_pet.split(",");
+          var last_word = split_arr[3];
+          values[3] = last_word.substring(0, last_word.length - 1);
+          res.render('./my_pets', {
+            title: 'My Pets',
+            all_pets: query.rows,
+            data: values,
+            loggedIn: req.user,
+            accountType: req.user.type,
+            restore: true
+          });
+        } else if (data.rows.length > 0 && action == 'restore') {
+            await pool.query(sql_query.query.restore_pet, [pet_name, req.user.email], async (err, data) => {
+              if (err) {
+                console.log(err);
+                req.flash('error', err);
+                res.redirect('/add_pet');
+              } else {
+                req.flash('success_msg', 'Pet ' + pet_name + ' is restored!');
+                res.redirect('/my_pets');
+              }
+            })
+        } else {
+          req.flash('success_msg', 'Pet ' + pet_name + ' is ' + action + 'ed!');
+          res.redirect('/my_pets');
         }
-        req.flash('success_msg', 'Pet ' + pet_name + ' is ' + action + 'ed!');
-        res.redirect('/my_pets');
       }
     });
   }
@@ -2445,7 +2469,6 @@ app.post('/give_review/:action', async (req, res) => {
     const values = [rating, review, owner_email, pet_name, start_date, end_date, ct_email];
     await pool.query(sql_query.query.give_review, values, (err, data) => {
       if (err) {
-        console.log(err);
         req.flash('error', err);
         res.redirect('/transactions');
       } else {

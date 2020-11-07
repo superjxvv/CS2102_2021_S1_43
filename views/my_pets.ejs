@@ -94,6 +94,46 @@
     </div>
 </div>
 
+<div class="modal fade" id="modal-default-restore">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Confirmation</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="post" action="/#" class="restore_form">
+                <input type="text" class="form-control" id="pet_name" name="pet_name" value="<%= data[0] %>" hidden>
+                <input type="text" class="form-control" id="special_req" name="special_req" value="<%= data[1] %>" hidden>
+                <input type="text" class="form-control" id="pet_type" name="pet_type" value="<%= data[3] %>" hidden>
+                <div class="modal-body">
+                    <div class="restore-text">
+                        Placeholder
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-between small text-muted">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+                    <button type="submit" class="btn btn-danger">Yes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    if ("<%= restore %>" != "false") {
+        var restore_modal = $("#modal-default-restore");
+        var pet_name = "<%= data[0] %>";
+        var pet_type = "<%= data[3] %>";
+        restore_modal.find('.restore-text').text('Previous pet ' + pet_name + ' found! Do you want to restore ' + pet_name + ' of pet type ' + pet_type + '?');
+        restore_modal.find('.modal-content form').attr("action", "/add_pet/restore");
+        $(document).ready(function(){
+            $("#modal-default-restore").modal('show');
+        });
+    }
+</script>
+
 <script>
     $('#modal-default').on('show.bs.modal', function(e) {
         var button = $(e.relatedTarget)

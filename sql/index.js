@@ -189,7 +189,9 @@ sql.query = {
   reject_bid:
     "UPDATE hire SET hire_status = 'rejected' WHERE owner_email = $1 AND pet_name = $2 AND ct_email = $3 AND start_date = $4 AND end_date = $5",
   monthly_wipe:
-    "UPDATE care_taker c1 SET monthly_salary = CASE WHEN job = 'part_timer' THEN 0 ELSE 3000 END, monthly_pet_days = 0 WHERE c1.email IN (SELECT email FROM care_taker c2);"
+    "UPDATE care_taker c1 SET monthly_salary = CASE WHEN job = 'part_timer' THEN 0 ELSE 3000 END, monthly_pet_days = 0 WHERE c1.email IN (SELECT email FROM care_taker c2);",
+    restore_pet:
+    "UPDATE own_pet SET deleted = false WHERE pet_name = $1 AND email = $2"
 };
 
 module.exports = sql;

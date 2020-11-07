@@ -3439,7 +3439,7 @@ insert into hire (owner_email, pet_name, ct_email, total_cost, hire_status, meth
 
 UPDATE hire h SET total_cost = (SELECT (p.base_daily_price + c.daily_price) * h.num_pet_days FROM pet_type p INNER JOIN can_take_care_of c ON p.name = c.pet_type INNER JOIN is_of i ON i.owner_email =  h.owner_email AND i.pet_name = h.pet_name WHERE c.email = h.ct_email AND c.pet_type = i.pet_type);
 
-UPDATE care_taker c SET rating = (SELECT AVG(h.rating) FROM hire h WHERE h.ct_email = c.email);
+UPDATE care_taker c SET rating = CASE WHEN (SELECT COUNT(*) FROM hire h1 WHERE h1.rating <> 0) = 0 THEN 0 ELSE (SELECT AVG(h2.rating) FROM hire h2 WHERE h2.ct_email = c.email AND h2.hire_status = 'completed') END;
 
 -- to update limit for part_timers
 UPDATE care_taker
@@ -3548,14 +3548,14 @@ insert into indicates_availability (email, start_date, end_date) values ('lgrino
 insert into indicates_availability (email, start_date, end_date) values ('jgeffinger1s@blog.com', '2020-11-13', '2022-10-15');
 
 CREATE OR REPLACE FUNCTION 
-add_pet(p_name VARCHAR, special_req VARCHAR, po_email VARCHAR, type VARCHAR) RETURNS NUMERIC AS
+add_pet(p_name VARCHAR, special_req VARCHAR, po_email VARCHAR, type VARCHAR) 
+    RETURNS TABLE (existing_pet_name VARCHAR, existing_special_requirement VARCHAR, existing_email VARCHAR, p_type VARCHAR) AS
 '
 DECLARE exists NUMERIC;
 BEGIN 
-SELECT COUNT(pet_name) INTO exists FROM own_pet WHERE pet_name = p_name AND email = po_email;
-INSERT INTO own_pet (pet_name, special_requirement, email) VALUES (p_name, special_req, po_email) ON CONFLICT (pet_name, email) DO UPDATE SET special_requirement = special_req, deleted = false;
+INSERT INTO own_pet (pet_name, special_requirement, email) VALUES (p_name, special_req, po_email) ON CONFLICT (pet_name, email) DO NOTHING;
 INSERT INTO is_of (pet_type, pet_name, owner_email) VALUES (type, p_name, po_email) ON CONFLICT (pet_name, owner_email) DO NOTHING;
-RETURN exists;
+RETURN QUERY SELECT O.pet_name, O.special_requirement, O.email, I.pet_type FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.pet_name = p_name AND O.email = po_email;
 END;
 '
 LANGUAGE plpgsql;
@@ -3574,7 +3574,11 @@ edit_po_info(po_email VARCHAR, po_name VARCHAR, po_pw VARCHAR, po_loc VARCHAR, p
 '
 BEGIN 
 UPDATE pet_owner SET name = po_name, password = po_pw, location = po_loc, address = po_addr WHERE email = po_email;
-INSERT INTO has_credit_card (number, email, expiry) VALUES (cc_num, po_email, cc_exp) ON CONFLICT (email) DO UPDATE SET number = cc_num, expiry = cc_exp;
+IF (cc_num IS NOT NULL AND cc_exp IS NOT NULL) THEN
+  INSERT INTO has_credit_card (number, email, expiry) VALUES (cc_num, po_email, cc_exp) ON CONFLICT (email) DO UPDATE SET number = cc_num, expiry = cc_exp;
+ELSE 
+  DELETE FROM has_credit_card WHERE email = po_email;
+END IF;
 END;
 '
 LANGUAGE plpgsql;
@@ -3584,7 +3588,11 @@ edit_po_info_no_pw(po_email VARCHAR, po_name VARCHAR, po_loc VARCHAR, po_addr VA
 '
 BEGIN 
 UPDATE pet_owner SET name = po_name,  location = po_loc, address = po_addr WHERE email = po_email;
-INSERT INTO has_credit_card (number, email, expiry) VALUES (cc_num, po_email, cc_exp) ON CONFLICT (email) DO UPDATE SET number = cc_num, expiry = cc_exp;
+IF (cc_num IS NOT NULL AND cc_exp IS NOT NULL) THEN
+  INSERT INTO has_credit_card (number, email, expiry) VALUES (cc_num, po_email, cc_exp) ON CONFLICT (email) DO UPDATE SET number = cc_num, expiry = cc_exp;
+ELSE 
+  DELETE FROM has_credit_card WHERE email = po_email;
+END IF;
 END;
 '
 LANGUAGE plpgsql;

@@ -1710,10 +1710,10 @@ app.post('/register', async (req, res) => {
           const queryAddress = hasAddress(address) ? address : null
           const insertText =
             req.body.isFullTime === 'true'
-              ? `INSERT INTO care_taker(email, name, password, location, job, address, max_concurrent_pet_limit) VALUES($1, $2, $3, $4, 'full_timer', $5, 5)`
+              ? `INSERT INTO care_taker(email, name, password, location, job, address, max_concurrent_pet_limit, monthly_salary) VALUES($1, $2, $3, $4, 'full_timer', $5, 5, 3000)`
               : req.body.type == 'pet_owner'
                 ? `INSERT INTO pet_owner(email, name, password, location, address) VALUES($1, $2, $3, $4, $5)`
-                : `INSERT INTO care_taker(email, name, password, location, job, address, max_concurrent_pet_limit) VALUES($1, $2, $3, $4, 'part_timer', $5, 2)`;
+                : `INSERT INTO care_taker(email, name, password, location, job, address, max_concurrent_pet_limit, monthly_salary) VALUES($1, $2, $3, $4, 'part_timer', $5, 2, 0)`;
           createAccountQueryValues = [email, name, hashedPw, region, queryAddress]
           pool
             .query(insertText, createAccountQueryValues)

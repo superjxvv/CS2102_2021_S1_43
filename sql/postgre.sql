@@ -39,7 +39,7 @@ CREATE TABLE care_taker(
   job job_type NOT NULL,
   address VARCHAR,
   deleted BOOLEAN NOT NULL DEFAULT FALSE,
-  CHECK (job = 'full_timer' AND max = 5)
+  CHECK (job = 'full_timer' AND max_concurrent_pet_limit = 5)
 );
 
 CREATE VIEW accounts AS (

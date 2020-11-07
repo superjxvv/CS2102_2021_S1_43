@@ -87,7 +87,6 @@ app.get('/search', async (req, res) => {
     );
     console.log(allCareTaker.rows);
     const allPetTypes = await pool.query(sql_query.query.all_pet_types);
-    let superAdmin = await isSuperAdmin(req);
     if(!req.user) {
       res.render('search', {
         careTakers: allCareTaker.rows,
@@ -99,7 +98,6 @@ app.get('/search', async (req, res) => {
         loggedIn: req.user,
         accountType: 3,
         jobTypeToHuman: jobTypeToHuman,
-        isSuperAdmin: superAdmin
       });
     } else {
       res.render('search', {
@@ -112,7 +110,6 @@ app.get('/search', async (req, res) => {
         loggedIn: req.user,
         accountType: req.user.type,
         jobTypeToHuman: jobTypeToHuman,
-        isSuperAdmin: superAdmin
       });
     }
   } catch (err) {
@@ -305,7 +302,6 @@ app.get(
         );
       }
       const allPetTypes = await pool.query(sql_query.query.all_pet_types);
-      let superAdmin = await isSuperAdmin(req);
       res.render('search', {
         careTakers: allCareTaker.rows,
         selectedLocation: location,
@@ -315,8 +311,7 @@ app.get(
         price,
         loggedIn: req.user,
         accountType: req.user.type,
-        jobTypeToHuman: jobTypeToHuman,
-        isSuperAdmin: superAdmin
+        jobTypeToHuman: jobTypeToHuman
       });
     } catch (err) {
       console.error(err.message);
@@ -506,7 +501,6 @@ app.get('/manage-users/:type/:status', async (req, res) => {
       }
     }
     console.log(users + "User")
-    let superAdmin = await isSuperAdmin(req);
     if (await isSuperAdmin(req)) {
       res.render('manage-users', {
         users: users.rows,
@@ -514,8 +508,7 @@ app.get('/manage-users/:type/:status', async (req, res) => {
         userStatus: userStatus,
         loggedIn: req.user,
         accountType: req.user.type,
-        superAdmin: true,
-        isSuperAdmin: superAdmin
+        superAdmin: true
       });
     } else {
       res.render('manage-users', {
@@ -524,8 +517,7 @@ app.get('/manage-users/:type/:status', async (req, res) => {
         userStatus: userStatus,
         loggedIn: req.user,
         accountType: req.user.type,
-        superAdmin: false,
-        isSuperAdmin: superAdmin
+        superAdmin: false
       });
     }
   } catch (err) {
@@ -804,7 +796,6 @@ app.get('/pcs-admin-dashboard', async (req, res) => {
     for (var i = 0; i < counts_alldeliverymethods.rowCount; i++) {
       counts_deliverymethods.push(counts_alldeliverymethods.rows[i]['count']);
     }
-    let superAdmin = await isSuperAdmin(req);
     res.render('pcs-admin-dashboard', {
       numPetsTakenCareOf: numPetsTakenCareOf.rows[0]['count'],
       numTransaction: numTransaction.rows[0]['count'],
@@ -815,8 +806,7 @@ app.get('/pcs-admin-dashboard', async (req, res) => {
       first4PetTypes: first4PetTypes.rows,
       first4Caretakers: first4Caretakers.rows,
       loggedIn: req.user,
-      accountType: req.user.type,
-      isSuperAdmin: superAdmin
+      accountType: req.user.type
     });
   } catch (err) {
     console.error(err.message);
@@ -835,7 +825,6 @@ app.get('/search-transactions', async (req, res) => {
       sql_query.query.all_transactions_price_desc_rating_desc
     );
     const allStatus = ['pendingAccept', 'rejected', 'pendingPayment', 'paymentMade', 'inProgress', 'completed', 'cancelled'];
-    let superAdmin = await isSuperAdmin(req);
     res.render('search-transactions', {
       loggedInUser: req.user,
       selectedHires: selectedHires.rows,
@@ -847,8 +836,7 @@ app.get('/search-transactions', async (req, res) => {
       totalCost,
       currMonth,
       loggedIn: req.user,
-      accountType: req.user.type,
-      isSuperAdmin: superAdmin
+      accountType: req.user.type
     });
   } catch (err) {
     console.error(err.message);
@@ -881,7 +869,6 @@ app.get('/search-transactions/:status/:currMonth', async (req, res) => {
       }
     }
     const allStatus = ['pendingAccept', 'rejected', 'pendingPayment', 'paymentMade', 'inProgress', 'completed', 'cancelled'];
-    let superAdmin = await isSuperAdmin(req);
     res.render('search-transactions', {
       loggedInUser: req.user,
       selectedHires: selectedHires.rows,
@@ -893,8 +880,7 @@ app.get('/search-transactions/:status/:currMonth', async (req, res) => {
       totalCost,
       currMonth,
       loggedIn: req.user,
-      accountType: req.user.type,
-      isSuperAdmin: superAdmin
+      accountType: req.user.type
     });
   } catch (err) {
     console.error(err.message);
@@ -1457,11 +1443,9 @@ const isSuperAdmin = async (req) => {
 
 app.get('/admin_register', async (req, res) => {
   if (await isSuperAdmin(req)) {
-    let superAdmin = await isSuperAdmin(req);
     res.render('admin_reg', {
       loggedIn: req.user,
-      accountType: req.user.type,
-      isSuperAdmin: superAdmin
+      accountType: req.user.type
     });
   } else {
     req.flash('error', 'Unauthorised action');

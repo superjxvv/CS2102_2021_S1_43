@@ -69,6 +69,11 @@
             <% } %>
         </div>
         <div class="row text-left">
+            <% if (get_ct_trxns.length == 0) { %>
+            <div class="card col-sm col-md" id="square-card" style="margin-bottom: 30px;">
+                <p><i>You have not added a pet type. Click on the '+' button above to start adding pet types!</i></p>
+            </div>
+            <% } else { %>
             <% for (var i = 0; i < 4 && i < my_pet_types.length; i++) { %>
             <% const type = my_pet_types[i]; %>
             <button class="card col-sm col-md" id="square-card">
@@ -78,6 +83,7 @@
                 </p>
             </button>
             <% } %>
+            <% } %>
         </div>
 
 
@@ -86,12 +92,7 @@
             <h4 class="vert-gap-small-header" style="margin-top: 13px;">My Leave Requests&nbsp;</h4>
             <a href="/apply_leave" class="btn btn-tool btn-sm" style="margin-left: 0px; margin-top: 14px;"><ion-icon name="add-outline" style="font-size: 24px; margin-top: 0px; padding: 0px; align-items: center;"></ion-icon></a>
         </div>
-        <div class="row text-left">
-            <p>
-                <b>Remaining leave days: </b> Placeholder
-            </p>
-        </div>
-        <div class="row text-left">
+        <!-- <div class="row text-left">
             <button class="card col-sm col-md" id="square-card">
                 <p><b>Start Date:</b> Placeholder<br>
                     <b>End Date:</b> Placeholder<br>
@@ -100,39 +101,13 @@
                     <b>Status:</b> Approved (placeholder)<br>
                 </p>
             </button>
-        
-            <button class="card col-sm col-md" id="square-card">
-                <p><b>Start Date:</b> Placeholder<br>
-                    <b>End Date:</b> Placeholder<br>
-                    <b>Applied on:</b> Placeholder<br>
-                    <b>No. of Days:</b> Placeholder<br>
-                    <b>Status:</b> Approved (placeholder)<br>
-                </p>
-            </button>
-        
-            <button class="card col-sm col-md" id="square-card">
-                <p><b>Start Date:</b> Placeholder<br>
-                    <b>End Date:</b> Placeholder<br>
-                    <b>Applied on:</b> Placeholder<br>
-                    <b>No. of Days:</b> Placeholder<br>
-                    <b>Status:</b> Approved (placeholder)<br>
-                </p>
-            </button>
-        
-            <button class="card col-sm col-md" id="square-card">
-                <p><b>Start Date:</b> Placeholder<br>
-                    <b>End Date:</b> Placeholder<br>
-                    <b>Applied on:</b> Placeholder<br>
-                    <b>No. of Days:</b> Placeholder<br>
-                    <b>Status:</b> Approved (placeholder)<br>
-                </p>
-            </button>
-        </div>
+    
+        </div> -->
     </div>
 
     <div class="container vert-gap-container">
         <div class="row">
-            <h2 class="vert-gap-contents">My Past Transactions</h2>
+            <h2 class="vert-gap-contents">My Transactions</h2>
             <a href="/transactions_ct" style="padding: 11px">See more</a>
         </div>
         <div class="row text-left">

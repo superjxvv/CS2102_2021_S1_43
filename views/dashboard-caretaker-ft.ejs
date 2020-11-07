@@ -69,6 +69,11 @@
             <% } %>
         </div>
         <div class="row text-left">
+            <% if (get_ct_trxns.length == 0) { %>
+            <div class="card col-sm col-md" id="square-card" style="margin-bottom: 30px;">
+                <p><i>You have not added a pet type. Click on the '+' button above to start adding pet types!</i></p>
+            </div>
+            <% } else { %>
             <% for (var i = 0; i < 4 && i < my_pet_types.length; i++) { %>
             <% const type = my_pet_types[i]; %>
             <button class="card col-sm col-md" id="square-card">
@@ -77,6 +82,7 @@
                     <b>Base Daily Price:</b> $<%= Number(type.daily_price).toFixed(2) %><br>
                 </p>
             </button>
+            <% } %>
             <% } %>
         </div>
 

@@ -499,6 +499,16 @@ app.get('/manage-users/:type/:status', async (req, res) => {
           sql_query.query.inactive_po_for_manage_users
         );
       }
+    } else if (userType == "admin") {
+      if (userStatus == "active") {
+        users = await pool.query(
+          sql_query.query.active_admin_for_manage_users
+        );
+      } else {
+        users = await pool.query(
+          sql_query.query.inactive_admin_for_manage_users
+        );
+      }
     }
     console.log(users + "User")
     if (await isSuperAdmin(req)) {
@@ -534,6 +544,8 @@ app.get('/delete-user/:type/:email', async (req, res) => {
       user = await pool.query(sql_query.query.get_ct_by_email, [email]);
     } else if (userType == "petowner") {
       user = await pool.query(sql_query.query.get_po_by_email, [email]);
+    } else {
+      user = await pool.query(sql_query.query.get_admin_by_email, [email]);
     }
     res.render('delete-user', {
       user: user.rows[0],
@@ -580,6 +592,23 @@ app.post('/delete-pet-owner', async (req, res) => {
   );
 });
 
+app.post('/delete-admin', async (req, res) => {
+  //todo: check that user is admin
+  var email = req.body.email;
+
+  await pool.query(
+    sql_query.query.delete_admin,
+    [email],
+    (err, data) => {
+      if (err) {
+        console.log(err)
+      } else {
+        res.redirect('/manage-users/admin/inactive');
+      }
+    }
+  );
+});
+
 app.get('/reactivate-user/:type/:email', async (req, res) => {
   try {
     //todo: check that user is admin
@@ -589,6 +618,8 @@ app.get('/reactivate-user/:type/:email', async (req, res) => {
       user = await pool.query(sql_query.query.get_ct_by_email, [email]);
     } else if (userType == "petowner") {
       user = await pool.query(sql_query.query.get_po_by_email, [email]);
+    } else {
+      user = await pool.query(sql_query.query.get_admin_by_email, [email]);
     }
     res.render('reactivate-user', {
       user: user.rows[0],
@@ -627,6 +658,18 @@ app.post('/reactivate-user/:type', async (req, res) => {
           console.log(err)
         } else {
           res.redirect('/manage-users/caretaker/active');
+        }
+      }
+    );
+  } else {
+    await pool.query(
+      sql_query.query.reactivate_admin,
+      [email],
+      (err, data) => {
+        if (err) {
+          console.log(err)
+        } else {
+          res.redirect('/manage-users/admin/active');
         }
       }
     );
@@ -967,8 +1010,12 @@ app.get('/dashboard-caretaker-ft', async (req, res) => {
           sql_query.query.ct_salary,
           values
         );
-        const get_ct_trxns = await pool.query(
-          sql_query.query.get_ct_trxn,
+        const rating = await pool.query(
+          sql_query.query.ct_rating,
+          values
+        );
+        const get_4_ct_trxns = await pool.query(
+          sql_query.query.get_4_ct_trxns,
           values
         );
         // const jobTypeQuery = await pool.query(sql_query.query.get_ct_type,
@@ -993,8 +1040,9 @@ app.get('/dashboard-caretaker-ft', async (req, res) => {
           accountType: account_type,
           pet_days: pet_days.rows[0].num_pet_days,
           salary: salary.rows[0].total_cost,
+          rating: rating,
           my_pet_types: my_pet_types.rows,
-          get_ct_trxns: get_ct_trxns.rows
+          get_ct_trxns: get_4_ct_trxns.rows
         });
       } else {
         // if is PCSadmin
@@ -1309,7 +1357,24 @@ app.post('/add_pet_type_ct', async (req, res) => {
     res.redirect('/login');
   } else {
     const pet_type = req.body.pet_type;
-    const values = [req.user.email, pet_type];
+    const rating = await pool.query(
+      sql_query.query.ct_rating,
+      [req.user.email]
+    );
+    const rating_num = rating.rows[0].avg_rating;
+    const base_daily_price = await pool.query(
+      sql_query.query.base_daily_price_for_pet,
+      [pet_type]
+    );
+    const base_daily_price_num = base_daily_price.rows[0].base_daily_price;
+    var bonus_multiplier = (rating_num - 3.5) / 1.5 * 0.5;
+    bonus_multiplier = bonus_multiplier > 0 ? bonus_multiplier : 0;
+    const new_price = Number((1 + bonus_multiplier) * base_daily_price_num).toFixed(2);
+    console.log("HERE");
+    console.log(rating_num);
+    console.log(bonus_multiplier);
+    console.log(new_price);
+    const values = [req.user.email, pet_type, new_price];
     await pool.query(sql_query.query.add_pet_type_ct, values, (err) => {
       if (err) {
         req.flash('error', err);
@@ -1317,6 +1382,116 @@ app.post('/add_pet_type_ct', async (req, res) => {
       } else {
         req.flash('success_msg', 'Pet Type (' + pet_type + ') is ' + 'added!');
         res.redirect('/my_pet_types');
+      }
+    });
+  }
+});
+
+app.post('/payment_received', async (req, res) => {
+  if (!req.user) {
+    res.redirect('/login');
+  } else {
+    const owner_email = req.body.owner_email;
+    const pet_name = req.body.pet_name;
+    const ct_email = req.body.ct_email;
+    const start_date = req.body.start_date;
+    const end_date = req.body.end_date;
+    const values = [owner_email, pet_name, ct_email, start_date, end_date];
+    await pool.query(sql_query.query.receive_payment, values, (err) => {
+      if (err) {
+        req.flash('error', err);
+        res.redirect('/transactions_ct'); // check this again
+      } else {
+        req.flash('success_msg', 'Confirmation of payment!');
+        res.redirect('/transactions_ct');
+      }
+    });
+  }
+});
+
+app.post('/start_taking_care', async (req, res) => {
+  if (!req.user) {
+    res.redirect('/login');
+  } else {
+    const owner_email = req.body.owner_email;
+    const pet_name = req.body.pet_name;
+    const ct_email = req.body.ct_email;
+    const start_date = req.body.start_date;
+    const end_date = req.body.end_date;
+    const values = [owner_email, pet_name, ct_email, start_date, end_date];
+    await pool.query(sql_query.query.start_taking_care, values, (err) => {
+      if (err) {
+        req.flash('error', err);
+        res.redirect('/transactions_ct'); // check this again
+      } else {
+        req.flash('success_msg', 'Take good care of it!');
+        res.redirect('/transactions_ct');
+      }
+    });
+  }
+});
+
+app.post('/done_taking_care', async (req, res) => {
+  if (!req.user) {
+    res.redirect('/login');
+  } else {
+    const owner_email = req.body.owner_email;
+    const pet_name = req.body.pet_name;
+    const ct_email = req.body.ct_email;
+    const start_date = req.body.start_date;
+    const end_date = req.body.end_date;
+    const values = [owner_email, pet_name, ct_email, start_date, end_date];
+    await pool.query(sql_query.query.done_taking_care, values, (err) => {
+      if (err) {
+        req.flash('error', err);
+        res.redirect('/transactions_ct'); // check this again
+      } else {
+        req.flash('success_msg', 'Transaction completed, great job!');
+        res.redirect('/transactions_ct');
+      }
+    });
+  }
+});
+
+app.post('/accept_bid', async (req, res) => {
+  if (!req.user) {
+    res.redirect('/login');
+  } else {
+    const owner_email = req.body.owner_email;
+    const pet_name = req.body.pet_name;
+    const ct_email = req.body.ct_email;
+    const start_date = req.body.start_date;
+    const end_date = req.body.end_date;
+    const values = [owner_email, pet_name, ct_email, start_date, end_date];
+    await pool.query(sql_query.query.accept_bid, values, (err) => {
+      if (err) {
+        req.flash('error', err);
+        res.redirect('/transactions_ct'); // check this again
+      } else {
+        req.flash('success_msg', 'Bid accepted!');
+        res.redirect('/transactions_ct');
+      }
+    });
+  }
+});
+
+app.post('/reject_bid', async (req, res) => {
+  if (!req.user) {
+    res.redirect('/login');
+  } else {
+    const owner_email = req.body.owner_email;
+    const pet_name = req.body.pet_name;
+    const ct_email = req.body.ct_email;
+    const start_date = req.body.start_date;
+    const end_date = req.body.end_date;
+    const values = [owner_email, pet_name, ct_email, start_date, end_date];
+    await pool.query(sql_query.query.reject_bid, values, (err) => {
+      if (err) {
+        req.flash('error', err);
+        res.redirect('/transactions_ct'); // check this again
+      } else {
+        req.flash('success_msg', 'Bid rejected!');
+        res.redirect('/transactions_ct');
       }
     });
   }
@@ -1455,7 +1630,11 @@ app.get('/admin_register', async (req, res) => {
 
 app.get('/ft_register', (req, res) => {
   if (isAdmin(req)) {
-    res.render('register', { isFullTime: true });
+    res.render('register', {
+      isFullTime: true,
+      loggedIn: req.user,
+      accountType: req.user.type
+    });
   } else {
     req.flash('error', 'Unauthorised action');
     res.redirect('/login_redirect');
@@ -1850,7 +2029,7 @@ app.post('/edit_bid', async (req, res) => {
     ]);
 
 
-    
+
 
     const maxConcLimit = ct_Query.rows[0].max_concurrent_pet_limit;
     var concurrentTransactions = new Object()
@@ -1986,7 +2165,7 @@ app.post('/submit_edit', async (req, res) => {
       );
       const costPerDay = costPerDayQuery.rows[0].daily_price;
       const totalCost = numDays * costPerDay;
-      
+
       //Put in replacement bid.
       queryValues = [
         owner_email,
@@ -2101,7 +2280,10 @@ const statusToHuman = (status) => {
     return 'Completed';
   } else if (status === 'cancelled') {
     return 'Cancelled';
-  } else {
+  } else if (status === 'paymentMade') {
+    return 'Payment Made';
+  } 
+  else {
     return 'Pending Payment';
   }
 };

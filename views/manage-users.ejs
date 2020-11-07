@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Caretaker Summary Information</title>
+    <title>Manage Users</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
         integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
     <link rel="stylesheet" href="/css/profile_styles.css">
@@ -68,10 +68,13 @@
                         <label>
                             <input type="radio" name="userType" value="petowner"  <% if(userType == "petowner") {%>checked<%}%> onChange="check()" />
                         Pet Owner </label>
-                    </div>
-                  </div>
-        
-                  <div class="form-group">
+                        <% if(superAdmin) { %> <label>
+                        <input type="radio" name="userType" value="admin" <% if(userType == "admin") {%>checked<%}%> onChange="check()" />
+                            Admin </label>
+                            <% } %> </div>
+                </div>
+
+                <div class="form-group">
                     <h6>User status</h6>
                     <div class="radio">
                         <label>
@@ -89,84 +92,126 @@
             <table id="example1" class="table table-bordered table-striped">
                 <thead>
                     <% if(userType == 'caretaker') { %> <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Location</th>
-                        <th>Rating</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                        </tr>
-                        <% } else if(userType == 'petowner') { %>
-                        <tr>
                             <th>Name</th>
                             <th>Email</th>
                             <th>Location</th>
+                            <th>Rating</th>
                             <th>Status</th>
                             <th>Actions</th>
-                        </tr>
-                        <% } %>
-                        </thead>
-                        <tbody>
-                            <% if(userType == 'caretaker') { %>
-                            <% users.forEach(careTaker => { %>
-                            <tr>
-                                <td><%= careTaker.name %></td>
-                                <td><%= careTaker.email %></td>
-                                <td><%= careTaker.location %></td>
-                                <td><%= careTaker.rating %></td>
-                                <% if (careTaker.deleted) { %>
-                                <td>
-                                    <span class="badge badge-danger">Inactive</span>
-                                </td>
-                                <td>
-                                    <a href="/reactivate-user/caretaker/<%=careTaker.email%>" class="text-muted">
-                                        <i class="fas fa-user-plus"> Reactivate</i>
-                                    </a>
-                                </td>
-                                <% } else { %>
-                                <td>
-                                    <span class="badge badge-success">Active</span>
-                                </td>
-                                <td>
-                                    <a href="/delete-user/caretaker/<%=careTaker.email%>" class="text-muted">
-                                        <i class="fas fa-user-times"> Deactivate</i>
-                                    </a>
-                                </td>
-                                <% } %>
                             </tr>
-                            <% }) %>
                             <% } else if(userType == 'petowner') { %>
-                            <% users.forEach(petowner => { %>
                             <tr>
-                                <td><%= petowner.name %></td>
-                                <td><%= petowner.email %></td>
-                                <td><%= petowner.location %></td>
-                                <% if (petowner.deleted) { %>
-                                <td>
-                                    <span class="badge badge-danger">Inactive</span>
-                                </td>
-                                <td>
-                                    <a href="/reactivate-user/petowner/<%=petowner.email%>" class="text-muted">
-                                        <i class="fas fa-user-plus"> Reactivate</i>
-                                    </a>
-                                </td>
-                                <% } else { %>
-                                <td>
-                                    <span class="badge badge-success">Active</span>
-                                </td>
-                                <td>
-                                    <a href="/delete-user/petowner/<%=petowner.email%>" class="text-muted">
-                                        <i class="fas fa-user-times"> Deactivate</i>
-                                    </a>
-                                </td>
-                                <% } %>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Location</th>
+                                <th>Status</th>
+                                <th>Actions</th>
                             </tr>
-                            <% }) %>
+                            <% } else if(userType == 'admin') {%>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
                             <% } %>
-                        </tbody>
-                        </table>
+                            </thead>
+                            <tbody>
+                                <% if(userType == 'caretaker') { %>
+                                <% users.forEach(careTaker => { %>
+                                <tr>
+                                    <td><%= careTaker.name %></td>
+                                    <td><%= careTaker.email %></td>
+                                    <td><%= careTaker.location %></td>
+                                    <td><%= careTaker.rating %></td>
+                                    <% if (careTaker.deleted) { %>
+                                    <td>
+                                        <span class="badge badge-danger">Inactive</span>
+                                    </td>
+                                    <td>
+                                        <a href="/reactivate-user/caretaker/<%=careTaker.email%>" class="text-muted">
+                                            <i class="fas fa-user-plus"> Reactivate</i>
+                                        </a>
+                                    </td>
+                                    <% } else { %>
+                                    <td>
+                                        <span class="badge badge-success">Active</span>
+                                    </td>
+                                    <td>
+                                        <a href="/delete-user/caretaker/<%=careTaker.email%>" class="text-muted">
+                                            <i class="fas fa-user-times"> Deactivate</i>
+                                        </a>
+                                    </td>
+                                    <% } %>
+                                </tr>
+                                <% }) %>
+                                <% } else if(userType == 'petowner') { %>
+                                <% users.forEach(petowner => { %>
+                                <tr>
+                                    <td><%= petowner.name %></td>
+                                    <td><%= petowner.email %></td>
+                                    <td><%= petowner.location %></td>
+                                    <% if (petowner.deleted) { %>
+                                    <td>
+                                        <span class="badge badge-danger">Inactive</span>
+                                    </td>
+                                    <td>
+                                        <a href="/reactivate-user/petowner/<%=petowner.email%>" class="text-muted">
+                                            <i class="fas fa-user-plus"> Reactivate</i>
+                                        </a>
+                                    </td>
+                                    <% } else { %>
+                                    <td>
+                                        <span class="badge badge-success">Active</span>
+                                    </td>
+                                    <td>
+                                        <a href="/delete-user/petowner/<%=petowner.email%>" class="text-muted">
+                                            <i class="fas fa-user-times"> Deactivate</i>
+                                        </a>
+                                    </td>
+                                    <% } %>
+                                </tr>
+                                <% }) %>
+                                <% } else if(userType == 'admin') { %>
+                                <% users.forEach(admin => { %>
+                                <tr>
+                                    <td><%= admin.name %></td>
+                                    <td><%= admin.email %></td>
+                                    <% if(admin.isSuperAdmin) { %>
+                                    <td>
+                                        <span class="badge badge-warning">Super Admin</span>
+                                    </td>
+                                    <% } else { %>
+                                    <td>
+                                        <span class="badge badge-secondary">Admin</span>
+                                    </td>
+                                    <% } %>
+                                    <% if (admin.deleted) { %>
+                                    <td>
+                                        <span class="badge badge-danger">Inactive</span>
+                                    </td>
+                                    <td>
+                                        <a href="/reactivate-user/admin/<%=admin.email%>" class="text-muted">
+                                            <i class="fas fa-user-plus"> Reactivate</i>
+                                        </a>
+                                    </td>
+                                    <% } else { %>
+                                    <td>
+                                        <span class="badge badge-success">Active</span>
+                                    </td>
+                                    <td>
+                                        <a href="/delete-user/admin/<%=admin.email%>" class="text-muted">
+                                            <i class="fas fa-user-times"> Deactivate</i>
+                                        </a>
+                                    </td>
+                                    <% } %>
+                                </tr>
+                                <% })} %>
+                            </tbody>
+                            </table>
+                    </div>
                 </div>
-            </div>
 </body>
 
 </html>

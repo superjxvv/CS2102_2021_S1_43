@@ -1,4 +1,8 @@
 <%- include('../functions') %>
+<% var transfer = all.method_of_pet_transfer; %>
+<% if (transfer == 'office') { transfer = 'Deliver to PetCare office'; } %>
+<% if (transfer == 'oDeliver') { transfer = 'Pet Owner to deliver to address'; } %>
+<% if (transfer == 'cPickup') { transfer = 'Caretaker to pickup'; } %>
 <div class="container vert-gap-card">
     <div class="card" style="background-color: whitesmoke; padding-bottom: 0px;">
         <div class="card-body col-12" style="padding-bottom: 0px; padding-top: 15px;">
@@ -17,9 +21,12 @@
                         <p><b>Pet Name:</b> <a href="/my_pet/<%= all.owner_email %>/<%= all.pet_name %>"><%= all.pet_name %></a></p>
                     <% } %>
                     <p><b>Pet Type:</b> <%= all.pet_type %></p>
+                    <p><b>Method of Pet Transfer:</b> <%= transfer %></p>
+                    <% if (all.method_of_pet_transfer == 'cPickup') { %>
+                    <p><b>Pickup Address:</b> <%= all.addr %></a></p>
+                    <% } %>
                     <p><b>Rating:</b> <%= all.trxn_rating %></p>
                     <p><b>Review:</b> <%= all.review_text %></p>
-                    <p><b>Caretaker:</b> <a href="/profile/<%= all.ct_email %>"><%= all.ct_name %></a></p>
                 </div>
                 <div class="col col-4">
                     <% if (all.addr && (all.hire_status == 'completed' || all.hire_status == 'inProgress')) { %>
@@ -36,6 +43,59 @@
                         <span class="badge badge-info"><%= statusToHuman(all.hire_status) %></span><br>
                     <% } %></p>
                     <p><b>Total Cost:</b> $<%= (Math.round(all.total_cost * 100) / 100).toFixed(2) %></p>
+                </div>
+
+
+
+
+                <div class="col col-3">
+                    <% if (all.hire_status == 'pendingPayment' && all.payment_method == 'cash') { %>
+                        <form method="POST" action="/payment_received">
+                            <input type="hidden" name="owner_email" value=<%=all.owner_email %>>
+                            <input type="hidden" name="ct_email" value=<%=all.ct_email %>>
+                            <input type="hidden" name="start_date" value=<%=moment(all.start_date).format() %>>
+                            <input type="hidden" name="end_date" value=<%=moment(all.end_date).format() %>>
+                            <input type="hidden" name="pet_name" value=<%=all.pet_name %>>
+                            <button type="submit" class="btn btn-success">Payment Received</input>
+                        </form>
+
+                    <% } else if (all.hire_status == 'paymentMade') { %>
+                    <form method="POST" action="/start_taking_care">
+                        <input type="hidden" name="owner_email" value=<%=all.owner_email %>>
+                        <input type="hidden" name="ct_email" value=<%=all.ct_email %>>
+                        <input type="hidden" name="start_date" value=<%=moment(all.start_date).format() %>>
+                        <input type="hidden" name="end_date" value=<%=moment(all.end_date).format() %>>
+                        <input type="hidden" name="pet_name" value=<%=all.pet_name %>>
+                        <button type="submit" class="btn btn-success">Start</input>
+                    </form>
+
+                    <% } else if (all.hire_status == 'inProgress') { %>
+                        <form method="POST" action="/done_taking_care">
+                            <input type="hidden" name="owner_email" value=<%=all.owner_email %>>
+                            <input type="hidden" name="ct_email" value=<%=all.ct_email %>>
+                            <input type="hidden" name="start_date" value=<%=moment(all.start_date).format() %>>
+                            <input type="hidden" name="end_date" value=<%=moment(all.end_date).format() %>>
+                            <input type="hidden" name="pet_name" value=<%=all.pet_name %>>
+                            <button type="submit" class="btn btn-success">Completed</input>
+                        </form>
+                    <% } else if (all.hire_status == 'pendingAccept') { %>
+                        <form method="POST" action="/accept_bid">
+                            <input type="hidden" name="owner_email" value=<%=all.owner_email %>>
+                            <input type="hidden" name="ct_email" value=<%=all.ct_email %>>
+                            <input type="hidden" name="start_date" value=<%=moment(all.start_date).format() %>>
+                            <input type="hidden" name="end_date" value=<%=moment(all.end_date).format() %>>
+                            <input type="hidden" name="pet_name" value=<%=all.pet_name %>>
+                            <button type="submit" class="btn btn-success">Accept Bid</input>
+                        </form>
+                        <form method="POST" action="/reject_bid">
+                            <input type="hidden" name="owner_email" value=<%=all.owner_email %>>
+                            <input type="hidden" name="ct_email" value=<%=all.ct_email %>>
+                            <input type="hidden" name="start_date" value=<%=moment(all.start_date).format() %>>
+                            <input type="hidden" name="end_date" value=<%=moment(all.end_date).format() %>>
+                            <input type="hidden" name="pet_name" value=<%=all.pet_name %>>
+                            <button type="submit" class="btn btn-danger">Reject Bid</input>
+                        </form>
+                    <% } %>
                 </div>
             </div>
         </div>

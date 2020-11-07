@@ -3540,10 +3540,10 @@ END;
 LANGUAGE plpgsql;
 
 CREATE OR REPLACE PROCEDURE 
-add_pet_type_ct(ct_email VARCHAR, type VARCHAR) AS
+add_pet_type_ct(ct_email VARCHAR, type VARCHAR, new_price NUMERIC) AS
 '
 BEGIN 
-INSERT INTO can_take_care_of (email, daily_price, pet_type) VALUES (ct_email, 0, type);
+INSERT INTO can_take_care_of (email, daily_price, pet_type) VALUES (ct_email, new_price, type);
 END;
 '
 LANGUAGE plpgsql;

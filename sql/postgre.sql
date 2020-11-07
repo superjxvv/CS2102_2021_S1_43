@@ -595,6 +595,8 @@ insert into part_timer (email) (select email from care_taker where job = 'part_t
 
 insert into full_timer (email) (select email from care_taker where job = 'full_timer');
 
+UPDATE care_taker SET max_concurrent_pet_limit = 5 WHERE job = 'full_timer';
+
 insert into own_pet (pet_name, special_requirement, email) values ('Elvera', 'rutrum rutrum neque aenean auctor gravida sem praesent id massa id nisl venenatis lacinia aenean sit amet', 'ahymans0@printfriendly.com');
 insert into own_pet (pet_name, special_requirement, email) values ('Essy', 'mauris non ligula pellentesque ultrices phasellus id sapien in sapien iaculis congue vivamus metus arcu adipiscing molestie hendrerit', 'eprimarolo1@cyberchimps.com');
 insert into own_pet (pet_name, special_requirement, email) values ('Ellie', 'nam congue risus semper porta volutpat quam pede lobortis ligula sit amet eleifend pede libero quis orci nullam molestie nibh', 'niacoboni2@phpbb.com');
@@ -3439,6 +3441,15 @@ UPDATE hire h SET total_cost = (SELECT (p.base_daily_price + c.daily_price) * h.
 
 UPDATE care_taker c SET rating = (SELECT AVG(h.rating) FROM hire h WHERE h.ct_email = c.email);
 
+-- to update limit for part_timers
+UPDATE care_taker
+SET max_concurrent_pet_limit = 
+  CASE
+    WHEN rating > 2 THEN FLOOR(rating)
+    ELSE 2
+  END
+WHERE job = 'part_timer';
+
 insert into indicates_availability (email, start_date, end_date) values ('hsiretc@wordpress.org', '2020-11-17', '2022-09-27');
 insert into indicates_availability (email, start_date, end_date) values ('araden2q@hatena.ne.jp', '2020-10-26', '2022-10-06');
 insert into indicates_availability (email, start_date, end_date) values ('nselvester2d@cornell.edu', '2021-01-07', '2022-10-11');
@@ -3747,6 +3758,16 @@ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS increase_rating_and_price ON pet_care.hire;
 
 CREATE TRIGGER increase_rating_and_price AFTER UPDATE ON hire FOR EACH ROW EXECUTE PROCEDURE increase_rating_and_price();
+
+-- to update price to match rating
+UPDATE can_take_care_of C
+SET daily_price = 
+  CASE 
+    WHEN (SELECT COALESCE(COUNT(*), 0) FROM hire WHERE rating IS NOT NULL AND rating <> 0 AND ct_email = C.email) = 0 THEN P.base_daily_price 
+    ELSE P.base_daily_price * (1 + (SELECT rating FROM care_taker WHERE email = C.email)/5)
+  END
+FROM pet_type P
+WHERE P.name = C.pet_type;
 
 --Trigger to update monthly salary and pet days upon completion of hire/bid.
 CREATE OR REPLACE FUNCTION update_monthly_stats() RETURNS TRIGGER AS

@@ -25,6 +25,8 @@
                     <% } else { %> 
                         <b>Rating:</b> <%= Number(get_ct_info[0].rating).toFixed(2) %><br>
                     <% } %>
+                    <b>Job:</b> <%= get_ct_info[0].job == 'full_timer' ? 'Full Timer' : 'Part Timer' %><br>
+                    <% console.log(get_ct_info[0].max_concurrent_pet_limit); %>
                 </p>
             </div>
         </div>
@@ -55,7 +57,7 @@
     </div>
     
 
-    <div class="container vert-gap-container">
+    <div class="container vert-gap-container" style="padding-bottom: 30px;">
         <div class="row">
             <h2 class="vert-gap-contents">Past Transactions</h2>
         </div>

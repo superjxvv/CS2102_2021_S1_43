@@ -38,7 +38,8 @@ CREATE TABLE care_taker(
   max_concurrent_pet_limit INTEGER,
   job job_type NOT NULL,
   address VARCHAR,
-  deleted BOOLEAN NOT NULL DEFAULT FALSE
+  deleted BOOLEAN NOT NULL DEFAULT FALSE,
+  CHECK (job = 'full_timer' AND max = 5)
 );
 
 CREATE VIEW accounts AS (
@@ -101,7 +102,7 @@ CREATE TABLE hire (
   owner_email VARCHAR,
   pet_name VARCHAR,
   ct_email VARCHAR REFERENCES care_taker(email),
-  num_pet_days INTEGER NOT NULL,
+  num_pet_days INTEGER NOT NULL CHECK (num_pet_days > 0),
   total_cost NUMERIC NOT NULL,
   hire_status hire_status NOT NULL,
   method_of_pet_transfer pet_transfer NOT NULL,
@@ -114,21 +115,25 @@ CREATE TABLE hire (
   address VARCHAR,
   PRIMARY KEY(owner_email, pet_name, ct_email, start_date, end_date),
   FOREIGN KEY (owner_email, pet_name) REFERENCES own_pet(email, pet_name),
-  FOREIGN KEY(start_date, end_date) REFERENCES date_range(start_date, end_date)
+  FOREIGN KEY(start_date, end_date) REFERENCES date_range(start_date, end_date),
+  CHECK (start_date <= end_date),
+  CHECK (transaction_date <= start_date)
 );
 
 CREATE TABLE indicates_availability (
 	email VARCHAR NOT NULL REFERENCES part_timer(email),
 	start_date DATE NOT NULL,
 	end_date DATE NOT NULL,
-	PRIMARY KEY(email, start_date, end_date)
+	PRIMARY KEY(email, start_date, end_date),
+  CHECK (start_date <= end_date)
 );
 
 CREATE TABLE has_leave (
 	email VARCHAR NOT NULL REFERENCES full_timer(email),
 	start_date DATE NOT NULL,
 	end_date DATE NOT NULL,
-	PRIMARY KEY(email, start_date, end_date)
+	PRIMARY KEY(email, start_date, end_date),
+  CHECK (start_date <= end_date)
 );
 
 insert into pcs_admin (email, name, password) values ('jmoff0@theglobeandmail.com', 'Jerrie Moff', 'ACrs3WKaUtC');
@@ -1922,6 +1927,11 @@ insert into can_take_care_of (email, daily_price, pet_type) values ('eportwaine5
 insert into can_take_care_of (email, daily_price, pet_type) values ('raust5i@joomla.org', '0.00', 'Hedgehog');
 insert into can_take_care_of (email, daily_price, pet_type) values ('dpittendreigh5j@photobucket.com', '0.00', 'Ant Farm');
 
+UPDATE can_take_care_of C
+SET daily_price = P.base_daily_price
+FROM pet_type P
+WHERE C.pet_type = P.name;
+
 insert into is_of (pet_type, pet_name, owner_email) values ('Rabbit', 'Elvera', 'ahymans0@printfriendly.com');
 insert into is_of (pet_type, pet_name, owner_email) values ('Ant Farm', 'Essy', 'eprimarolo1@cyberchimps.com');
 insert into is_of (pet_type, pet_name, owner_email) values ('Hedgehog', 'Ellie', 'niacoboni2@phpbb.com');
@@ -3687,11 +3697,14 @@ DROP TRIGGER IF EXISTS add_ct ON pet_care.care_taker;
 
 CREATE TRIGGER add_CT AFTER INSERT ON care_taker FOR EACH ROW EXECUTE PROCEDURE add_CT();
 
+-- to update rating and scale prices 
 CREATE OR REPLACE FUNCTION increase_rating_and_price() RETURNS TRIGGER AS
 $$
 DECLARE total_trxn NUMERIC;
 DECLARE total_rating NUMERIC;
 DECLARE base_price NUMERIC;
+DECLARE job_ct VARCHAR;
+DECLARE avg_rating NUMERIC;
 BEGIN
 SELECT INTO total_trxn, total_rating COUNT(H1.rating), SUM(H1.rating)
 FROM hire H1
@@ -3715,6 +3728,16 @@ SET daily_price =
 FROM pet_type P
 WHERE P.name = C.pet_type
 AND C.email = NEW.ct_email;
+
+SELECT INTO job_ct, avg_rating job, rating
+FROM care_taker
+WHERE care_taker.email = NEW.ct_email;
+
+IF job_ct = 'part_timer' AND avg_rating > 2 THEN
+  UPDATE care_taker
+  SET max_concurrent_pet_limit = FLOOR(avg_rating)
+  WHERE email = NEW.ct_email;
+END IF;
 
 RETURN NEW;
 END;

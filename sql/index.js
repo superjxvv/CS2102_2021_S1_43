@@ -187,7 +187,9 @@ sql.query = {
   accept_bid:
     "UPDATE hire SET hire_status = 'pendingPayment' WHERE owner_email = $1 AND pet_name = $2 AND ct_email = $3 AND start_date = $4 AND end_date = $5",
   reject_bid:
-    "UPDATE hire SET hire_status = 'rejected' WHERE owner_email = $1 AND pet_name = $2 AND ct_email = $3 AND start_date = $4 AND end_date = $5"
+    "UPDATE hire SET hire_status = 'rejected' WHERE owner_email = $1 AND pet_name = $2 AND ct_email = $3 AND start_date = $4 AND end_date = $5",
+  monthly_wipe:
+    "UPDATE care_taker c1 SET monthly_salary = CASE WHEN job = 'part_timer' THEN 0 ELSE 3000 END, monthly_pet_days = 0 WHERE c1.email IN (SELECT email FROM care_taker c2);"
 };
 
 module.exports = sql;

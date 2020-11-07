@@ -1198,7 +1198,8 @@ app.post('/edit_particulars', async (req, res) => {
         }
       });
     } else if (pw1 && pw2 && pw1 != pw2) {
-      res.redirect('/edit_particulars?add=fail');
+        req.flash('error', err);
+        res.redirect('/edit_particulars');
     } else if (!pw1 && !pw2) {
       const name = req.body.po_name;
       const email = req.user.email;

@@ -3724,3 +3724,43 @@ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS increase_rating_and_price ON pet_care.hire;
 
 CREATE TRIGGER increase_rating_and_price AFTER UPDATE ON hire FOR EACH ROW EXECUTE PROCEDURE increase_rating_and_price();
+
+--Trigger to update monthly salary and pet days upon completion of hire/bid.
+CREATE OR REPLACE FUNCTION update_monthly_stats() RETURNS TRIGGER AS
+$$
+DECLARE old_monthly_pet_days NUMERIC;
+DECLARE old_salary NUMERIC;
+DECLARE job job_type;
+BEGIN
+SELECT INTO old_monthly_pet_days, old_salary, job monthly_pet_days, monthly_salary, job FROM care_taker WHERE email = NEW.ct_email;
+IF (OLD.hire_status = 'inProgress' AND NEW.hire_status = 'completed') THEN
+  --Add pet day to monthly pet days
+  UPDATE care_taker SET monthly_pet_days = old_monthly_pet_days + NEW.num_pet_days
+  WHERE email = NEW.ct_email;
+
+  --Update salary
+  --If part timer
+  IF (job = 'part_timer') THEN
+    UPDATE care_taker SET monthly_salary = old_salary + 0.75 * NEW.total_cost
+    WHERE email = NEW.ct_email;
+  ELSE
+    IF (old_monthly_pet_days >= 60) THEN
+      UPDATE care_taker SET monthly_salary = old_salary + 0.8 * NEW.total_cost
+      WHERE email = NEW.ct_email;
+    ELSE
+      IF (old_monthly_pet_days + NEW.num_pet_days > 60) THEN
+        UPDATE care_taker SET monthly_salary = old_salary + 
+        (old_monthly_pet_days + NEW.num_pet_days - 60) / NEW.num_pet_days * NEW.total_cost * 0.8 
+        WHERE email = NEW.ct_email;
+      END IF;
+    END IF;
+  END IF;
+END IF;
+RETURN NEW;
+END;
+$$
+LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS update_monthly_stats ON pet_care.hire;
+
+CREATE TRIGGER update_monthly_stats AFTER UPDATE ON hire FOR EACH ROW EXECUTE PROCEDURE update_monthly_stats();

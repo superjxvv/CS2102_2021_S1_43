@@ -85,10 +85,9 @@ app.get('/search', async (req, res) => {
     const location = 'All';
     const selectedPetTypes = [];
     let rating = 'DESC';
-    let price = 'DESC';
     let allCareTaker;
     allCareTaker = await pool.query(
-      sql_query.query.all_caretaker_rating_desc_price_desc,
+      sql_query.query.all_caretaker_rating_desc,
       [startDate, endDate]
     );
     console.log(allCareTaker.rows);
@@ -100,7 +99,6 @@ app.get('/search', async (req, res) => {
         petTypes: allPetTypes.rows,
         selectedPetTypes,
         rating,
-        price,
         loggedIn: req.user,
         accountType: 3,
         jobTypeToHuman: jobTypeToHuman,
@@ -112,7 +110,6 @@ app.get('/search', async (req, res) => {
         petTypes: allPetTypes.rows,
         selectedPetTypes,
         rating,
-        price,
         loggedIn: req.user,
         accountType: req.user.type,
         jobTypeToHuman: jobTypeToHuman,
@@ -124,7 +121,7 @@ app.get('/search', async (req, res) => {
 });
 
 app.get(
-  '/search/:startDate/:endDate/:location/:petTypes/:rating/:price',
+  '/search/:startDate/:endDate/:location/:petTypes/:rating',
   async (req, res) => {
     try {
       const startDate = new Date(new moment(req.params.startDate, "DD-MM-YYYY")) || new Date();
@@ -133,192 +130,112 @@ app.get(
       const location = req.params.location;
       const selectedPetTypes = JSON.parse(req.params.petTypes);
       const rating = req.params.rating;
-      const price = req.params.price;
       console.log(
         startDate,
         endDate,
         location,
         selectedPetTypes,
-        rating,
-        price
+        rating
       );
       if (
         location != 'All' &&
         selectedPetTypes.length == 0 &&
-        rating == 'DESC' &&
-        price == 'DESC'
+        rating == 'DESC'
       ) {
         allCareTaker = await pool.query(
-          sql_query.query.filtered_location_caretaker_rating_desc_price_desc,
+          sql_query.query.filtered_location_caretaker_rating_desc,
           [startDate, endDate, location]
         );
       } else if (
         location == 'All' &&
         selectedPetTypes.length == 0 &&
-        rating == 'DESC' &&
-        price == 'DESC'
+        rating == 'DESC'
       ) {
         allCareTaker = await pool.query(
-          sql_query.query.all_caretaker_rating_desc_price_desc,
+          sql_query.query.all_caretaker_rating_desc,
           [startDate, endDate]
         );
       } else if (
         location != 'All' &&
         selectedPetTypes.length > 0 &&
-        rating == 'DESC' &&
-        price == 'DESC'
+        rating == 'DESC'
       ) {
         allCareTaker = await pool.query(
           sql_query.query
-            .filtered_location_pet_type_caretaker_rating_desc_price_desc,
+            .filtered_location_pet_type_caretaker_rating_desc,
           [startDate, endDate, location, selectedPetTypes]
         );
       } else if (
         location == 'All' &&
         selectedPetTypes.length > 0 &&
-        rating == 'DESC' &&
-        price == 'DESC'
+        rating == 'DESC'
       ) {
         allCareTaker = await pool.query(
-          sql_query.query.filtered_pet_type_caretaker_rating_desc_price_desc,
+          sql_query.query.filtered_pet_type_caretaker_rating_desc,
           [startDate, endDate, selectedPetTypes]
         );
       } else if (
         location != 'All' &&
         selectedPetTypes.length == 0 &&
-        rating == 'DESC' &&
-        price == 'ASC'
+        rating == 'ASC'
       ) {
         allCareTaker = await pool.query(
-          sql_query.query.filtered_location_caretaker_rating_desc_price_asc,
+          sql_query.query.filtered_location_caretaker_rating_asc,
           [startDate, endDate, location]
         );
       } else if (
         location == 'All' &&
         selectedPetTypes.length == 0 &&
-        rating == 'DESC' &&
-        price == 'ASC'
+        rating == 'ASC'
       ) {
         allCareTaker = await pool.query(
-          sql_query.query.all_caretaker_rating_desc_price_asc,
+          sql_query.query.all_caretaker_rating_asc,
           [startDate, endDate]
         );
       } else if (
         location != 'All' &&
         selectedPetTypes.length > 0 &&
-        rating == 'DESC' &&
-        price == 'ASC'
+        rating == 'ASC'
       ) {
         allCareTaker = await pool.query(
           sql_query.query
-            .filtered_location_pet_type_caretaker_rating_desc_price_asc,
+            .filtered_location_pet_type_caretaker_rating_asc,
           [startDate, endDate, location, selectedPetTypes]
         );
       } else if (
         location == 'All' &&
         selectedPetTypes.length > 0 &&
-        rating == 'DESC' &&
-        price == 'ASC'
+        rating == 'ASC'
       ) {
         allCareTaker = await pool.query(
-          sql_query.query.filtered_pet_type_caretaker_rating_desc_price_asc,
-          [startDate, endDate, selectedPetTypes]
-        );
-      } else if (
-        location != 'All' &&
-        selectedPetTypes.length == 0 &&
-        rating == 'ASC' &&
-        price == 'DESC'
-      ) {
-        allCareTaker = await pool.query(
-          sql_query.query.filtered_location_caretaker_rating_asc_price_desc,
-          [startDate, endDate, location]
-        );
-      } else if (
-        location == 'All' &&
-        selectedPetTypes.length == 0 &&
-        rating == 'ASC' &&
-        price == 'DESC'
-      ) {
-        allCareTaker = await pool.query(
-          sql_query.query.all_caretaker_rating_asc_price_desc,
-          [startDate, endDate]
-        );
-      } else if (
-        location != 'All' &&
-        selectedPetTypes.length > 0 &&
-        rating == 'ASC' &&
-        price == 'DESC'
-      ) {
-        allCareTaker = await pool.query(
-          sql_query.query
-            .filtered_location_pet_type_caretaker_rating_asc_price_desc,
-          [startDate, endDate, location, selectedPetTypes]
-        );
-      } else if (
-        location == 'All' &&
-        selectedPetTypes.length > 0 &&
-        rating == 'ASC' &&
-        price == 'DESC'
-      ) {
-        allCareTaker = await pool.query(
-          sql_query.query.filtered_pet_type_caretaker_rating_asc_price_desc,
-          [startDate, endDate, selectedPetTypes]
-        );
-      } else if (
-        location != 'All' &&
-        selectedPetTypes.length == 0 &&
-        rating == 'ASC' &&
-        price == 'ASC'
-      ) {
-        allCareTaker = await pool.query(
-          sql_query.query.filtered_location_caretaker_rating_asc_price_asc,
-          [startDate, endDate, location]
-        );
-      } else if (
-        location == 'All' &&
-        selectedPetTypes.length == 0 &&
-        rating == 'ASC' &&
-        price == 'ASC'
-      ) {
-        allCareTaker = await pool.query(
-          sql_query.query.all_caretaker_rating_asc_price_asc,
-          [startDate, endDate]
-        );
-      } else if (
-        location != 'All' &&
-        selectedPetTypes.length > 0 &&
-        rating == 'ASC' &&
-        price == 'ASC'
-      ) {
-        allCareTaker = await pool.query(
-          sql_query.query
-            .filtered_location_pet_type_caretaker_rating_asc_price_asc,
-          [startDate, endDate, location, selectedPetTypes]
-        );
-      } else if (
-        location == 'All' &&
-        selectedPetTypes.length > 0 &&
-        rating == 'ASC' &&
-        price == 'ASC'
-      ) {
-        allCareTaker = await pool.query(
-          sql_query.query.filtered_pet_type_caretaker_rating_asc_price_asc,
+          sql_query.query.filtered_pet_type_caretaker_rating_asc,
           [startDate, endDate, selectedPetTypes]
         );
       }
       const allPetTypes = await pool.query(sql_query.query.all_pet_types);
+      if(!req.user) {
       res.render('search', {
         careTakers: allCareTaker.rows,
         selectedLocation: location,
         petTypes: allPetTypes.rows,
         selectedPetTypes,
         rating,
-        price,
+        loggedIn: req.user,
+        accountType: 3,
+        jobTypeToHuman: jobTypeToHuman,
+      });
+    } else {
+      res.render('search', {
+        careTakers: allCareTaker.rows,
+        selectedLocation: location,
+        petTypes: allPetTypes.rows,
+        selectedPetTypes,
+        rating,
         loggedIn: req.user,
         accountType: req.user.type,
         jobTypeToHuman: jobTypeToHuman
       });
+    }
     } catch (err) {
       console.error(err.message);
     }

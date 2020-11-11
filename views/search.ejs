@@ -30,7 +30,6 @@
       let endDate;
       let selectedPetTypes = [];
       let ratingSort = 'DESC';
-      let priceSort = 'DESC';
       const petTypes = JSON.parse('<%- JSON.stringify(petTypes) %>');
       selectedPetTypes = JSON.parse('<%- JSON.stringify(selectedPetTypes) %>') ? JSON.parse('<%- JSON.stringify(selectedPetTypes) %>') : [];
       $('.select2').select2({
@@ -52,9 +51,8 @@
         })
       } else {
         ratingSort = JSON.parse('<%- JSON.stringify(rating) %>');
-        priceSort = JSON.parse('<%- JSON.stringify(price) %>');
-        startDate = new moment(urlArray[urlArray.length - 6], 'DD-MM-YYYY')
-        endDate = new moment(urlArray[urlArray.length - 5], 'DD-MM-YYYY')
+        startDate = new moment(urlArray[urlArray.length - 5], 'DD-MM-YYYY')
+        endDate = new moment(urlArray[urlArray.length - 4], 'DD-MM-YYYY')
         $('#reservation').daterangepicker({
           startDate,
           endDate,
@@ -66,58 +64,40 @@
 
       $('#reservation').on('apply.daterangepicker', function (ev, picker) {
         ev.preventDefault();
-        window.location.href = '/search/' + picker.startDate.format('DD-MM-YYYY') + '/' + picker.endDate.format('DD-MM-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort;
+        window.location.href = '/search/' + picker.startDate.format('DD-MM-YYYY') + '/' + picker.endDate.format('DD-MM-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort;
       });
 
       check = (event) => {
         event.preventDefault();
-        window.location.href = '/search/' + moment(startDate).format('DD-MM-YYYY') + '/' + moment(endDate).format('DD-MM-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort;
+        window.location.href = '/search/' + moment(startDate).format('DD-MM-YYYY') + '/' + moment(endDate).format('DD-MM-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort;
       };
 
       $('.select2').on('select2:select', function (e) {
         e.preventDefault();
         console.log($('input[name="location"]:checked').val())
         console.log($(this).val());
-        window.location.href = '/search/' + moment(startDate).format('DD-MM-YYYY') + '/' + moment(endDate).format('DD-MM-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($(this).val()) + '/' + ratingSort + '/' + priceSort;
+        window.location.href = '/search/' + moment(startDate).format('DD-MM-YYYY') + '/' + moment(endDate).format('DD-MM-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($(this).val()) + '/' + ratingSort;
       });
 
       $('.select2').on('select2:unselect', function (e) {
         e.preventDefault();
         console.log($('input[name="location"]:checked').val())
         console.log($(this).val());
-        window.location.href = '/search/' + moment(startDate).format('DD-MM-YYYY') + '/' + moment(endDate).format('DD-MM-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($(this).val()) + '/' + ratingSort + '/' + priceSort;
+        window.location.href = '/search/' + moment(startDate).format('DD-MM-YYYY') + '/' + moment(endDate).format('DD-MM-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($(this).val()) + '/' + ratingSort;
       });
-
-      // $("input[data-bootstrap-switch]").each(function () {
-      //   $(this).bootstrapSwitch();
-      // });
       $('input[name="sort-rating"]').bootstrapSwitch({
         state: ratingSort == 'DESC',
         onSwitchChange: function (event, state) {
           event.preventDefault()
           if (state) {
             ratingSort = 'DESC'
-            window.location.href = '/search/' + moment(startDate).format('DD-MM-YYYY') + '/' + moment(endDate).format('DD-MM-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort;
+            window.location.href = '/search/' + moment(startDate).format('DD-MM-YYYY') + '/' + moment(endDate).format('DD-MM-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort;
           } else {
             ratingSort = 'ASC'
-            window.location.href = '/search/' + moment(startDate).format('DD-MM-YYYY') + '/' + moment(endDate).format('DD-MM-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort;
+            window.location.href = '/search/' + moment(startDate).format('DD-MM-YYYY') + '/' + moment(endDate).format('DD-MM-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort;
           }
         }
       });
-      $('input[name="sort-price"]').bootstrapSwitch({
-        state: priceSort == 'DESC',
-        onSwitchChange: function (event, state) {
-          event.preventDefault()
-          if (state) {
-            priceSort = 'DESC'
-            window.location.href = '/search/' + moment(startDate).format('DD-MM-YYYY') + '/' + moment(endDate).format('DD-MM-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort;
-          } else {
-            priceSort = 'ASC'
-            window.location.href = '/search/' + moment(startDate).format('DD-MM-YYYY') + '/' + moment(endDate).format('DD-MM-YYYY') + '/' + $('input[name="location"]:checked').val() + '/' + JSON.stringify($('.select2').val()) + '/' + ratingSort + '/' + priceSort;
-          }
-        }
-      });
-
     });
   </script>
 </head>
@@ -237,8 +217,6 @@
           <h5 class="col-12">Sort By</h5>
           <label class="col-6">Rating</label>
           <input type="checkbox" name="sort-rating" checked data-bootstrap-switch data-on-text="DESC" data-off-text="ASC">
-          <label class="col-6">Price</label>
-          <input type="checkbox" name="sort-price" checked data-bootstrap-switch data-on-text="DESC" data-off-text="ASC">
         </div>
       </div>
     </section>

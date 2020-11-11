@@ -93,7 +93,7 @@ app.get('/search', async (req, res) => {
     );
     console.log(allCareTaker.rows);
     const allPetTypes = await pool.query(sql_query.query.all_pet_types);
-    if(!req.user) {
+    if (!req.user) {
       res.render('search', {
         careTakers: allCareTaker.rows,
         selectedLocation: location,
@@ -682,40 +682,68 @@ app.post('/reactivate-user/:type', async (req, res) => {
   }
 });
 
-app.get('/pcs-admin-profile/:email', async (req, res) => {
-  try {
-    //todo: check that user is admin
-    const email = req.params.email;
-    const admin = await pool.query(sql_query.query.get_admin_by_email, [email]);
+app.get('/pcs-admin-profile', async (req, res) => {
+  if (!req.user) {
+    res.redirect('/login');
+  } else {
+    const values = [req.user.email];
+    const admin = await pool.query(sql_query.query.get_admin_by_email, values);
     res.render('pcs-admin-profile', {
       admin: admin.rows[0],
       loggedIn: req.user,
       accountType: req.user.type
     });
-  } catch (err) {
-    console.error(err.message);
   }
 });
 
 app.post('/update-pcs-admin', async (req, res) => {
   //todo: check that user is admin
-  var email = req.body.email;
-  var name = req.body.name;
-  var password = req.body.password;
-
-  await pool.query(
-    sql_query.query.update_admin,
-    [email],
-    [name],
-    [password],
-    (err, data) => {
-      if (err) {
-        console.log(err)
-      } else {
-        res.redirect('/pcs-admin-profile/' + email);
-      }
+  if (!req.user) {
+    res.redirect('/login');
+  } else {
+    const pw1 = req.body.pw1;
+    const pw2 = req.body.pw2;
+    if (pw1 && pw2 && pw1 == pw2) {
+      const name = req.body.name;
+      const email = req.body.email;
+      const password = await bcrypt.hash(pw1, 10);
+      await pool.query(
+        sql_query.query.update_admin,
+        [email, name, password],
+        (err, data) => {
+          if (err) {
+            req.flash('error', err);
+            res.redirect('/pcs-admin-profile');
+            console.log(err)
+          } else {
+            req.flash('success_msg', 'Particulars updated!');
+            res.redirect('/pcs-admin-profile');
+          }
+        }
+      );
+    } else if (pw1 && pw2 && pw1 != pw2) {
+      req.flash('error', err);
+      res.redirect('/pcs-admin-profile');
+    } else if (!pw1 && !pw2) {
+      const name = req.body.name;
+      const email = req.body.email;
+ 
+      await pool.query(
+        sql_query.query.update_admin_no_pw,
+        [email, name],
+        (err, data) => {
+          console.log("error")
+          if (err) {
+            req.flash('error', err);
+            res.redirect('/pcs-admin-profile');
+          } else {
+            req.flash('success_msg', 'Particulars updated!');
+            res.redirect('/pcs-admin-profile');
+          }
+        }
+      );
     }
-  );
+  }
 });
 
 app.get('/pet-types', async (req, res) => {
@@ -1192,8 +1220,8 @@ app.post('/edit_particulars', async (req, res) => {
         }
       });
     } else if (pw1 && pw2 && pw1 != pw2) {
-        req.flash('error', err);
-        res.redirect('/edit_particulars');
+      req.flash('error', err);
+      res.redirect('/edit_particulars');
     } else if (!pw1 && !pw2) {
       const name = req.body.po_name;
       const email = req.user.email;
@@ -1364,16 +1392,16 @@ app.post('/add_pet/:action', async (req, res) => {
             restore: true
           });
         } else if (data.rows.length > 0 && action == 'restore') {
-            await pool.query(sql_query.query.restore_pet, [pet_name, req.user.email], async (err, data) => {
-              if (err) {
-                console.log(err);
-                req.flash('error', err);
-                res.redirect('/add_pet');
-              } else {
-                req.flash('success_msg', 'Pet ' + pet_name + ' is restored!');
-                res.redirect('/my_pets');
-              }
-            })
+          await pool.query(sql_query.query.restore_pet, [pet_name, req.user.email], async (err, data) => {
+            if (err) {
+              console.log(err);
+              req.flash('error', err);
+              res.redirect('/add_pet');
+            } else {
+              req.flash('success_msg', 'Pet ' + pet_name + ' is restored!');
+              res.redirect('/my_pets');
+            }
+          })
         } else {
           req.flash('success_msg', 'Pet ' + pet_name + ' is ' + action + 'ed!');
           res.redirect('/my_pets');
@@ -2313,7 +2341,7 @@ const statusToHuman = (status) => {
     return 'Cancelled';
   } else if (status === 'paymentMade') {
     return 'Payment Made';
-  } 
+  }
   else {
     return 'Pending Payment';
   }

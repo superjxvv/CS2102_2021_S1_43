@@ -103,6 +103,7 @@ sql.query = {
   // Update:
   update_pet_type: 'UPDATE pet_type SET base_daily_price=$2 WHERE name=$1',
   update_admin: 'UPDATE pcs_admin SET name=$2, password=$3 WHERE email=$1',
+  update_admin_no_pw: 'UPDATE pcs_admin SET name=$2 WHERE email=$1',
   delete_ct: 'UPDATE care_taker SET deleted=true WHERE email=$1',
   delete_po: 'UPDATE pet_owner SET deleted=true WHERE email=$1',
   delete_admin: 'UPDATE pcs_admin SET deleted=true WHERE email=$1',

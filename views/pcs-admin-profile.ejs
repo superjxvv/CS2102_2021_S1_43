@@ -9,7 +9,24 @@
         integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
     <link rel="stylesheet" href="/css/profile_styles.css">
     <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+    <script src="/plugins/jquery/jquery.min.js"></script>
+    <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/dist/js/adminlte.min.js"></script>
+    <link rel="stylesheet" href="/dist/css/adminlte.min.css">
+
 </head>
+<script>
+    const pw1 = document.forms["form"]["pw1"].value;
+    const pw2 = document.forms["form"]["pw2"].value;
+    if (pw1 != pw2) {
+        $(document).Toasts('create', {
+            class: 'bg-danger',
+            title: 'Passwords do not match!',
+            body: 'Please re-enter your passwords.'
+        })
+        return false;
+    }
+</script>
 
 <body style="background-color: lightgrey;">
     <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn}) %>
@@ -19,13 +36,13 @@
                 <div class="card-header">
                     <b> Profile </b>
                 </div>
-                <form method="post" action="/update-pcs-admin">
+                <form method="post" action="/update-pcs-admin" id="form">
                     <div class="card-body">
                         <div class="form-group row">
                             <label for="name" class="col-sm-3 col-form-label">Name: </label>
                             <div class="col-sm-9">
-                                <input type="text" required="required" class="form-control" id="name"
-                                    name="name" value="<%=admin.name%>">
+                                <input type="text" required="required" class="form-control" id="name" name="name"
+                                    value="<%=admin.name%>">
                             </div>
                         </div>
                         <div class="form-group row">
@@ -36,22 +53,43 @@
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label for="password" class="col-sm-3 col-form-label">Password: </label>
+                            <label for="pw1" class="col-sm-3 col-form-label">Update Password: </label>
                             <div class="col-sm-9">
-                                <input type="text" required="required" class="form-control" id="password"
-                                    name="password" value="<%=admin.password%>">
+                                <input type="password" class="form-control" id="pw1" name="pw1" value="">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="pw2" class="col-sm-3 col-form-label">Confirm New Password: </label>
+                            <div class="col-sm-9">
+                                <input type="password" class="form-control" id="pw2" name="pw2" value="">
                             </div>
                         </div>
                     </div>
                     <div class="card-footer small text-muted">
                         <button type="submit" class="btn btn-secondary">
-                            Update
+                            Update Profile
                         </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
+    <script>
+        if ("<%= messages.success_msg %>") {
+            $(document).Toasts('create', {
+                class: 'bg-success',
+                title: 'Success',
+                body: "<%= messages.success_msg %>"
+            });
+        }
+        if ("<%= messages.error %>") {
+            $(document).Toasts('create', {
+                class: 'bg-danger',
+                title: 'Error',
+                body: "<%= messages.error %>"
+            });
+        }
+    </script>
 </body>
 
 </html>

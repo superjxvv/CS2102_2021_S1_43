@@ -773,6 +773,7 @@ app.get('/pcs-admin-dashboard', async (req, res) => {
     const numPetsTakenCareOf = await pool.query(sql_query.query.num_pets_taken_care_of_in_current_month);
     const numTransaction = await pool.query(sql_query.query.active_transactions);
     const numTransactionsInMonthYear = await pool.query(sql_query.query.num_transactions_in_each_month_and_year);
+    const salaryToBePaid = await pool.query(sql_query.query.salary_to_be_paid);
     const first4PetTypes = await pool.query(sql_query.query.first_4_pet_types);
     const first4Caretakers = await pool.query(
       sql_query.query.first_4_caretakers
@@ -790,12 +791,14 @@ app.get('/pcs-admin-dashboard', async (req, res) => {
     for (var i = 0; i < counts_alldeliverymethods.rowCount; i++) {
       counts_deliverymethods.push(counts_alldeliverymethods.rows[i]['count']);
     }
+    console.log(salaryToBePaid.rows[0]['sum'])
     res.render('pcs-admin-dashboard', {
       numPetsTakenCareOf: numPetsTakenCareOf.rows[0]['count'],
       numTransaction: numTransaction.rows[0]['count'],
       transactionsDates: dates,
       numTransactionPerDate_PT: counts_PT,
       numTransactionPerDate_FT: counts_FT,
+      salaryToBePaid: salaryToBePaid.rows[0]['sum'],
       counts_deliverymethods: counts_deliverymethods,
       first4PetTypes: first4PetTypes.rows,
       first4Caretakers: first4Caretakers.rows,

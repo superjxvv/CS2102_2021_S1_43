@@ -119,7 +119,7 @@
                         <span class="info-box-number">
                             <%= numPetsTakenCareOf %>
                         </span>
-                        <a href="#" class="small-box-footer">
+                        <a href="/search-transactions/[&quot;completed&quot;]/true" class="small-box-footer">
                             <span style="font-size: x-small;">
                                 More info <i class="fas fa-arrow-circle-right"></i>
                             </span>
@@ -131,8 +131,14 @@
 
                     <div class="info-box-content">
                         <span class="info-box-text">Salary to be paid</span>
-                        <span class="info-box-number">$ 41,410</span>
-                        <a href="#" class="small-box-footer">
+                        <span class="info-box-number">
+                            <% if(salaryToBePaid != null) { %>
+                            <%= salaryToBePaid %>
+                            <% } else { %>
+                            0
+                            <% } %>
+                        </span>
+                        <a href="/search-transactions/[&quot;completed&quot;]/true" class="small-box-footer">
                             <span style="font-size: x-small;">
                                 More info <i class="fas fa-arrow-circle-right"></i>
                             </span>
@@ -145,7 +151,8 @@
                     <div class="info-box-content">
                         <span class="info-box-text"> Active Transactions</span>
                         <span class="info-box-number"> <%= numTransaction %></span>
-                        <a href="#" class="small-box-footer">
+                        <a href="/search-transactions/[&quot;pendingPayment&quot;,&quot;paymentMade&quot;,&quot;inProgress&quot;]/true"
+                            class="small-box-footer">
                             <span style="font-size: x-small;">
                                 More info <i class="fas fa-arrow-circle-right"></i>
                             </span>

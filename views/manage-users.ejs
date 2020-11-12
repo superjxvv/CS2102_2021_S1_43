@@ -178,7 +178,7 @@
                                 <tr>
                                     <td><%= admin.name %></td>
                                     <td><%= admin.email %></td>
-                                    <% if(admin.isSuperAdmin) { %>
+                                    <% if(admin.is_super_admin) { %>
                                     <td>
                                         <span class="badge badge-warning">Super Admin</span>
                                     </td>
@@ -201,9 +201,13 @@
                                         <span class="badge badge-success">Active</span>
                                     </td>
                                     <td>
+                                        <% if(admin.is_super_admin) { %>
+                                        -
+                                        <% } else { %>
                                         <a href="/delete-user/admin/<%=admin.email%>" class="text-muted">
                                             <i class="fas fa-user-times"> Deactivate</i>
                                         </a>
+                                        <% } %>
                                     </td>
                                     <% } %>
                                 </tr>

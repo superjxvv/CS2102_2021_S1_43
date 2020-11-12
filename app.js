@@ -1887,6 +1887,10 @@ app.get('/login_redirect', (req, res) => {
     } else if (req.user.type === 1) {
       res.redirect('/dashboard');
     } else {
+      console.log(req.user);
+      const jobType = req.user.job;
+      console.log(jobType);
+      console.log('jobType');
       res.redirect('/dashboard-caretaker-ft');
     }
   } else {
@@ -2056,9 +2060,62 @@ app.post('/bid', async (req, res) => {
 
 app.post('/apply_leave', async (req, res) => {
   if (req.user) {
+    const valuess = [req.user.email];
     const ct_email = req.body.ct_email;
     const start_date = moment(convertDate(req.body.start_date), 'DD/MM/YYYY').toDate();
     const end_date = moment(convertDate(req.body.end_date), 'DD/MM/YYYY').toDate();
+
+    var datesToDelete = new Set();
+    const leave = await pool.query(sql_query.query.full_timer_leave, valuess);
+    for (var i = 0; i < leave.rows.length; i++) {
+      const leaveDate = leave.rows[i];
+      datesFromRange(leaveDate.start_date, leaveDate.end_date, datesToDelete);
+    }
+    datesFromRange(start_date, end_date, datesToDelete);
+
+    const datesToDeleteArr = Array.from(datesToDelete);
+    const days = new Array(366);
+    for (var i = 0; i < datesToDeleteArr.length; i++) {
+      var date = datesToDeleteArr[i];
+      var start = new Date(date.getFullYear(), 0, 0);
+      var diff = date - start;
+      var oneDay = 1000 * 60 * 60 * 24;
+      var day = Math.floor(diff / oneDay);
+      days[day] = 1;
+    }
+    console.log("HELLO")
+    console.log(days);
+
+    function checkConstraint(days) {
+      var numOf150DaysBlocks = 0;
+      var consecDays = 0;
+      var prevDayAvail = true;
+      for (var i = 0; i < days.length; i++) {
+        if (consecDays == 150) {
+          numOf150DaysBlocks++;
+          consecDays = 0;
+        }
+
+        if (days[i] == 1) {
+          consecDays = 0;
+          prevDayAvail = false;
+        } else {
+          consecDays++;
+          prevDayAvail = true;
+        }
+      }
+      return numOf150DaysBlocks >= 2;
+    }
+
+    console.log("HELLO2")
+    console.log(checkConstraint(days));
+
+    if (!checkConstraint(days)) {
+      req.flash('error', 'Please ensure that you work for a minimum of 2 x 150 consecutive days each year.');
+      res.redirect('/my_leave');
+      return;
+    }    
+
     const values = [ct_email, start_date, end_date];
     await pool.query(sql_query.query.add_leave, values, (err) => {
       if (err) {
@@ -2083,6 +2140,7 @@ app.post('/add_availability', async (req, res) => {
     const values = [ct_email, start_date, end_date];
     await pool.query(sql_query.query.add_availability, values, (err) => {
       if (err) {
+        console.log(err);
         req.flash('error', err);
         res.redirect('/my_availability');
       } else {

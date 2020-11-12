@@ -387,11 +387,10 @@ app.get('/caretaker-summary-info', async (req, res) => {
   try {
     //todo: check that user is admin
     const summaryInfo = await pool.query(
-      sql_query.query.caretaker_summary_info
+      sql_query.query.caretaker_summary_info_curr_month
     );
     res.render('caretaker-summary-info', {
       caretakerSummaryInfo: summaryInfo.rows,
-      months: moment.months(),
       loggedIn: req.user,
       accountType: req.user.type
     });

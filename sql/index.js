@@ -26,9 +26,11 @@ sql.query = {
   selected_pet_type: 'SELECT * FROM pet_type WHERE name=$1',
   first_4_pet_types: 'SELECT * FROM pet_type ORDER BY name LIMIT 4',
   first_4_caretakers:
-    "SELECT C.name, C.email, SUM(H.num_pet_days) AS num_pet_days FROM care_taker C, hire H WHERE C.email = H.ct_email AND H.hire_status = 'completed' GROUP BY C.email ORDER BY C.name LIMIT 4",
+    "SELECT C.name, C.email, SUM(H.num_pet_days) AS num_pet_days FROM care_taker C, hire H WHERE C.email = H.ct_email AND H.hire_status = 'completed' AND date_part('month', H.start_date) = date_part('month', CURRENT_DATE) AND date_part('year', H.start_date) = date_part('year', CURRENT_DATE) GROUP BY C.email ORDER BY C.name LIMIT 4",
   caretaker_summary_info:
     "SELECT C.name, C.email, SUM(H.num_pet_days) AS num_pet_days, SUM(H.total_cost) AS total_cost, EXTRACT(MONTH FROM H.transaction_date) AS month FROM care_taker C, hire H WHERE C.email = H.ct_email AND H.hire_status = 'completed' GROUP BY C.email, EXTRACT(MONTH FROM H.transaction_date)",
+  caretaker_summary_info_curr_month:
+    "SELECT C.name, C.email, SUM(H.num_pet_days) AS num_pet_days, SUM(H.total_cost) AS total_cost FROM care_taker C, hire H WHERE C.email = H.ct_email AND H.hire_status = 'completed' AND date_part('month', H.start_date) = date_part('month', CURRENT_DATE) AND date_part('year', H.start_date) = date_part('year', CURRENT_DATE) GROUP BY C.email",
   num_pets_taken_care_of_in_current_month:
     "SELECT COUNT(DISTINCT pet_name) FROM hire WHERE date_part('month', start_date) = date_part('month', CURRENT_DATE) AND date_part('year', start_date) = date_part('year', CURRENT_DATE) AND hire_status = 'completed'",
   active_transactions:

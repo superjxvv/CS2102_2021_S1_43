@@ -2201,6 +2201,7 @@ app.post('/add_availability', async (req, res) => {
     const values = [ct_email, start_date, end_date];
     await pool.query(sql_query.query.add_availability, values, (err) => {
       if (err) {
+        console.log(err);
         req.flash('error', err);
         res.redirect('/my_availability');
       } else {

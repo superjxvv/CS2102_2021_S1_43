@@ -711,7 +711,7 @@ app.post('/add-pet-type', async (req, res) => {
     [name, baseDailyPrice],
     (err, data) => {
       if (err) {
-        req.flash('error', err);
+        req.flash('error', "Pet Type already exist.");
         res.redirect('/add-pet-type');
       } else {
         req.flash('success_msg', 'Pet Type added!');
@@ -745,7 +745,6 @@ app.get('/edit-pet-type/:name', async (req, res) => {
     //todo: check that user is admin
     const name = req.params.name;
     const baseDailyPrice = await pool.query(sql_query.query.base_daily_price_for_pet, [name]);
-    console.log(baseDailyPrice)
     res.render('edit-pet-type', {
       name: name,
       baseDailyPrice: baseDailyPrice.rows[0]['base_daily_price'],
@@ -767,7 +766,7 @@ app.post('/edit-pet-type', async (req, res) => {
     [name, baseDailyPrice],
     (err, data) => {
       if (err) {
-        req.flash('error', err);
+        req.flash('error', "Error.");
         console.log(err)
       } else {
         req.flash('success_msg', 'Pet Type edited!');

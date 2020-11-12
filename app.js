@@ -961,12 +961,13 @@ app.get('/dashboard-caretaker-ft', async (req, res) => {
       const account_type = req.user.type;
       if (account_type != 0) {
         const values = [req.user.email];
-        console.log(values);
         const my_details = await pool.query(
           sql_query.query.get_ct_info,
           values
         );
-        console.log(my_details.rows);
+        if (my_details.rows[0].job == "part_timer") {
+          res.redirect('/dashboard-caretaker-pt');
+        }
         const pet_days = await pool.query(
           sql_query.query.ct_pet_days,
           values
@@ -1030,12 +1031,10 @@ app.get('/dashboard-caretaker-pt', async (req, res) => {
       const account_type = req.user.type;
       if (account_type != 0) {
         const values = [req.user.email];
-        console.log(values);
         const my_details = await pool.query(
           sql_query.query.get_ct_info,
           values
         );
-        console.log(my_details.rows);
         const pet_days = await pool.query(
           sql_query.query.ct_pet_days,
           values

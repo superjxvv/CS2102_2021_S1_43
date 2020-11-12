@@ -16,6 +16,7 @@ const e = require('express');
 const { send } = require('process');
 const sql = require('./sql');
 var cron = require('node-cron');
+const { result } = require('lodash');
 initializePassport(passport);
 // -------------------------------------
 
@@ -2101,43 +2102,48 @@ app.post('/apply_leave', async (req, res) => {
     datesFromRange(start_date, end_date, datesToDelete);
 
     const datesToDeleteArr = Array.from(datesToDelete);
-    const days = new Array(366);
+    const years = {}; 
     for (var i = 0; i < datesToDeleteArr.length; i++) {
       var date = datesToDeleteArr[i];
+      var year = date.getFullYear();
+      if (years[year] == undefined) {
+        years[year] = new Array(366);
+      }
       var start = new Date(date.getFullYear(), 0, 0);
       var diff = date - start;
       var oneDay = 1000 * 60 * 60 * 24;
       var day = Math.floor(diff / oneDay);
-      days[day] = 1;
+      years[year][day] = 1;
     }
-    console.log("HELLO")
-    console.log(days);
 
-    function checkConstraint(days) {
-      var numOf150DaysBlocks = 0;
-      var consecDays = 0;
-      var prevDayAvail = true;
-      for (var i = 0; i < days.length; i++) {
-        if (consecDays == 150) {
-          numOf150DaysBlocks++;
-          consecDays = 0;
+    function checkConstraint(years) {
+      for (const year in years) {
+        const days = years[year];
+        var numOf150DaysBlocks = 0;
+        var consecDays = 0;
+        var prevDayAvail = true;
+        for (var i = 0; i < days.length; i++) {
+          if (consecDays == 150) {
+            numOf150DaysBlocks++;
+            consecDays = 0;
+          }
+
+          if (days[i] == 1) {
+            consecDays = 0;
+            prevDayAvail = false;
+          } else {
+            consecDays++;
+            prevDayAvail = true;
+          }
         }
-
-        if (days[i] == 1) {
-          consecDays = 0;
-          prevDayAvail = false;
-        } else {
-          consecDays++;
-          prevDayAvail = true;
+        if (numOf150DaysBlocks < 2) {
+          return false;
         }
       }
-      return numOf150DaysBlocks >= 2;
+      return true;
     }
 
-    console.log("HELLO2")
-    console.log(checkConstraint(days));
-
-    if (!checkConstraint(days)) {
+    if (!checkConstraint(years)) {
       req.flash('error', 'Please ensure that you work for a minimum of 2 x 150 consecutive days each year.');
       res.redirect('/my_leave');
       return;

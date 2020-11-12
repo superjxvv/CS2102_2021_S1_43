@@ -78,6 +78,17 @@ app.get('/', async (req, res) => {
 
 const jobTypeToHuman = (jobType) => jobType === 'part_timer' ? 'Part Timer' : 'Full Timer';
 
+const isAdmin = (req) => req.user && req.user.type === 0;
+
+const isSuperAdmin = async (req) => {
+  if (isAdmin(req)) {
+    const isSuperAdminQuery = await pool.query('SELECT * FROM pcs_admin WHERE email = $1', [req.user.email]);
+    return isSuperAdminQuery.rows[0].is_super_admin;
+  } else {
+    return false;
+  }
+}
+
 app.get('/search', async (req, res) => {
   try {
     const startDate = new Date();
@@ -977,7 +988,7 @@ app.get('/dashboard', async (req, res) => {
           my_pets: my_pets.rows,
           my_details: my_details.rows,
           statusToHuman: statusToHuman,
-          loggedIn: true,
+          loggedIn: req.user,
           today: new moment().format('DD-MM-YYYY'),
           accountType: account_type
         });
@@ -1635,17 +1646,6 @@ app.post('/my_pet_types/:ct_email/:pet_type', async (req, res) => {
 app.get('/register', (req, res) => {
   res.render('register', { isFullTime: false });
 });
-
-const isAdmin = (req) => req.user && req.user.type === 0;
-
-const isSuperAdmin = async (req) => {
-  if (isAdmin(req)) {
-    const isSuperAdminQuery = await pool.query('SELECT * FROM pcs_admin WHERE email = $1', [req.user.email]);
-    return isSuperAdminQuery.rows[0].is_super_admin;
-  } else {
-    return false;
-  }
-}
 
 app.get('/admin_register', async (req, res) => {
   if (await isSuperAdmin(req)) {

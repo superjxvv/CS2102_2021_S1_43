@@ -1,0 +1,109 @@
+<%- include('../functions') %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="/plugins/jquery/jquery.min.js"></script>
+    <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/dist/js/adminlte.min.js"></script>
+    <link rel="stylesheet" href="/dist/css/adminlte.min.css">
+    <%- include('./partials/head.ejs') %>
+</head>
+<body>
+    <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn, accountType: accountType}) %>
+
+    <div class="container vert-gap-container" style="padding-top: 30px">
+        <div class="row">
+            <h2 class="vert-gap-contents">My Availability&nbsp;</h2>
+            <a href="/add_availability" class="btn btn-tool btn-sm" style="margin-left: 0px; margin-top: 7px;"><ion-icon name="add-outline" style="font-size: 24px; margin-top: 0px; padding: 0px; align-items: center;"></ion-icon></a>
+        </div>
+        <% all_availability.forEach(avail => { %>
+            <div class="container" style="padding-bottom: 10px;">
+                <div class="card col-12" style="background-color: whitesmoke; text-align: left;">
+                    <div class="card-body" style="padding-bottom: 0px; padding-top: 10px;">
+                        <div class="row" id="transaction-header">
+                            <div class="row">
+                                <div class="col">
+                                <p><b>Start Date:</b> <%= avail.start_date %></p>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <form method="post" action="/my_availability/<%= email %>/<%= avail.start_date %>" style="text-align: right;">
+                                    <a data-toggle="modal" data-target="#modal-default" style="margin: 0px; color: azure" 
+                                            data-startdate="<%= avail.start_date %>" data-email="<%= email %>">
+                                        <button type="submit" class="btn btn-tool btn-sm">
+                                            <ion-icon name="trash-outline" style="font-size: 24px; padding-top: 13px;"></ion-icon>
+                                        </button>
+                                    </a>
+                                </form>
+                            </div>
+                                                    <div class="row">
+                                                        <div class="col">
+                                                            <p><b>End Date:</b> <%= avail.end_date %></p>
+                                                        </div>
+                                                    </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        <% }) %>
+    </div>
+
+    <script>
+        if ("<%= messages.success_msg %>") {
+            $(document).Toasts('create', {
+                    class: 'bg-success',
+                    title: 'Success',
+                    body: "<%= messages.success_msg %>"
+            });
+        }
+        if ("<%= messages.error %>") {
+            $(document).Toasts('create', {
+                    class: 'bg-danger',
+                    title: 'Error',
+                    body: "<%= messages.error %>"
+            });
+        }
+    </script>
+    
+</body>
+
+<div class="modal fade" id="modal-default">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Confirmation</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="post" action="/#" class="delete_form">
+                <div class="modal-body">
+                    <div class="delete-text">
+                        Placeholder
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-between small text-muted">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+                    <button type="submit" class="btn btn-danger">Yes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    $('#modal-default').on('show.bs.modal', function(e) {
+        var button = $(e.relatedTarget)
+        var start_date = button.data('startdate');
+        var email = button.data('email');
+        var modal = $(this);
+        modal.find('.delete-text').text("Are you sure you want to delete this availability?");
+        modal.find('.modal-content form').attr("action", "/my_availability/" + email + "/" + start_date);
+    });
+</script>
+
+<script src="https://unpkg.com/ionicons@5.2.3/dist/ionicons.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
+</html>

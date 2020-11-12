@@ -89,11 +89,11 @@
 
 
         <div class="row">
-            <h4 class="vert-gap-small-header" style="margin-top: 13px;">My Leave Requests&nbsp;</h4>
-            <% if (my_leave_requests.length >= 1) { %>
-                <a href="/my_leave" style="padding-left: 13px; padding-top: 17px;">See more</a>
+            <h4 class="vert-gap-small-header" style="margin-top: 13px;">My Availability&nbsp;</h4>
+            <% if (my_availability.length >= 1) { %>
+                <a href="/my_availability" style="padding-left: 13px; padding-top: 17px;">See more</a>
             <% } else { %>
-                <a href="/apply_leave" class="btn btn-tool btn-sm" style="margin-left: 0px; margin-top: 14px;">
+                <a href="/add_availability" class="btn btn-tool btn-sm" style="margin-left: 0px; margin-top: 14px;">
                     <ion-icon name="add-outline" style="font-size: 24px; margin-top: 0px; padding: 0px; align-items: center;">
                     </ion-icon>
                 </a>
@@ -101,17 +101,17 @@
             <% } %>
         </div>
         <div class="row text-left">
-            <% if (my_leave_requests.length == 0) { %>
+            <% if (my_availability.length == 0) { %>
             <div class="card col-sm col-md" id="square-card" style="margin-bottom: 30px;">
-                <p><i>You have not submitted any leave requests. Click on the '+' button above to submit a new leave request!</i></p>
+                <p><i>You have not indicated your available dates yet. Click on the '+' button above to add dates!</i></p>
             </div>
             <% } else { %>
-            <% for (var i = 0; i < 4 && i < my_leave_requests.length; i++) { %>
-            <% const leave = my_leave_requests[i]; %>
+            <% for (var i = 0; i < 4 && i < my_availability.length; i++) { %>
+            <% const avail = my_availability[i]; %>
             <button class="card col-sm col-md" id="square-card">
                 <p>
-                    <b>Start Date:</b> <%= leave.start_date %><br>
-                    <b>End Date:</b> <%= leave.end_date %><br>
+                    <b>Start Date:</b> <%= avail.start_date %><br>
+                    <b>End Date:</b> <%= avail.end_date %><br>
                 </p>
             </button>
             <% } %>

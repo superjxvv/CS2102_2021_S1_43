@@ -58,18 +58,26 @@
 
 <body style="background-color: lightgrey;">
     <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn, accountType: accountType}) %>
-    <h3 style="margin-top: 3%;">Search Transactions</h3>
-    <div class="form-group">
-        <div class="radio">
-            <label>Only show Transactions in current month: </label>
-            <input type="checkbox" name="showCurrentMonth" <% if(currMonth == 'true') {%> checked <%}%> onChange="check(event)" />
-            </div>
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Search Transactions</h3>
+        </div>
+        <div class="card-body">
+            <div class="form-group">
+                <div class="radio">
+                    <h6>Only show Transactions in current month:
+                        <input type="checkbox" name="showCurrentMonth" <% if(currMonth == 'true') {%> checked <%}%> onChange="check(event)" />
+                    </h6>
+                </div>
           </div>
-        <label class="col-sm-3">Filter by Transaction Status: </label>
-        <select class="select2" multiple="multiple" data-placeholder="Filter by status"
-            data-dropdown-css-class="select2-dark" style="width: 100%;">
-        </select>
-        <br/>
+          <div class="form-group">
+              <h6>Filter by Transaction Status: </h6>
+              <select class="select2" multiple="multiple" data-placeholder="Filter by status"
+              data-dropdown-css-class="select2-dark" style="width: 100%;">
+          </select>
+          </div>
+        </div>
+        </div>
     <div class="card">
         <div class="card-body">
             <table id="example1" class="table table-bordered table-striped">
@@ -88,52 +96,52 @@
                 </thead>
                 <tbody>
                     <% selectedHires.forEach(hire => { %> <tr>
-            <td><%= hire.owner_email %></td>
-            <td><%= hire.pet_name %></td>
-            <td><%= hire.ct_email %></td>
-            <td><%= hire.num_pet_days %></td>
-            <td><%= hire.total_cost %></td>
-            <td><%= hire.method_of_pet_transfer %></td>
-            <td><%= new Intl.DateTimeFormat('en-GB', { year: 'numeric', month: 'long', day: '2-digit'}).format(hire.transaction_date) %>
-            </td>
-            <td><%= hire.rating %></td>
-            <% if(hire.hire_status == 'completed') { %>
-            <td>
-                <span class="badge badge-success">Completed</span>
-            </td>
-            <% } else if(hire.hire_status == 'rejected') { %>
-            <td>
-                <span class="badge badge-danger">Rejected</span>
-            </td>
-            <% } else if(hire.hire_status == 'cancelled') { %>
-            <td>
-                <span class="badge badge-danger">Cancelled</span>
-            </td>
-            <% } else if(hire.hire_status == 'pendingAccept') { %>
-            <td>
-                <span class="badge badge-secondary">Pending Accept</span>
-            </td>
-            <% } else if(hire.hire_status == 'pendingPayment') { %>
-            <td>
-                <span class="badge badge-secondary">Pending Payment</span>
-            </td>
-            <% } else if(hire.hire_status == 'paymentMade') { %>
-            <td>
-                <span class="badge badge-info">Payment Made</span>
-            </td>
-            <% } else if(hire.hire_status == 'inProgress') { %>
-            <td>
-                <span class="badge badge-info">In Progress</span>
-            </td>
-            <% } else { %>
-            <td><%= hire.hire_status %></td>
-            <%} %>
-            </tr>
-            <% }) %>
-            </tbody>
-            </table>
-        </div>
-    </div>
+                        <td><%= hire.owner_email %></td>
+                        <td><%= hire.pet_name %></td>
+                        <td><%= hire.ct_email %></td>
+                        <td><%= hire.num_pet_days %></td>
+                        <td><%= hire.total_cost %></td>
+                        <td><%= hire.method_of_pet_transfer %></td>
+                        <td><%= new Intl.DateTimeFormat('en-GB', { year: 'numeric', month: 'long', day: '2-digit'}).format(hire.transaction_date) %>
+                        </td>
+                        <td><%= hire.rating %></td>
+                        <% if(hire.hire_status == 'completed') { %>
+                        <td>
+                            <span class="badge badge-success">Completed</span>
+                        </td>
+                        <% } else if(hire.hire_status == 'rejected') { %>
+                        <td>
+                            <span class="badge badge-danger">Rejected</span>
+                        </td>
+                        <% } else if(hire.hire_status == 'cancelled') { %>
+                        <td>
+                            <span class="badge badge-danger">Cancelled</span>
+                        </td>
+                        <% } else if(hire.hire_status == 'pendingAccept') { %>
+                        <td>
+                            <span class="badge badge-secondary">Pending Accept</span>
+                        </td>
+                        <% } else if(hire.hire_status == 'pendingPayment') { %>
+                        <td>
+                            <span class="badge badge-secondary">Pending Payment</span>
+                        </td>
+                        <% } else if(hire.hire_status == 'paymentMade') { %>
+                        <td>
+                            <span class="badge badge-info">Payment Made</span>
+                        </td>
+                        <% } else if(hire.hire_status == 'inProgress') { %>
+                        <td>
+                            <span class="badge badge-info">In Progress</span>
+                        </td>
+                        <% } else { %>
+                        <td><%= hire.hire_status %></td>
+                        <%} %>
+                        </tr>
+                        <% }) %>
+                        </tbody>
+                        </table>
+                </div>
+            </div>
 </body>
 
 </html>

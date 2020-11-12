@@ -21,6 +21,42 @@
     <link rel="stylesheet" href="/plugins/select2/css/select2.min.css">
     <link rel="stylesheet" href="/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">
     <script>
+        const humanToStatus = (human) => {
+            if (human === 'In Progress') {
+                return "inProgress";
+            } else if (human === 'Pending Accept') {
+                return "pendingAccept";
+            } else if (human === 'Rejected') {
+                return "rejected";
+            } else if (human === 'Completed') {
+                return "completed";
+            } else if (human === 'Cancelled') {
+                return "cancelled";
+            } else if (human === 'Payment Made') {
+                return "paymentMade";
+            }
+            else {
+                return "pendingPayment";
+            }
+        };
+        const statusToHuman = (status) => {
+            if (status === 'inProgress') {
+                return 'In Progress';
+            } else if (status === 'pendingAccept') {
+                return 'Pending Accept';
+            } else if (status === 'rejected') {
+                return 'Rejected';
+            } else if (status === 'completed') {
+                return 'Completed';
+            } else if (status === 'cancelled') {
+                return 'Cancelled';
+            } else if (status === 'paymentMade') {
+                return 'Payment Made';
+            }
+            else {
+                return 'Pending Payment';
+            }
+        };
         $(function () {
             $("#example1").DataTable({
                 "responsive": true,
@@ -29,18 +65,24 @@
                 "ordering": false,
             })
             let selectedStatus = [];
-            const allStatus = JSON.parse('<%- JSON.stringify(allStatus) %>');
+            let allStatus = JSON.parse('<%- JSON.stringify(allStatus) %>');
+            allStatus = allStatus.map((status) => { return statusToHuman(status) })
             let currMonth = JSON.parse('<%- JSON.stringify(currMonth) %>');
             console.log(currMonth)
             selectedStatus = JSON.parse('<%- JSON.stringify(selectedStatus) %>') ? JSON.parse('<%- JSON.stringify(selectedStatus) %>') : [];
+            console.log(allStatus)
             $('.select2').select2({
                 data: allStatus,
                 allowClear: true,
             })
+            selectedStatus = selectedStatus.map((status) => { return statusToHuman(status) })
+            console.log(selectedStatus)
             $('.select2').val(selectedStatus);
             $('.select2').trigger('change.select2');
             $('.select2').on('change', function (e) {
-                window.location.href = '/search-transactions/' + JSON.stringify($('.select2').val()) + "/" + currMonth;
+                x = $('.select2').val()
+                x = x.map((human) => { return humanToStatus(human) }) 
+                window.location.href = '/search-transactions/' + JSON.stringify(x) + "/" + currMonth;
             });
 
             check = (event) => {
@@ -50,7 +92,9 @@
                 } else {
                     currMonth = 'true'
                 }
-                window.location.href = '/search-transactions/' + JSON.stringify($('.select2').val()) + '/' + currMonth;
+                x = $('.select2').val()
+                x = x.map((human) => { return humanToStatus(human) })
+                window.location.href = '/search-transactions/' + JSON.stringify(x) + '/' + currMonth;
             };
         })
     </script>
@@ -101,7 +145,7 @@
                         <td><%= hire.ct_email %></td>
                         <td><%= hire.num_pet_days %></td>
                         <td><%= hire.total_cost %></td>
-                        <td><%= hire.method_of_pet_transfer %></td>
+                        <td><%= transferConvert(hire.method_of_pet_transfer) %></td>
                         <td><%= new Intl.DateTimeFormat('en-GB', { year: 'numeric', month: 'long', day: '2-digit'}).format(hire.transaction_date) %>
                         </td>
                         <td><%= hire.rating %></td>

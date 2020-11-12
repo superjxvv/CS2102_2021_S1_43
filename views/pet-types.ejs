@@ -12,30 +12,19 @@
     <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="/dist/js/adminlte.min.js"></script>
     <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
-
-    <!-- AdminLTE App -->
+    <script src="/plugins/jquery/jquery.min.js"></script>
+    <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="/dist/js/adminlte.min.js"></script>
-    <script>
-        $(function () {
-            var showSuccessToast = JSON.parse('<%- JSON.stringify(showSuccessToast) %>') ? JSON.parse('<%- JSON.stringify(showSuccessToast) %>') : [];
-            if (showSuccessToast) {
-                $(document).Toasts('create', {
-                    class: 'bg-success',
-                    title: 'Pet Type added successfully!',
-                    position: 'topLeft'
-                })
-            }
-        });
-    </script>
+    <link rel="stylesheet" href="/dist/css/adminlte.min.css">
 </head>
 
 <body style="background-color: lightgrey;">
     <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn, accountType: accountType}) %>
-    <div class="card" style="margin-left: auto; margin-right: auto; margin-top: 5%; width: 80%; align-content: center;">
+    <div class="card" style="margin-left: auto; margin-right: auto; margin-top: 3%; width: 80%; align-content: center;">
         <div class="card-header border-0" style="flex-direction: row; display: flex; justify-content: space-between;">
             <h3 class="card-title">Pet Types</h3>
             <div class="card-tools">
-                <a href="/add-pet-type" class="btn btn-tool btn-sm">
+                <a href="/add-pet-type" class="btn btn-tool btn-sm" style="position: absolute; margin-left: 400px;">
                     <i class="fas fa-plus"></i>
                 </a>
             </div>
@@ -66,6 +55,22 @@
         </div>
     </div>
     <!-- /.card -->
+    <script>
+        if ("<%= messages.success_msg %>") {
+            $(document).Toasts('create', {
+                class: 'bg-success',
+                title: 'Success',
+                body: "<%= messages.success_msg %>"
+            });
+        }
+        if ("<%= messages.error %>") {
+            $(document).Toasts('create', {
+                class: 'bg-danger',
+                title: 'Error',
+                body: "<%= messages.error %>"
+            });
+        }
+    </script>
 </body>
 
 </html>

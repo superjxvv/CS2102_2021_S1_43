@@ -86,7 +86,7 @@
                 <a href="/search" style="padding: 11px">See more</a>
             <% } else {%>
                 <h2 class="vert-gap-contents">Top Caretakers Nearby&nbsp;</h2>
-                <a href="/search/<%=today%>/<%=today%>/<%=my_details[0].location%>/[]/DESC/DESC" style="padding: 11px">See more</a>
+                <a href="/search/<%=today%>/<%=today%>/<%=my_details[0].location%>/[]/DESC" style="padding: 11px">See more</a>
             <% } %>
         </div>
         <% if (top_ratings.length == 0) { %>
@@ -118,7 +118,7 @@
             
             <% if (loggedIn) {  %>
                 <h2 class="vert-gap-contents">My Transactions&nbsp;</h2>
-                <% if (recent_trxn.length > 4) { %>
+                <% if (recent_trxn.length > 0) { %>
                     <a href="/transactions" style="padding: 11px">See more</a>
                 <% } %>
             <% } else { %>
@@ -128,7 +128,7 @@
         <div class="row text-left">
             <% if (recent_trxn.length == 0) { %>
                 <div class="card col-sm col-md" id="square-card" style="margin-bottom: 30px;">
-                    <p><i>No Completed Transactions Yet!</i></p>
+                    <p><i>No Transactions Yet!</i></p>
                 </div>
             <% } else { %>
                 <% for (var i = 0; i < 4 && i < recent_trxn.length; i++) { %>

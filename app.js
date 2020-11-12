@@ -956,47 +956,23 @@ app.get('/dashboard-caretaker-ft', async (req, res) => {
         );
         if (my_details.rows[0].job == "part_timer") {
           res.redirect('/dashboard-caretaker-pt');
+          return;
         }
-        const pet_days = await pool.query(
-          sql_query.query.ct_pet_days,
-          values
-        );
-        const salary = await pool.query(
-          sql_query.query.ct_salary,
-          values
-        );
-        const rating = await pool.query(
-          sql_query.query.ct_rating,
-          values
-        );
         const get_4_ct_trxns = await pool.query(
           sql_query.query.get_4_ct_trxns,
           values
         );
-        // const jobTypeQuery = await pool.query(sql_query.query.get_ct_type,
-        //   values
-        // );
-        // const jobType = jobTypeQuery.rows[0].job;
-        // if (jobType == 'part-timer') {
-        //   var additional_pet_limit = Math.ceil((rating - 3) / 0.5);
-        //   additional_pet_limit = additional_pet_limit > 3 ? 3 : additional_pet_limit;
-        //   additional_pet_limit = additional_pet_limit < 0 ? 0 : additional_pet_limit;
-        //   const pet_limit = 2 + additional_pet_limit;
-        // } else {
-        //   const pet_limit = 5;
-        // }
         const my_pet_types = await pool.query(sql_query.query.all_my_pet_types, values);
         const my_leave_requests = await pool.query(sql_query.query.all_my_leave_requests, values);
-
         res.render('./dashboard-caretaker-ft', {
           title: 'Dashboard',
           my_details: my_details.rows,
           statusToHuman: statusToHuman,
           loggedIn: req.user,
           accountType: account_type,
-          pet_days: pet_days.rows[0].num_pet_days,
-          salary: salary.rows[0].total_cost,
-          rating: rating,
+          pet_days: my_details.rows[0].monthly_pet_days,
+          salary: my_details.rows[0].monthly_salary,
+          rating: my_details.rows[0].rating,
           my_pet_types: my_pet_types.rows,
           get_ct_trxns: get_4_ct_trxns.rows,
           my_leave_requests: my_leave_requests.rows
@@ -1024,18 +1000,6 @@ app.get('/dashboard-caretaker-pt', async (req, res) => {
           sql_query.query.get_ct_info,
           values
         );
-        const pet_days = await pool.query(
-          sql_query.query.ct_pet_days,
-          values
-        );
-        const salary = await pool.query(
-          sql_query.query.ct_salary,
-          values
-        );
-        const rating = await pool.query(
-          sql_query.query.ct_rating,
-          values
-        );
         const get_4_ct_trxns = await pool.query(
           sql_query.query.get_4_ct_trxns,
           values
@@ -1049,9 +1013,9 @@ app.get('/dashboard-caretaker-pt', async (req, res) => {
           statusToHuman: statusToHuman,
           loggedIn: req.user,
           accountType: account_type,
-          pet_days: pet_days.rows[0].num_pet_days,
-          salary: salary.rows[0].total_cost,
-          rating: rating,
+          pet_days: my_details.rows[0].monthly_pet_days,
+          salary: my_details.rows[0].monthly_salary,
+          rating: my_details.rows[0].rating,
           my_pet_types: my_pet_types.rows,
           my_availability: my_availability.rows,
           get_ct_trxns: get_4_ct_trxns.rows,
@@ -1067,30 +1031,6 @@ app.get('/dashboard-caretaker-pt', async (req, res) => {
   }
 });
 
-// app.get('/apply_leave', async (req, res) => {
-//   try {
-//     if (!req.user) {
-//       res.redirect('/login');
-//     } else {
-//       const account_type = req.user.type;
-//       if (account_type != 0) {
-//         res.render('./apply_leave', {
-//           title: 'Apply Leave',
-//           statusToHuman: statusToHuman,
-//           loggedIn: req.user,
-//           accountType: account_type
-//         });
-//       } else {
-//         // if is PCSadmin
-//         // have not tried this out
-//         res.redirect('/caretaker-summary-info');
-//       }
-//     }
-//   } catch (err) {
-//     console.error(err.message);
-//   }
-// });
-
 app.get('/add_availability', async (req, res) => {
   if (req.user) {
     const values = [req.user.email];
@@ -1101,7 +1041,6 @@ app.get('/add_availability', async (req, res) => {
         const availDate = avail.rows[i];
         datesFromRange(availDate.start_date, availDate.end_date, datesToDelete);
       }
-    // }
     res.render('add_availability', {
       loggedInUser: req.user,
       loggedInUserEmail: req.user.email,

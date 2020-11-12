@@ -996,6 +996,7 @@ app.get('/dashboard-caretaker-ft', async (req, res) => {
         //   const pet_limit = 5;
         // }
         const my_pet_types = await pool.query(sql_query.query.all_my_pet_types, values);
+        const my_leave_requests = await pool.query(sql_query.query.all_my_leave_requests, values);
 
         res.render('./dashboard-caretaker-ft', {
           title: 'Dashboard',
@@ -1007,7 +1008,8 @@ app.get('/dashboard-caretaker-ft', async (req, res) => {
           salary: salary.rows[0].total_cost,
           rating: rating,
           my_pet_types: my_pet_types.rows,
-          get_ct_trxns: get_4_ct_trxns.rows
+          get_ct_trxns: get_4_ct_trxns.rows,
+          my_leave_requests: my_leave_requests.rows
         });
       } else {
         // if is PCSadmin
@@ -1020,18 +1022,51 @@ app.get('/dashboard-caretaker-ft', async (req, res) => {
   }
 });
 
-app.get('/apply_leave', async (req, res) => {
+app.get('/dashboard-caretaker-pt', async (req, res) => {
   try {
     if (!req.user) {
       res.redirect('/login');
     } else {
       const account_type = req.user.type;
       if (account_type != 0) {
-        res.render('./apply_leave', {
-          title: 'Apply Leave',
+        const values = [req.user.email];
+        console.log(values);
+        const my_details = await pool.query(
+          sql_query.query.get_ct_info,
+          values
+        );
+        console.log(my_details.rows);
+        const pet_days = await pool.query(
+          sql_query.query.ct_pet_days,
+          values
+        );
+        const salary = await pool.query(
+          sql_query.query.ct_salary,
+          values
+        );
+        const rating = await pool.query(
+          sql_query.query.ct_rating,
+          values
+        );
+        const get_4_ct_trxns = await pool.query(
+          sql_query.query.get_4_ct_trxns,
+          values
+        );
+        const my_pet_types = await pool.query(sql_query.query.all_my_pet_types, values);
+        const my_availability = await pool.query(sql_query.query.all_my_availability, values);
+
+        res.render('./dashboard-caretaker-pt', {
+          title: 'Dashboard',
+          my_details: my_details.rows,
           statusToHuman: statusToHuman,
           loggedIn: req.user,
-          accountType: account_type
+          accountType: account_type,
+          pet_days: pet_days.rows[0].num_pet_days,
+          salary: salary.rows[0].total_cost,
+          rating: rating,
+          my_pet_types: my_pet_types.rows,
+          my_availability: my_availability.rows,
+          get_ct_trxns: get_4_ct_trxns.rows,
         });
       } else {
         // if is PCSadmin
@@ -1041,6 +1076,135 @@ app.get('/apply_leave', async (req, res) => {
     }
   } catch (err) {
     console.error(err.message);
+  }
+});
+
+// app.get('/apply_leave', async (req, res) => {
+//   try {
+//     if (!req.user) {
+//       res.redirect('/login');
+//     } else {
+//       const account_type = req.user.type;
+//       if (account_type != 0) {
+//         res.render('./apply_leave', {
+//           title: 'Apply Leave',
+//           statusToHuman: statusToHuman,
+//           loggedIn: req.user,
+//           accountType: account_type
+//         });
+//       } else {
+//         // if is PCSadmin
+//         // have not tried this out
+//         res.redirect('/caretaker-summary-info');
+//       }
+//     }
+//   } catch (err) {
+//     console.error(err.message);
+//   }
+// });
+
+app.get('/add_availability', async (req, res) => {
+  if (req.user) {
+    const values = [req.user.email];
+    careTakerToBid = await pool.query(sql_query.query.caretaker_to_bid, values);
+    var datesToDelete = new Set();
+      const avail = await pool.query(sql_query.query.part_timer_availability, values);
+      for (var i = 0; i < avail.rows.length; i++) {
+        const availDate = avail.rows[i];
+        datesFromRange(availDate.start_date, availDate.end_date, datesToDelete);
+      }
+    // }
+    res.render('add_availability', {
+      loggedInUser: req.user,
+      loggedInUserEmail: req.user.email,
+      careTakerToBid: careTakerToBid.rows[0],
+      today: new Date().toLocaleString(),
+      latestDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1))
+        .toLocaleString(),
+      blockedDates: Array.from(datesToDelete),
+      loggedIn: req.user,
+      accountType: req.user.type,
+      moment: moment,
+      jobTypeToHuman: jobTypeToHuman
+    });
+  } else {
+    req.flash('error', 'Please login before submitting a leave request.');
+    res.redirect('/login');
+  }
+});
+
+app.get('/apply_leave', async (req, res) => {
+  if (req.user) {
+    const values = [req.user.email];
+    careTakerToBid = await pool.query(sql_query.query.caretaker_to_bid, values);
+    //Dates that this ct is already booked.
+    const datesCaring = await pool.query(sql_query.query.dates_caring, [
+      req.user.email,
+      new Date()
+    ]);
+    var datesToDelete = new Set();
+    const maxConcLimit = careTakerToBid.rows[0].max_concurrent_pet_limit;
+
+
+    // //For each date, count number of occurences.
+    // for (var i = 0; i < datesCaring.rows.length; i++) {
+    //   const usedDate = datesCaring.rows[i];
+    //   countDatesFromRange(
+    //     usedDate.start_date,
+    //     usedDate.end_date,
+    //     concurrentTransactions
+    //   );
+    // }
+    // //For each date counted in hashMap concurrentTransactions, add it to datesToDelete if the count > max limit
+    // for (var key in concurrentTransactions) {
+    //   if (concurrentTransactions[key] >= maxConcLimit) {
+    //     datesToDelete.add(new Date(key));
+    //   }
+    // }
+
+
+    // var datesToAllow = new Set();
+    // var isPartTimer = false;
+    // //Part timer only show available dates
+    // if (careTakerToBid.rows[0].job == 'part_timer') {
+    //   const availability = await pool.query(
+    //     sql_query.query.part_timer_availability,
+    //     [ct_email]
+    //   );
+    //   isPartTimer = true;
+    //   for (var i = 0; i < availability.rows.length; i++) {
+    //     const canDate = availability.rows[i];
+    //     datesFromRange(
+    //       canDate.start_date,
+    //       canDate.end_date,
+    //       datesToAllow,
+    //       datesToDelete
+    //     );
+    //   }
+    //   //Full timer will disable some dates
+    // } else {
+    const leave = await pool.query(sql_query.query.full_timer_leave, values);
+    for (var i = 0; i < leave.rows.length; i++) {
+      const leaveDate = leave.rows[i];
+      datesFromRange(leaveDate.start_date, leaveDate.end_date, datesToDelete);
+    }
+    // }
+    res.render('apply_leave', {
+      loggedInUser: req.user,
+      loggedInUserEmail: req.user.email,
+      careTakerToBid: careTakerToBid.rows[0],
+      today: new Date().toLocaleString(),
+      latestDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1))
+        .toLocaleString(),
+      blockedDates: Array.from(datesToDelete),
+      loggedIn: req.user,
+      accountType: req.user.type,
+      moment: moment,
+      jobTypeToHuman: jobTypeToHuman
+    });
+  } else {
+    req.flash('error', 'Please login before submitting a leave request.');
+    res.redirect('/login');
   }
 });
 
@@ -1080,6 +1244,52 @@ app.get('/my_pet_types', async (req, res) => {
       res.render('./my_pet_types', {
         title: 'My Pet Types',
         all_pet_types: query.rows,
+        loggedIn: req.user,
+        accountType: req.user.type,
+        email: email
+      });
+    }
+  }
+});
+
+app.get('/my_leave', async (req, res) => {
+  if (!req.user) {
+    res.redirect('/login');
+  } else {
+    const account_type = req.user.type;
+    const email = req.user.email;
+    if (account_type == 1) {
+      res.redirect('/dashboard');
+    } else {
+      const values = [req.user.email];
+      const query = await pool.query(sql_query.query.all_my_leave_requests, values);
+      console.log(query);
+      res.render('./my_leave', {
+        title: 'My Leave Requests',
+        all_leave_requests: query.rows,
+        loggedIn: req.user,
+        accountType: req.user.type,
+        email: email
+      });
+    }
+  }
+});
+
+app.get('/my_availability', async (req, res) => {
+  if (!req.user) {
+    res.redirect('/login');
+  } else {
+    const account_type = req.user.type;
+    const email = req.user.email;
+    if (account_type == 1) {
+      res.redirect('/dashboard');
+    } else {
+      const values = [req.user.email];
+      const query = await pool.query(sql_query.query.all_my_availability, values);
+      console.log(query);
+      res.render('./my_availability', {
+        title: 'My Availability',
+        all_availability: query.rows,
         loggedIn: req.user,
         accountType: req.user.type,
         email: email
@@ -1587,6 +1797,42 @@ app.post('/my_pet_types/:ct_email/:pet_type', async (req, res) => {
   }
 });
 
+app.post('/my_leave/:ct_email/:start_date', async (req, res) => {
+  if (!req.user) {
+    res.redirect('/login');
+  } else {
+    const values = [req.params.ct_email, convertDate(req.params.start_date)];
+    console.log(values);
+    await pool.query(sql_query.query.delete_leave, values, (err) => {
+      if (err) {
+        req.flash('error', 'Delete failed.');
+        res.redirect('/my_leave');
+      } else {
+        req.flash('success_msg', 'Leave request is deleted.');
+        res.redirect('/my_leave');
+      }
+    });
+  }
+});
+
+app.post('/my_availability/:ct_email/:start_date', async (req, res) => {
+  if (!req.user) {
+    res.redirect('/login');
+  } else {
+    const values = [req.params.ct_email, convertDate(req.params.start_date)];
+    console.log(values);
+    await pool.query(sql_query.query.delete_availability, values, (err) => {
+      if (err) {
+        req.flash('error', 'Delete failed.');
+        res.redirect('/my_availability');
+      } else {
+        req.flash('success_msg', 'Availability is deleted.');
+        res.redirect('/my_availability');
+      }
+    });
+  }
+});
+
 /*
  ** Section for YS: Register, View Transactions
  ** TODO: Change all msg to flash messages.
@@ -1891,6 +2137,50 @@ app.post('/bid', async (req, res) => {
     });
   } else {
     req.flash('error', 'Please login to submit a bid for a care.');
+    res.redirect('/login');
+  }
+});
+
+app.post('/apply_leave', async (req, res) => {
+  if (req.user) {
+    const ct_email = req.body.ct_email;
+    const start_date = moment(convertDate(req.body.start_date), 'DD/MM/YYYY').toDate();
+    const end_date = moment(convertDate(req.body.end_date), 'DD/MM/YYYY').toDate();
+    const values = [ct_email, start_date, end_date];
+    console.log(values);
+    await pool.query(sql_query.query.add_leave, values, (err) => {
+      if (err) {
+        req.flash('error', err);
+        res.redirect('/my_leave');
+      } else {
+        req.flash('success_msg', 'Leave request is submitted!');
+        res.redirect('/my_leave');
+      }
+    });
+  } else {
+    req.flash('error', 'Please login to submit a leave request.');
+    res.redirect('/login');
+  }
+});
+
+app.post('/add_availability', async (req, res) => {
+  if (req.user) {
+    const ct_email = req.body.ct_email;
+    const start_date = moment(convertDate(req.body.start_date), 'DD/MM/YYYY').toDate();
+    const end_date = moment(convertDate(req.body.end_date), 'DD/MM/YYYY').toDate();
+    const values = [ct_email, start_date, end_date];
+    console.log(values);
+    await pool.query(sql_query.query.add_availability, values, (err) => {
+      if (err) {
+        req.flash('error', err);
+        res.redirect('/my_availability');
+      } else {
+        req.flash('success_msg', 'Available dates added!');
+        res.redirect('/my_availability');
+      }
+    });
+  } else {
+    req.flash('error', 'Please login to indicate your availability.');
     res.redirect('/login');
   }
 });

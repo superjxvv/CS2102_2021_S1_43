@@ -107,6 +107,10 @@ sql.query = {
     'SELECT * FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.email = $1  AND deleted = false ORDER BY O.pet_name',
   all_my_pet_types:
     "SELECT * FROM can_take_care_of WHERE email = $1 ORDER BY pet_type ASC",
+  all_my_leave_requests:
+    "SELECT * FROM has_leave WHERE email = $1 ORDER BY start_date ASC",
+  all_my_availability:
+    "SELECT * FROM indicates_availability WHERE email = $1 ORDER BY start_date ASC",
   get_pet_info:
     'SELECT * FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.email = $1 AND O.pet_name = $2',
   get_po_info:
@@ -147,6 +151,8 @@ sql.query = {
     'CALL pay_for_bid($1, $2, $3, $4, $5, $6)',
   add_pet: 'SELECT "add_pet"($1, $2, $3, $4)',
   add_pet_type_ct: 'CALL "add_pet_type_ct"($1, $2, $3)',
+  add_leave: 'CALL "add_leave"($1, $2, $3)',
+  add_availability: 'CALL "add_availability"($1, $2, $3)',
   update_po_info: 'CALL "edit_po_info"($1, $2, $3, $4, $5, $6, $7)',
   update_po_info_no_pw: 'CALL "edit_po_info_no_pw"($1, $2, $3, $4, $5, $6)',
   update_ct_info: 'CALL "edit_ct_info"($1, $2, $3, $4, $5, $6)',
@@ -155,6 +161,10 @@ sql.query = {
     'UPDATE own_pet SET deleted = true WHERE pet_name = $1 AND email = $2;',
   delete_pet_type_ct:
     'DELETE FROM can_take_care_of WHERE email = $1 AND pet_type = $2;',
+  delete_leave:
+    'DELETE FROM has_leave WHERE email = $1 AND start_date = $2;',
+  delete_availability:
+    'DELETE FROM indicates_availability WHERE email = $1 AND start_date = $2;',
   recent_trxn_general_completed:
     "SELECT H.hire_status, H.start_date, H.end_date, C.name AS ct_name, C.email AS ct_email, P.name AS po_name, H.pet_name, H.rating, H.review_text FROM hire H INNER JOIN care_taker C ON H.ct_email = C.email INNER JOIN pet_owner P ON H.owner_email = P.email WHERE H.hire_status = 'completed' AND H.rating IS NOT NULL ORDER BY H.rating DESC, H.transaction_date DESC LIMIT 4",
   best_ct:

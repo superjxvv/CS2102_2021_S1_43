@@ -3570,6 +3570,24 @@ END;
 LANGUAGE plpgsql;
 
 CREATE OR REPLACE PROCEDURE 
+add_leave(ct_email VARCHAR, startt DATE, endd DATE) AS
+'
+BEGIN 
+INSERT INTO has_leave (email, start_date, end_date) VALUES (ct_email, startt, endd);
+END;
+'
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE PROCEDURE 
+add_availability(ct_email VARCHAR, startt DATE, endd DATE) AS
+'
+BEGIN 
+INSERT INTO indicates_availability (email, start_date, end_date) VALUES (ct_email, startt, endd);
+END;
+'
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE PROCEDURE 
 edit_po_info(po_email VARCHAR, po_name VARCHAR, po_pw VARCHAR, po_loc VARCHAR, po_addr VARCHAR, cc_num VARCHAR, cc_exp VARCHAR) AS
 '
 BEGIN 

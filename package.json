@@ -33,7 +33,7 @@
     "nodemon": "^2.0.6",
     "passport": "^0.4.1",
     "passport-local": "^1.0.0",
-    "pg": "^8.4.1"
+    "pg": "^8.5.0"
   },
   "devDependencies": {
     "less": "^3.12.2"

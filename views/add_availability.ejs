@@ -2,28 +2,15 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bid for Care Taker</title>
     <script src="/plugins/jquery/jquery.min.js"></script>
     <script src="/plugins/moment/moment.min.js"></script>
     <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="/plugins/datatables/jquery.dataTables.min.js"></script>
-    <script src="/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
-    <script src="/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
-    <script src="/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
     <script src="/plugins/daterangepicker/daterangepicker.js"></script>
-    <script src="/plugins/select2/js/select2.full.min.js"></script>
-    <script src="/plugins/bootstrap-switch/js/bootstrap-switch.min.js"></script>
     <script src="/dist/js/adminlte.min.js"></script>
-    <link rel="stylesheet" href="/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="/dist/css/adminlte.min.css">
-    <link rel="stylesheet" href="/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
-    <link rel="stylesheet" href="/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
     <link rel="stylesheet" href="/plugins/daterangepicker/daterangepicker.css">
     <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
-    <link rel="stylesheet" href="/plugins/select2/css/select2.min.css">
-    <link rel="stylesheet" href="/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">
     <script>
         $(function () {
             var today = new Date("<%= today %>");
@@ -95,8 +82,6 @@
                     document.getElementById("start_date").value = "";
                     document.getElementById("end_date").value = "";
                 } else {
-                    console.log(picker.startDate)
-                    console.log(picker.endDate)
                     document.getElementById("start_date").value = picker.startDate;
                     document.getElementById("end_date").value = picker.endDate;
                     $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
@@ -121,36 +106,33 @@
 
 <body>
     <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn, accountType: accountType}) %>
-    <div>
-        <div id="content-wrapper">
-            <div class="container-fluid">
-                <div class="card" style="width: 60%; margin: auto; margin-top: 5%">
-                    <div class="card-header" style="background-color:whitesmoke">
-                        <b>Add Availability</b>
-                    </div>
-                
-                    <form method="POST" action="/add_availability" role="form" onsubmit="return validateForm()" name="preBidForm">
-                        <div class="card-body">
-                            <div class="form-group">
-                                <h5>Select Start and End Date:</h5>
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text">
-                                            <i class="far fa-calendar-alt"></i>
-                                        </span>
-                                    </div>
-                                    <input type="text" class="form-control float-right" id="dates" name="dates" value="">
-                                    <input type="hidden" id="start_date" name="start_date" value="">
-                                    <input type="hidden" id="end_date" name="end_date" value="">
-                                </div>
-                            </div>
-                            <input type="hidden" name="ct_email" value=<%=careTakerToBid.email%>>
-                        </div>
-                        <div class="card-footer">
-                            <button type="submit" class="btn btn-secondary">Apply</button>
-                        </div>
-                    </form>
+    <div id="content-wrapper">
+        <div class="container-fluid">
+            <div class="card" style="width: 60%; margin: auto; margin-top: 5%">
+                <div class="card-header" style="background-color:whitesmoke">
+                    <b>Add Availability</b>
                 </div>
+                <form method="POST" action="/add_availability" role="form" onsubmit="return validateForm()" name="preBidForm">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <h5>Select Start and End Date:</h5>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">
+                                        <i class="far fa-calendar-alt"></i>
+                                    </span>
+                                </div>
+                                <input type="text" class="form-control float-right" id="dates" name="dates" value="">
+                                <input type="hidden" id="start_date" name="start_date" value="">
+                                <input type="hidden" id="end_date" name="end_date" value="">
+                            </div>
+                        </div>
+                        <input type="hidden" name="ct_email" value=<%=careTakerToBid.email%>>
+                    </div>
+                    <div class="card-footer small text-muted">
+                        <button type="submit" class="btn btn-secondary" style="margin: 0px;">Apply</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

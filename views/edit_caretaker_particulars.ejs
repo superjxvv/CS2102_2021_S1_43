@@ -22,6 +22,15 @@
             })
             return false;
         }
+        const bank_acc = document.forms["particulars_form"]["bank_account"].value;
+        if (bank_acc != "" && bank_acc.length < 8) {
+            $(document).Toasts('create', {
+                class: 'bg-danger',
+                title: 'Bank Account Number invalid!',
+                body: 'Please re-enter your Bank Account Number. Ensure that it is at least 8 digits long.'
+            })
+            return false;
+        }
         const pw1 = document.forms["particulars_form"]["pw1"].value;
         const pw2 = document.forms["particulars_form"]["pw2"].value;
         if (pw1 != pw2) {
@@ -32,24 +41,7 @@
             })
             return false;
         }
-        const cc_num = document.forms["particulars_form"]["cc_num"].value;
-        if (cc_num != "" && cc_num.length < 8) {
-            $(document).Toasts('create', {
-                class: 'bg-danger',
-                title: 'Credit Card Number invalid!',
-                body: 'Please re-enter your Credit Card Number. Ensure that it is at least 8 digits long.'
-            })
-            return false;
-        }
-        const cc_date = document.forms["particulars_form"]["cc_date"].value;
-        if (!(cc_num == "" && cc_date == "") && (cc_num == "" || cc_date == "")) {
-            $(document).Toasts('create', {
-                class: 'bg-danger',
-                title: 'Missing Credit Card details!',
-                body: 'Please enter both your Credit Card Number and its expiry date.'
-            })
-            return false;
-        }
+        
     }
 </script>
 
@@ -149,11 +141,6 @@
             });
         }
     </script>
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/i18n/defaults-*.min.js"></script>
 </body>
 
 <div class="modal fade" id="modal-default">

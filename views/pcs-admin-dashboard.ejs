@@ -106,8 +106,10 @@
     <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn, accountType: accountType}) %>
     <section class="content">
         <div class="container-fluid" style="display: flex; flex-direction: column;">
-            <div style="display: flex; flex-direction: row; justify-content: space-between; margin-left: 10%; margin-right: auto;  margin-top: 1%; margin-bottom: 1%; width: 85%; align-content: flex-start;">
-                <h5> Summary Statistics for <%= new Date().toLocaleString('default', { month: 'long' }); %></h5>
+            <div
+                style="display: flex; flex-direction: row; justify-content: space-between; margin-left: 10%; margin-right: auto;  margin-top: 1%; margin-bottom: 1%; width: 85%; align-content: flex-start;">
+                <h3 style="font-size: 1.75rem;"> Summary Statistics for
+                    <%= new Date().toLocaleString('default', { month: 'long' }); %></h3>
             </div>
             <div
                 style="display: flex; flex-direction: row; justify-content: space-between; margin-left: auto; margin-right: auto;  width: 85%; align-content: center;">
@@ -267,7 +269,7 @@
                                     <% first4PetTypes.forEach(petType => { %>
                                     <tr>
                                         <td><%= petType.name %></td>
-                                        <td><%= petType.base_daily_price %></td>
+                                        <td><%= (Math.round(petType.base_daily_price * 100) / 100).toFixed(2) %></td>
                                     </tr>
                                     <% }) %>
                                 </tbody>

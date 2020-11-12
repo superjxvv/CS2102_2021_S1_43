@@ -66,9 +66,13 @@
                         </div>
                     </div>
                     <div class="card-footer small text-muted">
-                        <button type="submit" class="btn btn-secondary">
+                        <button type="submit" class="btn btn-secondary float-right">
                             Update Profile
                         </button>
+                        <a data-toggle="modal" data-target="#modal-default" class="btn btn-danger float-left"
+                            style="margin: 0px; color: azure" formaction="/delete_account">
+                            Delete Account
+                        </a>
                     </div>
                 </form>
             </div>
@@ -91,5 +95,29 @@
         }
     </script>
 </body>
+
+<div class="modal fade" id="modal-default">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Confirmation</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="post" action="/delete_account">
+                <div class="modal-body">
+                    <div>
+                        Are you sure you want to delete your account?
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-between small text-muted">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+                    <button type="submit" class="btn btn-secondary">Yes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 </html>

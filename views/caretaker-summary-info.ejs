@@ -81,7 +81,7 @@
                         <td><%= careTaker.name %></td>
                         <td><%= careTaker.email %></td>
                         <td><%= careTaker.num_pet_days %></td>
-                        <td><%= careTaker.total_cost %></td>
+                        <td><%= (Math.round(careTaker.total_cost * 100) / 100).toFixed(2) %></td>
                         <td><%= careTaker.month %></td>
                     </tr>
                     <% }) %>

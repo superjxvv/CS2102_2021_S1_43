@@ -494,6 +494,7 @@ app.post('/delete-care-taker', async (req, res) => {
       if (err) {
         console.log(err)
       } else {
+        req.flash('success_msg', "Caretaker deactivated!");
         res.redirect('/manage-users/caretaker/inactive');
       }
     }
@@ -511,6 +512,7 @@ app.post('/delete-pet-owner', async (req, res) => {
       if (err) {
         console.log(err)
       } else {
+        req.flash('success_msg', "Pet owner deactivated!");
         res.redirect('/manage-users/petowner/inactive');
       }
     }
@@ -528,6 +530,7 @@ app.post('/delete-admin', async (req, res) => {
       if (err) {
         console.log(err)
       } else {
+        req.flash('success_msg', "Admin deactivated!");
         res.redirect('/manage-users/admin/inactive');
       }
     }
@@ -570,6 +573,7 @@ app.post('/reactivate-user/:type', async (req, res) => {
         if (err) {
           console.log(err)
         } else {
+          req.flash('success_msg', "Pet owner reactivated!");
           res.redirect('/manage-users/petowner/active');
         }
       }
@@ -582,6 +586,7 @@ app.post('/reactivate-user/:type', async (req, res) => {
         if (err) {
           console.log(err)
         } else {
+          req.flash('success_msg', "Caretaker reactivated!");
           res.redirect('/manage-users/caretaker/active');
         }
       }
@@ -594,6 +599,7 @@ app.post('/reactivate-user/:type', async (req, res) => {
         if (err) {
           console.log(err)
         } else {
+          req.flash('success_msg', "Admin reactivated!");
           res.redirect('/manage-users/admin/active');
         }
       }
@@ -1314,16 +1320,42 @@ app.post('/edit_particulars', async (req, res) => {
 });
 
 app.post('/delete_account', async (req, res) => {
-  await pool.query(req.user.type == 1 ? sql_query.query.delete_po_account : sql_query.query.delete_ct_account, [req.user.email], (err, data) => {
-    if (err) {
-      req.flash('error', err);
-      res.redirect('/edit_particulars');
+  if (req.user.type != 0) {
+    await pool.query(req.user.type == 1 ? sql_query.query.delete_po_account : sql_query.query.delete_ct_account, [req.user.email], (err, data) => {
+      if (err) {
+        req.flash('error', err);
+        res.redirect('/edit_particulars');
+      } else {
+        req.logout();
+        req.flash('success_msg', "Account deleted! We're sad to see you go... :(");
+        res.redirect('/login');
+      }
+    });
+  } else {
+    if (await isSuperAdmin(req)) {
+      await pool.query(sql_query.query.delete_super_admin, [req.user.email], (err, data) => {
+        if (err) {
+          req.flash('error', err);
+          res.redirect('/pcs-admin-profile');
+        } else {
+          req.logout();
+          req.flash('success_msg', "Account deleted! We're sad to see you go... :(");
+          res.redirect('/login');
+        }
+      });
     } else {
-      req.logout();
-      req.flash('success_msg', "Account deleted! We're sad to see you go... :(");
-      res.redirect('/login');
+      await pool.query(sql_query.query.delete_admin, [req.user.email], (err, data) => {
+        if (err) {
+          req.flash('error', err);
+          res.redirect('/pcs-admin-profile');
+        } else {
+          req.logout();
+          req.flash('success_msg', "Account deleted! We're sad to see you go... :(");
+          res.redirect('/login');
+        }
+      });
     }
-  });
+  }
 });
 
 app.post('/delete_account', async (req, res) => {
@@ -2110,7 +2142,7 @@ app.post('/apply_leave', async (req, res) => {
       req.flash('error', 'Please ensure that you work for a minimum of 2 x 150 consecutive days each year.');
       res.redirect('/my_leave');
       return;
-    }    
+    }
 
     const values = [ct_email, start_date, end_date];
     await pool.query(sql_query.query.add_leave, values, (err) => {

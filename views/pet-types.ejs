@@ -22,7 +22,7 @@
     <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn, accountType: accountType}) %>
     <div class="card" style="margin-left: auto; margin-right: auto; margin-top: 3%; width: 80%; align-content: center;">
         <div class="card-header border-0" style="flex-direction: row; display: flex; justify-content: space-between;">
-            <h3 class="card-title">Pet Types</h3>
+            <h3 class="card-title" style="font-size: 1.75rem;">Pet Types</h3>
             <div class="card-tools">
                 <a href="/add-pet-type" class="btn btn-tool btn-sm" style="position: absolute; margin-left: 400px;">
                     <i class="fas fa-plus"></i>
@@ -42,7 +42,7 @@
                     <% allPetTypes.forEach(petType => { %>
                     <tr>
                         <td><%= petType.name %></td>
-                        <td><%= petType.base_daily_price %></td>
+                        <td><%= (Math.round(petType.base_daily_price * 100) / 100).toFixed(2) %></td>
                         <td>
                             <a href="/edit-pet-type/<%=petType.name%>" class="text-muted">
                                 <i class="far fa-edit"></i>

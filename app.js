@@ -702,7 +702,7 @@ app.post('/add-pet-type', async (req, res) => {
     [name, baseDailyPrice],
     (err, data) => {
       if (err) {
-        req.flash('error', err);
+        req.flash('error', "Pet Type already exist.");
         res.redirect('/add-pet-type');
       } else {
         req.flash('success_msg', 'Pet Type added!');
@@ -756,7 +756,7 @@ app.post('/edit-pet-type', async (req, res) => {
     [name, baseDailyPrice],
     (err, data) => {
       if (err) {
-        req.flash('error', err);
+        req.flash('error', "Error.");
         console.log(err)
       } else {
         req.flash('success_msg', 'Pet Type edited!');

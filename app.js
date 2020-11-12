@@ -678,11 +678,8 @@ app.get('/pet-types', async (req, res) => {
   try {
     //todo: check that user is admin
     const allPetTypes = await pool.query(sql_query.query.all_pet_types);
-    var launchToast = req.url.includes('add=pass');
-    console.log(launchToast);
     res.render('pet-types', {
       allPetTypes: allPetTypes.rows,
-      showSuccessToast: launchToast,
       loggedIn: req.user,
       accountType: req.user.type
     });
@@ -693,7 +690,6 @@ app.get('/pet-types', async (req, res) => {
 
 app.get('/add-pet-type', async (req, res) => {
   try {
-    //todo: check that user is admin
     const allPetTypes = await pool.query(sql_query.query.all_pet_types);
     res.render('add-pet-type', {
       allPetTypes: allPetTypes.rows,
@@ -715,10 +711,11 @@ app.post('/add-pet-type', async (req, res) => {
     [name, baseDailyPrice],
     (err, data) => {
       if (err) {
-        res.redirect('/add-pet-type?add=fail');
-        console.log(err)
+        req.flash('error', err);
+        res.redirect('/add-pet-type');
       } else {
-        res.redirect('/pet-types?add=pass');
+        req.flash('success_msg', 'Pet Type added!');
+        res.redirect('/pet-types');
       }
     }
   );
@@ -770,9 +767,11 @@ app.post('/edit-pet-type', async (req, res) => {
     [name, baseDailyPrice],
     (err, data) => {
       if (err) {
+        req.flash('error', err);
         console.log(err)
       } else {
-        res.redirect('/pet-types?add=pass');
+        req.flash('success_msg', 'Pet Type edited!');
+        res.redirect('/pet-types');
       }
     }
   );

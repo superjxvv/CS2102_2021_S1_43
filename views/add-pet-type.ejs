@@ -9,6 +9,10 @@
         integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
     <link rel="stylesheet" href="/css/profile_styles.css">
     <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+    <script src="/plugins/jquery/jquery.min.js"></script>
+    <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/dist/js/adminlte.min.js"></script>
+    <link rel="stylesheet" href="/dist/css/adminlte.min.css">
 </head>
 
 <body style="background-color: lightgrey;">
@@ -45,6 +49,15 @@
             </div>
         </div>
     </div>
+    <script>
+        if ("<%= messages.error %>") {
+            $(document).Toasts('create', {
+                class: 'bg-danger',
+                title: 'Error',
+                body: "<%= messages.error %>"
+            });
+        }
+    </script>
 </body>
 
 </html>

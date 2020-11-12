@@ -12,21 +12,10 @@
     <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="/dist/js/adminlte.min.js"></script>
     <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
-
-    <!-- AdminLTE App -->
+    <script src="/plugins/jquery/jquery.min.js"></script>
+    <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="/dist/js/adminlte.min.js"></script>
-    <script>
-        $(function () {
-            var showSuccessToast = JSON.parse('<%- JSON.stringify(showSuccessToast) %>') ? JSON.parse('<%- JSON.stringify(showSuccessToast) %>') : [];
-            if (showSuccessToast) {
-                $(document).Toasts('create', {
-                    class: 'bg-success',
-                    title: 'Pet Type added successfully!',
-                    position: 'topLeft'
-                })
-            }
-        });
-    </script>
+    <link rel="stylesheet" href="/dist/css/adminlte.min.css">
 </head>
 
 <body style="background-color: lightgrey;">
@@ -66,6 +55,22 @@
         </div>
     </div>
     <!-- /.card -->
+    <script>
+        if ("<%= messages.success_msg %>") {
+            $(document).Toasts('create', {
+                class: 'bg-success',
+                title: 'Success',
+                body: "<%= messages.success_msg %>"
+            });
+        }
+        if ("<%= messages.error %>") {
+            $(document).Toasts('create', {
+                class: 'bg-danger',
+                title: 'Error',
+                body: "<%= messages.error %>"
+            });
+        }
+    </script>
 </body>
 
 </html>

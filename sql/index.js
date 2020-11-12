@@ -93,6 +93,7 @@ sql.query = {
   delete_ct: 'UPDATE care_taker SET deleted=true WHERE email=$1',
   delete_po: 'UPDATE pet_owner SET deleted=true WHERE email=$1',
   delete_admin: 'UPDATE pcs_admin SET deleted=true WHERE email=$1',
+  delete_super_admin: 'DELETE FROM pcs_admin WHERE email=$1',
   reactivate_ct: 'UPDATE care_taker SET deleted=false WHERE email=$1',
   reactivate_po: 'UPDATE pet_owner SET deleted=false WHERE email=$1',
   reactivate_admin: 'UPDATE pcs_admin SET deleted=false WHERE email=$1',

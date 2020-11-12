@@ -15,9 +15,11 @@
     <script src="/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
     <script src="/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
     <script src="/dist/js/adminlte.min.js"></script>
+    <link rel="stylesheet" href="/dist/css/adminlte.min.css">
     <link rel="stylesheet" href="/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
     <link rel="stylesheet" href="/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
     <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+
     <script>
         $(function () {
             userType = JSON.parse('<%- JSON.stringify(userType) %>');
@@ -42,9 +44,10 @@
 
 <body style="background-color: lightgrey;">
     <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn, accountType: accountType}) %>
-    <div class="card">
+    <div class="card" style="margin-bottom: 0%;">
         <div class="card-header">
-            <h3 class="card-title">Manage Users</h3>
+            <h3 class="card-title" style="font-size: 1.75rem;">Manage Users</h3>
+            <br /> <br />
             <div class="btn-group">
                 <a href="/ft_register">
                     <i class="fas fa-plus"></i> Add Full-time Caretaker </a>
@@ -124,7 +127,7 @@
                                     <td><%= careTaker.name %></td>
                                     <td><%= careTaker.email %></td>
                                     <td><%= careTaker.location %></td>
-                                    <td><%= careTaker.rating %></td>
+                                    <td><%= (Math.round(careTaker.rating * 100) / 100).toFixed(2) %></td>
                                     <% if (careTaker.deleted) { %>
                                     <td>
                                         <span class="badge badge-danger">Inactive</span>
@@ -216,6 +219,23 @@
                             </table>
                     </div>
                 </div>
+
+                <script>
+                    if ("<%= messages.success_msg %>") {
+                        $(document).Toasts('create', {
+                            class: 'bg-success',
+                            title: 'Success',
+                            body: "<%= messages.success_msg %>"
+                        });
+                    }
+                    if ("<%= messages.error %>") {
+                        $(document).Toasts('create', {
+                            class: 'bg-danger',
+                            title: 'Error',
+                            body: "<%= messages.error %>"
+                        });
+                    }
+                </script>
 </body>
 
 </html>

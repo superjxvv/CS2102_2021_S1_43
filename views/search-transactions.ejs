@@ -81,7 +81,7 @@
             $('.select2').trigger('change.select2');
             $('.select2').on('change', function (e) {
                 x = $('.select2').val()
-                x = x.map((human) => { return humanToStatus(human) }) 
+                x = x.map((human) => { return humanToStatus(human) })
                 window.location.href = '/search-transactions/' + JSON.stringify(x) + "/" + currMonth;
             });
 
@@ -104,7 +104,7 @@
     <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn, accountType: accountType}) %>
     <div class="card">
         <div class="card-header">
-            <h3 class="card-title">Search Transactions</h3>
+            <h3 class="card-title" style="font-size: 1.75rem;">Search Transactions</h3>
         </div>
         <div class="card-body">
             <div class="form-group">
@@ -148,7 +148,11 @@
                         <td><%= transferConvert(hire.method_of_pet_transfer) %></td>
                         <td><%= new Intl.DateTimeFormat('en-GB', { year: 'numeric', month: 'long', day: '2-digit'}).format(hire.transaction_date) %>
                         </td>
-                        <td><%= hire.rating %></td>
+                        <% if(hire.rating){ %>
+                            <td><%= (Math.round(hire.rating * 100) / 100).toFixed(2) %></td>
+                        <% } else { %>
+                        <td> NA </td>
+                        <% } %>
                         <% if(hire.hire_status == 'completed') { %>
                         <td>
                             <span class="badge badge-success">Completed</span>

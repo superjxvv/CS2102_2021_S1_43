@@ -224,29 +224,29 @@ app.get(
         );
       }
       const allPetTypes = await pool.query(sql_query.query.all_pet_types);
-      if(!req.user) {
-      res.render('search', {
-        careTakers: allCareTaker.rows,
-        selectedLocation: location,
-        petTypes: allPetTypes.rows,
-        selectedPetTypes,
-        rating,
-        loggedIn: req.user,
-        accountType: 3,
-        jobTypeToHuman: jobTypeToHuman,
-      });
-    } else {
-      res.render('search', {
-        careTakers: allCareTaker.rows,
-        selectedLocation: location,
-        petTypes: allPetTypes.rows,
-        selectedPetTypes,
-        rating,
-        loggedIn: req.user,
-        accountType: req.user.type,
-        jobTypeToHuman: jobTypeToHuman
-      });
-    }
+      if (!req.user) {
+        res.render('search', {
+          careTakers: allCareTaker.rows,
+          selectedLocation: location,
+          petTypes: allPetTypes.rows,
+          selectedPetTypes,
+          rating,
+          loggedIn: req.user,
+          accountType: 3,
+          jobTypeToHuman: jobTypeToHuman,
+        });
+      } else {
+        res.render('search', {
+          careTakers: allCareTaker.rows,
+          selectedLocation: location,
+          petTypes: allPetTypes.rows,
+          selectedPetTypes,
+          rating,
+          loggedIn: req.user,
+          accountType: req.user.type,
+          jobTypeToHuman: jobTypeToHuman
+        });
+      }
     } catch (err) {
       console.error(err.message);
     }
@@ -655,7 +655,7 @@ app.post('/update-pcs-admin', async (req, res) => {
     } else if (!pw1 && !pw2) {
       const name = req.body.name;
       const email = req.body.email;
- 
+
       await pool.query(
         sql_query.query.update_admin_no_pw,
         [email, name],
@@ -678,11 +678,8 @@ app.get('/pet-types', async (req, res) => {
   try {
     //todo: check that user is admin
     const allPetTypes = await pool.query(sql_query.query.all_pet_types);
-    var launchToast = req.url.includes('add=pass');
-    console.log(launchToast);
     res.render('pet-types', {
       allPetTypes: allPetTypes.rows,
-      showSuccessToast: launchToast,
       loggedIn: req.user,
       accountType: req.user.type
     });
@@ -693,7 +690,6 @@ app.get('/pet-types', async (req, res) => {
 
 app.get('/add-pet-type', async (req, res) => {
   try {
-    //todo: check that user is admin
     const allPetTypes = await pool.query(sql_query.query.all_pet_types);
     res.render('add-pet-type', {
       allPetTypes: allPetTypes.rows,
@@ -715,10 +711,11 @@ app.post('/add-pet-type', async (req, res) => {
     [name, baseDailyPrice],
     (err, data) => {
       if (err) {
-        res.redirect('/add-pet-type?add=fail');
-        console.log(err)
+        req.flash('error', err);
+        res.redirect('/add-pet-type');
       } else {
-        res.redirect('/pet-types?add=pass');
+        req.flash('success_msg', 'Pet Type added!');
+        res.redirect('/pet-types');
       }
     }
   );
@@ -770,9 +767,11 @@ app.post('/edit-pet-type', async (req, res) => {
     [name, baseDailyPrice],
     (err, data) => {
       if (err) {
+        req.flash('error', err);
         console.log(err)
       } else {
-        res.redirect('/pet-types?add=pass');
+        req.flash('success_msg', 'Pet Type edited!');
+        res.redirect('/pet-types');
       }
     }
   );
@@ -842,6 +841,7 @@ app.get('/search-transactions', async (req, res) => {
       selectedPetTransferMethod,
       rating,
       totalCost,
+      transferConvert: transferConvert,
       currMonth,
       loggedIn: req.user,
       accountType: req.user.type
@@ -886,6 +886,7 @@ app.get('/search-transactions/:status/:currMonth', async (req, res) => {
       selectedPetTransferMethod,
       rating,
       totalCost,
+      transferConvert: transferConvert,
       currMonth,
       loggedIn: req.user,
       accountType: req.user.type

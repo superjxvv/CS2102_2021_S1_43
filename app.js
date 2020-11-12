@@ -1217,7 +1217,6 @@ app.get('/my_availability', async (req, res) => {
     } else {
       const values = [req.user.email];
       const query = await pool.query(sql_query.query.all_my_availability, values);
-      console.log(query);
       res.render('./my_availability', {
         title: 'My Availability',
         all_availability: query.rows,
@@ -1918,10 +1917,7 @@ app.get('/login_redirect', (req, res) => {
     } else if (req.user.type === 1) {
       res.redirect('/dashboard');
     } else {
-      console.log(req.user);
       const jobType = req.user.job;
-      console.log(jobType);
-      console.log('jobType');
       res.redirect('/dashboard-caretaker-ft');
     }
   } else {

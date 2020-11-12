@@ -67,13 +67,7 @@
                     body: msg
                 });
             }
-
-            // $('.select2').on('change', function (e) {
-            //     console.log($('.select2').val());
-            //     document.getElementById("pet_name").value = $('.select2').val();
-            //     console.log(document.getElementById("pet_name").value);
-            // });
-
+            
             $('input[name="dates"]').on('apply.daterangepicker', function (ev, picker) {
                 if (!includesInvalidDate(picker.startDate, picker.endDate)) {
                     errorToast("Please a date range that does not include any disabled date");

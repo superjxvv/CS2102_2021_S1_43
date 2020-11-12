@@ -69,7 +69,7 @@
             <% } %>
         </div>
         <div class="row text-left">
-            <% if (get_ct_trxns.length == 0) { %>
+            <% if (my_pet_types.length == 0) { %>
             <div class="card col-sm col-md" id="square-card" style="margin-bottom: 30px;">
                 <p><i>You have not added a pet type. Click on the '+' button above to start adding pet types!</i></p>
             </div>
@@ -85,8 +85,6 @@
             <% } %>
             <% } %>
         </div>
-
-
 
         <div class="row">
             <h4 class="vert-gap-small-header" style="margin-top: 13px;">My Availability&nbsp;</h4>
@@ -110,8 +108,8 @@
             <% const avail = my_availability[i]; %>
             <button class="card col-sm col-md" id="square-card">
                 <p>
-                    <b>Start Date:</b> <%= avail.start_date %><br>
-                    <b>End Date:</b> <%= avail.end_date %><br>
+                    <b>Start Date:</b> <%= stringToDate(String(avail.start_date)) %><br>
+                    <b>End Date:</b> <%= stringToDate(String(avail.end_date)) %><br>
                 </p>
             </button>
             <% } %>

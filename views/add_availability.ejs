@@ -122,69 +122,37 @@
 <body>
     <%- include('./partials/nav_bar.ejs', {loggedIn: loggedIn, accountType: accountType}) %>
     <div>
-        <section class="content row p-3 d-flex justify-content-center">
-            <div class="card card-primary col-8 px-0">
-                <div class="card-header">
-                    <h3 class="card-title">Add Availability</h3>
-                </div>
-                <!-- /.card-header -->
-                <!-- form start -->
-                <form method="POST" action="/add_availability" role="form" onsubmit="return validateForm()" name="preBidForm">
-                    <div class="card-body">
-                        <!-- <div class="form-group">
-                            <label for="ct_email">Care Taker Email address</label>
-                            <input type="email" class="form-control" id="ct_email" value="<%=careTakerToBid.email%>"
-                                disabled>
-                        </div>
-                        <div class="form-group">
-                            <label for="ct_name">Care Taker Name</label>
-                            <input type="text" class="form-control" id="ct_name" value="<%=careTakerToBid.name%>"
-                                disabled>
-                        </div>
-                        <div class="form-group">
-                            <label for="ct_location">Care Taker Location</label>
-                            <input type="text" class="form-control" id="ct_location"
-                                value="<%=careTakerToBid.location%>" disabled>
-                        </div>
-                        <div class="form-group">
-                            <label for="ct_job">Care Taker Type</label>
-                            <input type="text" class="form-control" id="ct_job"
-                                value="<%=jobTypeToHuman(careTakerToBid.job)%>" disabled>
-                        </div>
-                        <div class="form-group select2-dark">
-                            <label for="pet">Choose pet to take care of</label>
-                            <select class="form-control select2" multiple="multiple"
-                                data-placeholder="Choose pet to take care of" id="pet"
-                                data-dropdown-css-class="select2-dark" style="width: 100%;">
-                            </select>
-                        </div> -->
-                        <div class="form-group">
-                            <h5>Select Start and End Date:</h5>
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text">
-                                        <i class="far fa-calendar-alt"></i>
-                                    </span>
+        <div id="content-wrapper">
+            <div class="container-fluid">
+                <div class="card" style="width: 60%; margin: auto; margin-top: 5%">
+                    <div class="card-header" style="background-color:whitesmoke">
+                        <b>Add Availability</b>
+                    </div>
+                
+                    <form method="POST" action="/add_availability" role="form" onsubmit="return validateForm()" name="preBidForm">
+                        <div class="card-body">
+                            <div class="form-group">
+                                <h5>Select Start and End Date:</h5>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">
+                                            <i class="far fa-calendar-alt"></i>
+                                        </span>
+                                    </div>
+                                    <input type="text" class="form-control float-right" id="dates" name="dates" value="">
+                                    <input type="hidden" id="start_date" name="start_date" value="">
+                                    <input type="hidden" id="end_date" name="end_date" value="">
                                 </div>
-                                <input type="text" class="form-control float-right" id="dates" name="dates" value="">
-                                <input type="hidden" id="start_date" name="start_date" value="">
-                                <input type="hidden" id="end_date" name="end_date" value="">
                             </div>
-                            <!-- /.input group -->
+                            <input type="hidden" name="ct_email" value=<%=careTakerToBid.email%>>
                         </div>
-                        <input type="hidden" name="ct_email" value=<%=careTakerToBid.email%>>
-                        <!-- <input type="hidden" name="owner_email" value=<%=loggedInUser.email%>>
-                        <input type="hidden" id="pet_name" name="pet_name"> -->
-                    </div>
-                    <!-- /.card-body -->
-
-                    <div class="card-footer">
-                        <button type="submit" class="btn btn-primary float-right">Apply</button>
-                    </div>
-                </form>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-secondary">Apply</button>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <!-- /.card -->
-        </section>
+        </div>
     </div>
 </body>
 

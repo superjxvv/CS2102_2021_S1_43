@@ -164,11 +164,13 @@
                     <a href="/profile/<%=careTakers[i].email%>" class="btn btn-sm btn-primary">
                       <i class="fas fa-user"></i> View Profile
                     </a>
+                    <% if (accountType == 1) {%>
                     <form method="POST" action="/pre-bid">
                       <input type="hidden" name="ct_email" value=<%=careTakers[i].email%>>
                       <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-user"></i> Bid for Care
                         Taker</button>
                     </form>
+                    <%}%>
                   </div>
                 </div>
               </div>

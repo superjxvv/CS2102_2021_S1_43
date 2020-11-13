@@ -247,7 +247,7 @@ app.get(
 );
 
 app.post('/pre-bid', async (req, res) => {
-  if (req.user) {
+  if (req.user && req.user.type == 1) {
     let { ct_email } = req.body;
     careTakerToBid = await pool.query(sql_query.query.caretaker_to_bid, [
       ct_email
@@ -324,7 +324,7 @@ app.post('/pre-bid', async (req, res) => {
       jobTypeToHuman: jobTypeToHuman
     });
   } else {
-    req.flash('error', 'Please login before bidding for care taker.');
+    req.flash('error', 'Please login as a pet owner before bidding for care taker.');
     res.redirect('/login');
   }
 });

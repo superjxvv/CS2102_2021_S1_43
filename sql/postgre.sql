@@ -7371,3 +7371,6 @@ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS hire_add_hire ON pet_care.hire;
 
 CREATE TRIGGER hire_add_hire BEFORE INSERT ON hire FOR EACH ROW EXECUTE PROCEDURE add_hire();
+
+UPDATE own_pet 
+SET deleted = false;

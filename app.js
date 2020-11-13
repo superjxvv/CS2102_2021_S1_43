@@ -1476,8 +1476,8 @@ app.post('/add_pet/:action', async (req, res) => {
         req.flash('error', err);
         res.redirect('/add_pet');
       } else {
-          req.flash('success_msg', 'Pet ' + pet_name + ' is ' + action + 'ed!');
-          res.redirect('/my_pets');
+        req.flash('success_msg', 'Pet ' + pet_name + ' is ' + action + 'ed!');
+        res.redirect('/my_pets');
       }
     });
   }

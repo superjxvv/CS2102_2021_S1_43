@@ -145,9 +145,17 @@ add_pet(p_name VARCHAR, special_req VARCHAR, po_email VARCHAR, type VARCHAR)
 '
 DECLARE exists NUMERIC;
 BEGIN 
+SELECT INTO exists CASE 
+    WHEN (SELECT COUNT(*) FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.pet_name = p_name AND O.email = po_email) >= 1 THEN 1
+    ELSE 0
+  END;
+
 INSERT INTO own_pet (pet_name, special_requirement, email) VALUES (p_name, special_req, po_email) ON CONFLICT (pet_name, email) DO NOTHING;
 INSERT INTO is_of (pet_type, pet_name, owner_email) VALUES (type, p_name, po_email) ON CONFLICT (pet_name, owner_email) DO NOTHING;
-RETURN QUERY SELECT O.pet_name, O.special_requirement, O.email, I.pet_type FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.pet_name = p_name AND O.email = po_email;
+
+IF exists = 1 
+  THEN RETURN QUERY (SELECT O.pet_name, O.special_requirement, O.email, I.pet_type FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.pet_name = p_name AND O.email = po_email);
+END IF;
 END;
 '
 LANGUAGE plpgsql;

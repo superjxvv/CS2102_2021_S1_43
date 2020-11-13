@@ -1639,7 +1639,6 @@ insert into care_taker (email, name, password, location, monthly_pet_days, month
 insert into care_taker (email, name, password, location, monthly_pet_days, monthly_salary, rating, bank_account, job, max_concurrent_pet_limit, address, deleted) values ('lklugedu@dmoz.org', 'Lottie Kluge', 'jZd47TwYtzi', 'Central', null, null, null, 'ES55 2335 4613 1298 2366 2064', 'part_timer', 2, '21 Westerfield Hill', false);
 insert into care_taker (email, name, password, location, monthly_pet_days, monthly_salary, rating, bank_account, job, max_concurrent_pet_limit, address, deleted) values ('yvalentimdv@imgur.com', 'Yasmin Valentim', 'mUcAi9NL7', 'North-East', null, null, null, 'DE20 5044 2650 1043 9441 00', 'part_timer', 2, '0 Gerald Crossing', true);
 
-
 insert into part_timer (email) (select email from care_taker where job = 'part_timer');
 
 insert into full_timer (email) (select email from care_taker where job = 'full_timer');
@@ -7233,9 +7232,9 @@ CREATE OR REPLACE FUNCTION update_monthly_stats() RETURNS TRIGGER AS
 $$
 DECLARE old_monthly_pet_days NUMERIC;
 DECLARE old_salary NUMERIC;
-DECLARE job job_type;
+DECLARE jobT job_type;
 BEGIN
-SELECT INTO old_monthly_pet_days, old_salary, job monthly_pet_days, monthly_salary, job FROM care_taker WHERE email = NEW.ct_email;
+SELECT INTO old_monthly_pet_days, old_salary, jobT monthly_pet_days, monthly_salary, job FROM care_taker WHERE email = NEW.ct_email;
 IF (OLD.hire_status = 'inProgress' AND NEW.hire_status = 'completed') THEN
   --Add pet day to monthly pet days
   UPDATE care_taker SET monthly_pet_days = old_monthly_pet_days + NEW.num_pet_days
@@ -7243,7 +7242,7 @@ IF (OLD.hire_status = 'inProgress' AND NEW.hire_status = 'completed') THEN
 
   --Update salary
   --If part timer
-  IF (job = 'part_timer') THEN
+  IF (jobT = 'part_timer') THEN
     UPDATE care_taker SET monthly_salary = old_salary + 0.75 * NEW.total_cost
     WHERE email = NEW.ct_email;
   ELSE

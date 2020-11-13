@@ -2692,6 +2692,12 @@ app.get('/give_review/:action', async (req, res) => {
   }
 });
 
+function dateToSQL(date) {
+  var d1 = convertDate(date);
+  var arr = d1.split("/");
+  return arr[2] + '-' + arr[1] + '-' + arr[0];
+}
+
 app.post('/give_review/:action', async (req, res) => {
   if (!req.user) {
     res.redirect('/login');
@@ -2700,15 +2706,23 @@ app.post('/give_review/:action', async (req, res) => {
     const review = req.body.review == "" ? null : req.body.review;
     const owner_email = req.user.email;
     const pet_name = req.body.pet_name;
-    const start_date = moment(new Date(req.body.start_date) + 1).format('YYYY-MM-DD');
-    const end_date = moment(new Date(req.body.end_date) + 1).format('YYYY-MM-DD');
+    var start = new Date(req.body.start_date);
+    start.setDate(start.getDate());
+    var end = new Date(req.body.end_date);
+    end.setDate(end.getDate());
+    const start_date = dateToSQL(start);
+    const end_date = dateToSQL(end);
+    console.log(start_date, end_date);
     const ct_email = req.body.ct_email;
     const values = [rating, review, owner_email, pet_name, start_date, end_date, ct_email];
     await pool.query(sql_query.query.give_review, values, (err, data) => {
       if (err) {
+        console.log("hi");
         req.flash('error', err);
+        console.log(err);
         res.redirect('/transactions');
       } else {
+        console.log("bye");
         req.flash('success_msg', 'Review ' + req.params.action + 'ed!');
         res.redirect('/transactions');
       }

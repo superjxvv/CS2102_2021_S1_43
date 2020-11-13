@@ -1478,7 +1478,7 @@ app.post('/add_pet/:action', async (req, res) => {
       } else {
         console.log(data.rows);
         console.log(data.rows[0]);
-        if (data.rows.length > 0 && action != 'restore') {
+        if (data.rows[0] != 0 && action != 'restore') {
           const query = await pool.query(sql_query.query.all_my_pets, [req.user.email]);
           var split_arr = data.rows[0].add_pet.split(",");
           console.log(split_arr);
@@ -1492,7 +1492,7 @@ app.post('/add_pet/:action', async (req, res) => {
             accountType: req.user.type,
             restore: true
           });
-        } else if (data.rows.length > 0 && action == 'restore') {
+        } else if (data.rows[0] != 0 && action == 'restore') {
           await pool.query(sql_query.query.restore_pet, [pet_name, req.user.email], async (err, data) => {
             if (err) {
               console.log(err);

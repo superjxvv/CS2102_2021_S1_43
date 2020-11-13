@@ -110,8 +110,8 @@
             <% const leave = my_leave_requests[i]; %>
             <button class="card col-sm col-md" id="square-card">
                 <p>
-                    <b>Start Date:</b> <%= leave.start_date %><br>
-                    <b>End Date:</b> <%= leave.end_date %><br>
+                    <b>Start Date:</b> <%= stringToDate(String(leave.start_date)) %><br>
+                    <b>End Date:</b> <%= stringToDate(String(leave.end_date)) %><br>
                 </p>
             </button>
             <% } %>

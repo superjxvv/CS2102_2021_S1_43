@@ -16,6 +16,7 @@ const e = require('express');
 const { send } = require('process');
 const sql = require('./sql');
 var cron = require('node-cron');
+const { result } = require('lodash');
 initializePassport(passport);
 // -------------------------------------
 
@@ -1475,34 +1476,8 @@ app.post('/add_pet/:action', async (req, res) => {
         req.flash('error', err);
         res.redirect('/add_pet');
       } else {
-        if (data.rows.length > 0 && action != 'restore') {
-          const query = await pool.query(sql_query.query.all_my_pets, [req.user.email]);
-          var split_arr = data.rows[0].add_pet.split(",");
-          var last_word = split_arr[3];
-          values[3] = last_word.substring(0, last_word.length - 1);
-          res.render('./my_pets', {
-            title: 'My Pets',
-            all_pets: query.rows,
-            data: values,
-            loggedIn: req.user,
-            accountType: req.user.type,
-            restore: true
-          });
-        } else if (data.rows.length > 0 && action == 'restore') {
-          await pool.query(sql_query.query.restore_pet, [pet_name, req.user.email], async (err, data) => {
-            if (err) {
-              console.log(err);
-              req.flash('error', err);
-              res.redirect('/add_pet');
-            } else {
-              req.flash('success_msg', 'Pet ' + pet_name + ' is restored!');
-              res.redirect('/my_pets');
-            }
-          })
-        } else {
           req.flash('success_msg', 'Pet ' + pet_name + ' is ' + action + 'ed!');
           res.redirect('/my_pets');
-        }
       }
     });
   }
@@ -2101,43 +2076,48 @@ app.post('/apply_leave', async (req, res) => {
     datesFromRange(start_date, end_date, datesToDelete);
 
     const datesToDeleteArr = Array.from(datesToDelete);
-    const days = new Array(366);
+    const years = {}; 
     for (var i = 0; i < datesToDeleteArr.length; i++) {
       var date = datesToDeleteArr[i];
+      var year = date.getFullYear();
+      if (years[year] == undefined) {
+        years[year] = new Array(366);
+      }
       var start = new Date(date.getFullYear(), 0, 0);
       var diff = date - start;
       var oneDay = 1000 * 60 * 60 * 24;
       var day = Math.floor(diff / oneDay);
-      days[day] = 1;
+      years[year][day] = 1;
     }
-    console.log("HELLO")
-    console.log(days);
 
-    function checkConstraint(days) {
-      var numOf150DaysBlocks = 0;
-      var consecDays = 0;
-      var prevDayAvail = true;
-      for (var i = 0; i < days.length; i++) {
-        if (consecDays == 150) {
-          numOf150DaysBlocks++;
-          consecDays = 0;
+    function checkConstraint(years) {
+      for (const year in years) {
+        const days = years[year];
+        var numOf150DaysBlocks = 0;
+        var consecDays = 0;
+        var prevDayAvail = true;
+        for (var i = 0; i < days.length; i++) {
+          if (consecDays == 150) {
+            numOf150DaysBlocks++;
+            consecDays = 0;
+          }
+
+          if (days[i] == 1) {
+            consecDays = 0;
+            prevDayAvail = false;
+          } else {
+            consecDays++;
+            prevDayAvail = true;
+          }
         }
-
-        if (days[i] == 1) {
-          consecDays = 0;
-          prevDayAvail = false;
-        } else {
-          consecDays++;
-          prevDayAvail = true;
+        if (numOf150DaysBlocks < 2) {
+          return false;
         }
       }
-      return numOf150DaysBlocks >= 2;
+      return true;
     }
 
-    console.log("HELLO2")
-    console.log(checkConstraint(days));
-
-    if (!checkConstraint(days)) {
+    if (!checkConstraint(years)) {
       req.flash('error', 'Please ensure that you work for a minimum of 2 x 150 consecutive days each year.');
       res.redirect('/my_leave');
       return;
@@ -2686,6 +2666,12 @@ app.get('/give_review/:action', async (req, res) => {
   }
 });
 
+function dateToSQL(date) {
+  var d1 = convertDate(date);
+  var arr = d1.split("/");
+  return arr[2] + '-' + arr[1] + '-' + arr[0];
+}
+
 app.post('/give_review/:action', async (req, res) => {
   if (!req.user) {
     res.redirect('/login');
@@ -2694,15 +2680,22 @@ app.post('/give_review/:action', async (req, res) => {
     const review = req.body.review == "" ? null : req.body.review;
     const owner_email = req.user.email;
     const pet_name = req.body.pet_name;
-    const start_date = moment(new Date(req.body.start_date) + 1).format('YYYY-MM-DD');
-    const end_date = moment(new Date(req.body.end_date) + 1).format('YYYY-MM-DD');
+    var start = new Date(req.body.start_date);
+    start.setDate(start.getDate());
+    var end = new Date(req.body.end_date);
+    end.setDate(end.getDate());
+    const start_date = dateToSQL(start);
+    const end_date = dateToSQL(end);
     const ct_email = req.body.ct_email;
     const values = [rating, review, owner_email, pet_name, start_date, end_date, ct_email];
     await pool.query(sql_query.query.give_review, values, (err, data) => {
       if (err) {
+        console.log("hi");
         req.flash('error', err);
+        console.log(err);
         res.redirect('/transactions');
       } else {
+        console.log("bye");
         req.flash('success_msg', 'Review ' + req.params.action + 'ed!');
         res.redirect('/transactions');
       }

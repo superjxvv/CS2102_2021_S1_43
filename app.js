@@ -1476,12 +1476,9 @@ app.post('/add_pet/:action', async (req, res) => {
         req.flash('error', err);
         res.redirect('/add_pet');
       } else {
-        console.log(data.rows);
-        console.log(data.rows[0]);
         if (data.rows[0] && data.rows[0] != 0 && action != 'restore') {
           const query = await pool.query(sql_query.query.all_my_pets, [req.user.email]);
           var split_arr = data.rows[0].add_pet.split(",");
-          console.log(split_arr);
           var last_word = split_arr[3];
           values[3] = last_word.substring(0, last_word.length - 1);
           res.render('./my_pets', {

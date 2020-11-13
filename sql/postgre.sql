@@ -1,6 +1,7 @@
 CREATE SCHEMA pet_care;
 SET search_path TO pet_care;
 
+--Tables block
 CREATE TABLE pcs_admin(
   email VARCHAR PRIMARY KEY,
   name VARCHAR NOT NULL,
@@ -135,7 +136,301 @@ CREATE TABLE has_leave (
 	PRIMARY KEY(email, start_date, end_date),
   CHECK (start_date <= end_date)
 );
+--Table block end
 
+--Function block
+CREATE OR REPLACE FUNCTION 
+add_pet(p_name VARCHAR, special_req VARCHAR, po_email VARCHAR, type VARCHAR) 
+    RETURNS TABLE (existing_pet_name VARCHAR, existing_special_requirement VARCHAR, existing_email VARCHAR, p_type VARCHAR) AS
+'
+DECLARE exists NUMERIC;
+BEGIN 
+INSERT INTO own_pet (pet_name, special_requirement, email) VALUES (p_name, special_req, po_email) ON CONFLICT (pet_name, email) DO NOTHING;
+INSERT INTO is_of (pet_type, pet_name, owner_email) VALUES (type, p_name, po_email) ON CONFLICT (pet_name, owner_email) DO NOTHING;
+RETURN QUERY SELECT O.pet_name, O.special_requirement, O.email, I.pet_type FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.pet_name = p_name AND O.email = po_email;
+END;
+'
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE PROCEDURE 
+add_pet_type_ct(ct_email VARCHAR, type VARCHAR, new_price NUMERIC) AS
+'
+BEGIN 
+INSERT INTO can_take_care_of (email, daily_price, pet_type) VALUES (ct_email, new_price, type);
+END;
+'
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE PROCEDURE 
+add_leave(ct_email VARCHAR, startt DATE, endd DATE) AS
+'
+BEGIN 
+INSERT INTO has_leave (email, start_date, end_date) VALUES (ct_email, startt, endd);
+END;
+'
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE PROCEDURE 
+add_availability(ct_email VARCHAR, startt DATE, endd DATE) AS
+'
+BEGIN 
+INSERT INTO indicates_availability (email, start_date, end_date) VALUES (ct_email, startt, endd);
+END;
+'
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE PROCEDURE 
+edit_po_info(po_email VARCHAR, po_name VARCHAR, po_pw VARCHAR, po_loc VARCHAR, po_addr VARCHAR, cc_num VARCHAR, cc_exp VARCHAR) AS
+'
+BEGIN 
+UPDATE pet_owner SET name = po_name, password = po_pw, location = po_loc, address = po_addr WHERE email = po_email;
+IF (cc_num IS NOT NULL AND cc_exp IS NOT NULL) THEN
+  INSERT INTO has_credit_card (number, email, expiry) VALUES (cc_num, po_email, cc_exp) ON CONFLICT (email) DO UPDATE SET number = cc_num, expiry = cc_exp;
+ELSE 
+  DELETE FROM has_credit_card WHERE email = po_email;
+END IF;
+END;
+'
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE PROCEDURE 
+edit_po_info_no_pw(po_email VARCHAR, po_name VARCHAR, po_loc VARCHAR, po_addr VARCHAR, cc_num VARCHAR, cc_exp VARCHAR) AS
+'
+BEGIN 
+UPDATE pet_owner SET name = po_name,  location = po_loc, address = po_addr WHERE email = po_email;
+IF (cc_num IS NOT NULL AND cc_exp IS NOT NULL) THEN
+  INSERT INTO has_credit_card (number, email, expiry) VALUES (cc_num, po_email, cc_exp) ON CONFLICT (email) DO UPDATE SET number = cc_num, expiry = cc_exp;
+ELSE 
+  DELETE FROM has_credit_card WHERE email = po_email;
+END IF;
+END;
+'
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE PROCEDURE 
+edit_ct_info(ct_email VARCHAR, ct_name VARCHAR, ct_pw VARCHAR, ct_loc VARCHAR, ct_addr VARCHAR, ct_bank_acct VARCHAR) AS
+'
+BEGIN 
+UPDATE care_taker SET name = ct_name, password = ct_pw, location = ct_loc, address = ct_addr, bank_account = ct_bank_acct WHERE email = ct_email;
+END;
+'
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE PROCEDURE 
+edit_ct_info_no_pw(ct_email VARCHAR, ct_name VARCHAR, ct_loc VARCHAR, ct_addr VARCHAR, ct_bank_acct VARCHAR) AS
+'
+BEGIN 
+UPDATE care_taker SET name = ct_name,  location = ct_loc, address = ct_addr, bank_account = ct_bank_acct WHERE email = ct_email;
+END;
+'
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE PROCEDURE
+pay_for_bid(payment_method method_of_payment, po_email VARCHAR, petname VARCHAR, caretaker_email VARCHAR, startD DATE, endD DATE) AS
+$$
+BEGIN
+  IF (payment_method = 'cash') THEN
+    UPDATE hire SET method_of_payment = payment_method WHERE owner_email = po_email AND pet_name = petname AND ct_email = caretaker_email
+    AND start_date = startD AND end_date = endD;
+  ELSIF (payment_method = 'creditcard') THEN
+    UPDATE hire SET method_of_payment = payment_method, hire_status = 'paymentMade' WHERE owner_email = po_email AND pet_name = petname AND ct_email = caretaker_email
+    AND start_date = startD AND end_date = endD;
+  END IF;
+END;
+$$
+
+LANGUAGE plpgsql;
+
+--Add dates into date_range if not exists to prevent foreign key error.
+--Auto accepts if caretaker is fulltimer
+CREATE OR REPLACE FUNCTION add_hire() RETURNS TRIGGER AS 
+$$ 
+BEGIN 
+  --Check if exceed concurrent pet limit
+  IF (EXISTS(
+  SELECT 1
+  FROM (select one_date::date from generate_series(NEW.start_date, 
+  NEW.end_date, '1 day'::interval) one_date) all_dates, hire
+  WHERE hire.ct_email = NEW.ct_email AND hire.hire_status <> 'rejected' AND hire.hire_status <> 'completed' AND hire.hire_status <> 'pendingAccept'
+    AND hire.hire_status <> 'cancelled' AND hire.start_date <= all_dates.one_date AND hire.end_date >= all_dates.one_date
+  GROUP BY all_dates.one_date
+  HAVING COUNT(*) > (SELECT max_concurrent_pet_limit FROM care_taker WHERE email = NEW.ct_email)
+  )) THEN
+    RAISE NOTICE 'Exceed max concurrent';
+    RETURN NULL;
+  END IF;
+
+  IF ((NEW.start_date, NEW.end_date) NOT IN (SELECT * FROM date_range)) THEN 
+    INSERT INTO date_range(start_date, end_date) VALUES(NEW.start_date, NEW.end_date); 
+  END IF;
+  IF (NEW.ct_email IN (SELECT email FROM full_timer)) THEN
+    NEW.hire_status := 'pendingPayment';
+  END IF;
+  RETURN NEW; 
+END; 
+$$ 
+LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS hire_add_hire ON pet_care.hire;
+
+CREATE TRIGGER hire_add_hire BEFORE INSERT ON hire FOR EACH ROW EXECUTE PROCEDURE add_hire();
+
+--Check that the pet type of pet in hire can be taken care of by CT
+CREATE OR REPLACE FUNCTION check_can_take_care_of() RETURNS TRIGGER AS 
+$$
+BEGIN
+  --Query what pet type it is and if it is in can_take_care_of
+  IF ((SELECT pet_type FROM is_of I WHERE I.owner_email = NEW.owner_email AND I.pet_name = NEW.pet_name) IN (SELECT pet_type FROM can_take_care_of WHERE email = NEW.ct_email)) THEN
+    RETURN NEW;
+  END IF;
+  RETURN NULL;
+END;
+$$
+LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS hire_can_take_care_of ON pet_care.hire;
+
+CREATE TRIGGER hire_can_take_care_of BEFORE INSERT ON hire FOR EACH ROW EXECUTE PROCEDURE check_can_take_care_of();
+
+CREATE OR REPLACE FUNCTION update_hire() RETURNS TRIGGER AS 
+$$ 
+BEGIN 
+  IF ((NEW.start_date, NEW.end_date) NOT IN (SELECT * FROM date_range)) THEN 
+    INSERT INTO date_range(start_date, end_date) VALUES(NEW.start_date, NEW.end_date); 
+  END IF;
+  RETURN NEW; 
+END; 
+$$ 
+LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS hire_update_hire ON pet_care.hire;
+
+CREATE TRIGGER hire_update_hire BEFORE UPDATE ON hire FOR EACH ROW EXECUTE PROCEDURE update_hire();
+
+
+--Upon inserting into care_taker table, auto insert into respective part_timer or full_timer table.
+CREATE OR REPLACE FUNCTION add_CT() RETURNS TRIGGER AS
+$$
+BEGIN
+  IF (NEW.job = 'part_timer') THEN
+    INSERT INTO part_timer VALUES(NEW.email);
+  ELSE
+    INSERT INTO full_timer VALUES(NEW.email);
+  END IF;
+  RETURN NEW;
+END
+$$
+LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS add_ct ON pet_care.care_taker;
+
+CREATE TRIGGER add_CT AFTER INSERT ON care_taker FOR EACH ROW EXECUTE PROCEDURE add_CT();
+
+-- to update rating and scale prices 
+CREATE OR REPLACE FUNCTION increase_rating_and_price() RETURNS TRIGGER AS
+$$
+DECLARE total_trxn NUMERIC;
+DECLARE total_rating NUMERIC;
+DECLARE base_price NUMERIC;
+DECLARE job_ct VARCHAR;
+DECLARE avg_rating NUMERIC;
+BEGIN
+SELECT INTO total_trxn, total_rating COUNT(H1.rating), SUM(H1.rating)
+FROM hire H1
+WHERE H1.ct_email = NEW.ct_email 
+AND (H1.rating IS NOT NULL OR H1.rating <> 0)
+AND H1.hire_status = 'completed';
+UPDATE care_taker
+SET rating =
+  CASE 
+    WHEN total_trxn = 0 THEN 0
+    ELSE total_rating/total_trxn
+  END
+WHERE email = NEW.ct_email;
+
+UPDATE can_take_care_of C
+SET daily_price = 
+  CASE 
+    WHEN total_trxn = 0 THEN P.base_daily_price 
+    ELSE P.base_daily_price * (1 + (total_rating/total_trxn)/5)
+  END
+FROM pet_type P
+WHERE P.name = C.pet_type
+AND C.email = NEW.ct_email;
+
+SELECT INTO job_ct, avg_rating job, rating
+FROM care_taker
+WHERE care_taker.email = NEW.ct_email;
+
+IF job_ct = 'part_timer' AND avg_rating > 2 THEN
+  UPDATE care_taker
+  SET max_concurrent_pet_limit = FLOOR(avg_rating)
+  WHERE email = NEW.ct_email;
+END IF;
+
+RETURN NEW;
+END;
+$$
+LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS increase_rating_and_price ON pet_care.hire;
+
+CREATE TRIGGER increase_rating_and_price AFTER UPDATE ON hire FOR EACH ROW EXECUTE PROCEDURE increase_rating_and_price();
+
+-- to update price to match rating
+UPDATE can_take_care_of C
+SET daily_price = 
+  CASE 
+    WHEN (SELECT COALESCE(COUNT(*), 0) FROM hire WHERE rating IS NOT NULL AND rating <> 0 AND ct_email = C.email) = 0 THEN P.base_daily_price 
+    ELSE P.base_daily_price * (1 + (SELECT rating FROM care_taker WHERE email = C.email)/5)
+  END
+FROM pet_type P
+WHERE P.name = C.pet_type;
+
+--Trigger to update monthly salary and pet days upon completion of hire/bid.
+CREATE OR REPLACE FUNCTION update_monthly_stats() RETURNS TRIGGER AS
+$$
+DECLARE old_monthly_pet_days NUMERIC;
+DECLARE old_salary NUMERIC;
+DECLARE jobT job_type;
+BEGIN
+UPDATE hire h SET total_cost = (SELECT (p.base_daily_price + c.daily_price) * h.num_pet_days FROM pet_type p INNER JOIN can_take_care_of c ON p.name = c.pet_type INNER JOIN is_of i ON i.owner_email =  NEW.owner_email AND i.pet_name = NEW.pet_name WHERE c.email = NEW.ct_email AND c.pet_type = i.pet_type) WHERE h.owner_email = NEW.owner_email AND h.pet_name = NEW.pet_name AND h.ct_email = NEW.ct_email AND h.start_date = NEW.start_date AND h.end_date = NEW.end_date;
+SELECT INTO old_monthly_pet_days, old_salary, jobT monthly_pet_days, monthly_salary, job FROM care_taker WHERE email = NEW.ct_email;
+IF (NEW.hire_status = 'completed' AND date_part('month', NEW.end_date) = date_part('month', CURRENT_DATE) AND 
+  date_part('year', NEW.end_date) = date_part('year', CURRENT_DATE)) THEN
+  --Add pet day to monthly pet days
+  UPDATE care_taker SET monthly_pet_days = old_monthly_pet_days + NEW.num_pet_days
+  WHERE email = NEW.ct_email;
+
+  --Update salary
+  --If part timer
+  IF (jobT = 'part_timer') THEN
+    UPDATE care_taker SET monthly_salary = old_salary + 0.75 * NEW.total_cost
+    WHERE email = NEW.ct_email;
+  ELSE
+    IF (old_monthly_pet_days >= 60) THEN
+      UPDATE care_taker SET monthly_salary = old_salary + 0.8 * NEW.total_cost
+      WHERE email = NEW.ct_email;
+    ELSE
+      IF (old_monthly_pet_days + NEW.num_pet_days > 60) THEN
+        UPDATE care_taker SET monthly_salary = old_salary + 
+        (old_monthly_pet_days + NEW.num_pet_days - 60) / NEW.num_pet_days * NEW.total_cost * 0.8 
+        WHERE email = NEW.ct_email;
+      END IF;
+    END IF;
+  END IF;
+END IF;
+RETURN NEW;
+END;
+$$
+LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS update_monthly_stats ON pet_care.hire;
+
+CREATE TRIGGER update_monthly_stats AFTER INSERT ON hire FOR EACH ROW EXECUTE PROCEDURE update_monthly_stats();
+--Function block end
+
+--Rows block
 insert into pcs_admin (email, name, password, is_super_admin, deleted) values ('cpingstone0@drupal.org', 'Calida Pingstone', 'ziRg5elKqjRo', true, false);
 insert into pcs_admin (email, name, password, is_super_admin, deleted) values ('cburgess1@goo.ne.jp', 'Candie Burgess', 'Dj2iKo9otGuv', true, true);
 insert into pcs_admin (email, name, password, is_super_admin, deleted) values ('jstarkie2@vinaora.com', 'Jaclyn Starkie', 'AfcvlGliW', false, true);
@@ -1639,10 +1934,10 @@ insert into care_taker (email, name, password, location, monthly_pet_days, month
 insert into care_taker (email, name, password, location, monthly_pet_days, monthly_salary, rating, bank_account, job, max_concurrent_pet_limit, address, deleted) values ('lklugedu@dmoz.org', 'Lottie Kluge', 'jZd47TwYtzi', 'Central', null, null, null, 'ES55 2335 4613 1298 2366 2064', 'part_timer', 2, '21 Westerfield Hill', false);
 insert into care_taker (email, name, password, location, monthly_pet_days, monthly_salary, rating, bank_account, job, max_concurrent_pet_limit, address, deleted) values ('yvalentimdv@imgur.com', 'Yasmin Valentim', 'mUcAi9NL7', 'North-East', null, null, null, 'DE20 5044 2650 1043 9441 00', 'part_timer', 2, '0 Gerald Crossing', true);
 
+--Handled by trigger
+--insert into part_timer (email) (select email from care_taker where job = 'part_timer');
 
-insert into part_timer (email) (select email from care_taker where job = 'part_timer');
-
-insert into full_timer (email) (select email from care_taker where job = 'full_timer');
+--insert into full_timer (email) (select email from care_taker where job = 'full_timer');
 
 UPDATE care_taker SET max_concurrent_pet_limit = 5 WHERE job = 'full_timer';
 
@@ -6466,7 +6761,27 @@ insert into hire (owner_email, pet_name, ct_email, method_of_pet_transfer, metho
 
 UPDATE hire h SET total_cost = (SELECT (p.base_daily_price + c.daily_price) * h.num_pet_days FROM pet_type p INNER JOIN can_take_care_of c ON p.name = c.pet_type INNER JOIN is_of i ON i.owner_email =  h.owner_email AND i.pet_name = h.pet_name WHERE c.email = h.ct_email AND c.pet_type = i.pet_type);
 
-UPDATE care_taker c SET rating = CASE WHEN (SELECT COUNT(*) FROM hire h1 WHERE h1.rating <> 0) = 0 THEN 0 ELSE (SELECT AVG(h2.rating) FROM hire h2 WHERE h2.ct_email = c.email AND h2.hire_status = 'completed') END;
+UPDATE care_taker c SET rating = (SELECT AVG(h2.rating) FROM hire h2 WHERE h2.ct_email = c.email AND h2.hire_status = 'completed') END;
+
+UPDATE can_take_care_of c
+SET daily_price = (COALESCE((SELECT AVG(h2.rating) FROM hire h2 WHERE h2.ct_email = c.email AND h2.hire_status = 'completed'), 0) / 5 + 1) * (SELECT base_daily_price FROM pet_type WHERE name = c.pet_type)
+END;
+
+--UPDATE care_taker c
+--SET
+-- c.monthly_pet_days = c.monthly_pet_days + 
+/*   (SELECT SUM(num_pet_days) FROM hire 
+  WHERE date_part('month', hire.end_date) = date_part('month', CURRENT_DATE) AND 
+  date_part('year', hire.end_date) = date_part('year', CURRENT_DATE) AND
+  hire.hire_status = 'completed' AND
+  hire.ct_email = c.email),
+
+  c.monthly_salary = CASE WHEN c.job = 'part_timer' THEN
+    0.75 * (SELECT SUM(total_cost) FROM hire h WHERE h.ct_email = c.email AND  
+    date_part('month', hire.end_date) = date_part('month', CURRENT_DATE) AND 
+    date_part('year', hire.end_date) = date_part('year', CURRENT_DATE) AND
+    h.hire_status = 'completed')
+  ELSE */
 
 -- to update limit for part_timers
 UPDATE care_taker
@@ -6979,263 +7294,13 @@ insert into has_leave (email, start_date, end_date) values ('bkollasdm@usgs.gov'
 insert into has_leave (email, start_date, end_date) values ('riggodn@mysql.com', '2021-06-16', '2021-7-1');
 insert into has_leave (email, start_date, end_date) values ('sespinhodp@exblog.jp', '2021-03-06', '2021-3-21');
 
-
-CREATE OR REPLACE FUNCTION 
-add_pet(p_name VARCHAR, special_req VARCHAR, po_email VARCHAR, type VARCHAR) 
-    RETURNS TABLE (existing_pet_name VARCHAR, existing_special_requirement VARCHAR, existing_email VARCHAR, p_type VARCHAR) AS
-'
-DECLARE exists NUMERIC;
-BEGIN 
-INSERT INTO own_pet (pet_name, special_requirement, email) VALUES (p_name, special_req, po_email) ON CONFLICT (pet_name, email) DO NOTHING;
-INSERT INTO is_of (pet_type, pet_name, owner_email) VALUES (type, p_name, po_email) ON CONFLICT (pet_name, owner_email) DO NOTHING;
-RETURN QUERY SELECT O.pet_name, O.special_requirement, O.email, I.pet_type FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.pet_name = p_name AND O.email = po_email;
-END;
-'
-LANGUAGE plpgsql;
-
-CREATE OR REPLACE PROCEDURE 
-add_pet_type_ct(ct_email VARCHAR, type VARCHAR, new_price NUMERIC) AS
-'
-BEGIN 
-INSERT INTO can_take_care_of (email, daily_price, pet_type) VALUES (ct_email, new_price, type);
-END;
-'
-LANGUAGE plpgsql;
-
-CREATE OR REPLACE PROCEDURE 
-add_leave(ct_email VARCHAR, startt DATE, endd DATE) AS
-'
-BEGIN 
-INSERT INTO has_leave (email, start_date, end_date) VALUES (ct_email, startt, endd);
-END;
-'
-LANGUAGE plpgsql;
-
-CREATE OR REPLACE PROCEDURE 
-add_availability(ct_email VARCHAR, startt DATE, endd DATE) AS
-'
-BEGIN 
-INSERT INTO indicates_availability (email, start_date, end_date) VALUES (ct_email, startt, endd);
-END;
-'
-LANGUAGE plpgsql;
-
-CREATE OR REPLACE PROCEDURE 
-edit_po_info(po_email VARCHAR, po_name VARCHAR, po_pw VARCHAR, po_loc VARCHAR, po_addr VARCHAR, cc_num VARCHAR, cc_exp VARCHAR) AS
-'
-BEGIN 
-UPDATE pet_owner SET name = po_name, password = po_pw, location = po_loc, address = po_addr WHERE email = po_email;
-IF (cc_num IS NOT NULL AND cc_exp IS NOT NULL) THEN
-  INSERT INTO has_credit_card (number, email, expiry) VALUES (cc_num, po_email, cc_exp) ON CONFLICT (email) DO UPDATE SET number = cc_num, expiry = cc_exp;
-ELSE 
-  DELETE FROM has_credit_card WHERE email = po_email;
-END IF;
-END;
-'
-LANGUAGE plpgsql;
-
-CREATE OR REPLACE PROCEDURE 
-edit_po_info_no_pw(po_email VARCHAR, po_name VARCHAR, po_loc VARCHAR, po_addr VARCHAR, cc_num VARCHAR, cc_exp VARCHAR) AS
-'
-BEGIN 
-UPDATE pet_owner SET name = po_name,  location = po_loc, address = po_addr WHERE email = po_email;
-IF (cc_num IS NOT NULL AND cc_exp IS NOT NULL) THEN
-  INSERT INTO has_credit_card (number, email, expiry) VALUES (cc_num, po_email, cc_exp) ON CONFLICT (email) DO UPDATE SET number = cc_num, expiry = cc_exp;
-ELSE 
-  DELETE FROM has_credit_card WHERE email = po_email;
-END IF;
-END;
-'
-LANGUAGE plpgsql;
-
-CREATE OR REPLACE PROCEDURE 
-edit_ct_info(ct_email VARCHAR, ct_name VARCHAR, ct_pw VARCHAR, ct_loc VARCHAR, ct_addr VARCHAR, ct_bank_acct VARCHAR) AS
-'
-BEGIN 
-UPDATE care_taker SET name = ct_name, password = ct_pw, location = ct_loc, address = ct_addr, bank_account = ct_bank_acct WHERE email = ct_email;
-END;
-'
-LANGUAGE plpgsql;
-
-CREATE OR REPLACE PROCEDURE 
-edit_ct_info_no_pw(ct_email VARCHAR, ct_name VARCHAR, ct_loc VARCHAR, ct_addr VARCHAR, ct_bank_acct VARCHAR) AS
-'
-BEGIN 
-UPDATE care_taker SET name = ct_name,  location = ct_loc, address = ct_addr, bank_account = ct_bank_acct WHERE email = ct_email;
-END;
-'
-LANGUAGE plpgsql;
-
-CREATE OR REPLACE PROCEDURE
-pay_for_bid(payment_method method_of_payment, po_email VARCHAR, petname VARCHAR, caretaker_email VARCHAR, startD DATE, endD DATE) AS
-$$
-BEGIN
-  IF (payment_method = 'cash') THEN
-    UPDATE hire SET method_of_payment = payment_method WHERE owner_email = po_email AND pet_name = petname AND ct_email = caretaker_email
-    AND start_date = startD AND end_date = endD;
-  ELSIF (payment_method = 'creditcard') THEN
-    UPDATE hire SET method_of_payment = payment_method, hire_status = 'paymentMade' WHERE owner_email = po_email AND pet_name = petname AND ct_email = caretaker_email
-    AND start_date = startD AND end_date = endD;
-  END IF;
-END;
-$$
-
-LANGUAGE plpgsql;
-
---Add dates into date_range if not exists to prevent foreign key error.
---Auto accepts if caretaker is fulltimer
-CREATE OR REPLACE FUNCTION add_hire() RETURNS TRIGGER AS 
-$$ 
-BEGIN 
-  --Check if exceed concurrent pet limit
-  IF (EXISTS(
-  SELECT 1
-  FROM (select one_date::date from generate_series(NEW.start_date, 
-  NEW.end_date, '1 day'::interval) one_date) all_dates, hire
-  WHERE hire.ct_email = NEW.ct_email AND hire.hire_status <> 'rejected' AND hire.hire_status <> 'completed' AND hire.hire_status <> 'pendingAccept'
-    AND hire.hire_status <> 'cancelled' AND hire.start_date <= all_dates.one_date AND hire.end_date >= all_dates.one_date
-  GROUP BY all_dates.one_date
-  HAVING COUNT(*) > (SELECT max_concurrent_pet_limit FROM care_taker WHERE email = NEW.ct_email)
-  )) THEN
-    RAISE NOTICE 'Exceed max concurrent';
-    RETURN NULL;
-  END IF;
-
-  IF ((NEW.start_date, NEW.end_date) NOT IN (SELECT * FROM date_range)) THEN 
-    INSERT INTO date_range(start_date, end_date) VALUES(NEW.start_date, NEW.end_date); 
-  END IF;
-  IF (NEW.ct_email IN (SELECT email FROM full_timer)) THEN
-    NEW.hire_status := 'pendingPayment';
-  END IF;
-  RETURN NEW; 
-END; 
-$$ 
-LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS hire_add_hire ON pet_care.hire;
-
-CREATE TRIGGER hire_add_hire BEFORE INSERT ON hire FOR EACH ROW EXECUTE PROCEDURE add_hire();
-
---Check that the pet type of pet in hire can be taken care of by CT
-CREATE OR REPLACE FUNCTION check_can_take_care_of() RETURNS TRIGGER AS 
-$$
-BEGIN
-  --Query what pet type it is and if it is in can_take_care_of
-  IF ((SELECT pet_type FROM is_of I WHERE I.owner_email = NEW.owner_email AND I.pet_name = NEW.pet_name) IN (SELECT pet_type FROM can_take_care_of WHERE email = NEW.ct_email)) THEN
-    RETURN NEW;
-  END IF;
-  RETURN NULL;
-END;
-$$
-LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS hire_can_take_care_of ON pet_care.hire;
-
-CREATE TRIGGER hire_can_take_care_of BEFORE INSERT ON hire FOR EACH ROW EXECUTE PROCEDURE check_can_take_care_of();
-
-CREATE OR REPLACE FUNCTION update_hire() RETURNS TRIGGER AS 
-$$ 
-BEGIN 
-  IF ((NEW.start_date, NEW.end_date) NOT IN (SELECT * FROM date_range)) THEN 
-    INSERT INTO date_range(start_date, end_date) VALUES(NEW.start_date, NEW.end_date); 
-  END IF;
-  RETURN NEW; 
-END; 
-$$ 
-LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS hire_update_hire ON pet_care.hire;
-
-CREATE TRIGGER hire_update_hire BEFORE UPDATE ON hire FOR EACH ROW EXECUTE PROCEDURE update_hire();
-
-
---Upon inserting into care_taker table, auto insert into respective part_timer or full_timer table.
-CREATE OR REPLACE FUNCTION add_CT() RETURNS TRIGGER AS
-$$
-BEGIN
-  IF (NEW.job = 'part_timer') THEN
-    INSERT INTO part_timer VALUES(NEW.email);
-  ELSE
-    INSERT INTO full_timer VALUES(NEW.email);
-  END IF;
-  RETURN NEW;
-END
-$$
-LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS add_ct ON pet_care.care_taker;
-
-CREATE TRIGGER add_CT AFTER INSERT ON care_taker FOR EACH ROW EXECUTE PROCEDURE add_CT();
-
--- to update rating and scale prices 
-CREATE OR REPLACE FUNCTION increase_rating_and_price() RETURNS TRIGGER AS
-$$
-DECLARE total_trxn NUMERIC;
-DECLARE total_rating NUMERIC;
-DECLARE base_price NUMERIC;
-DECLARE job_ct VARCHAR;
-DECLARE avg_rating NUMERIC;
-BEGIN
-SELECT INTO total_trxn, total_rating COUNT(H1.rating), SUM(H1.rating)
-FROM hire H1
-WHERE H1.ct_email = NEW.ct_email 
-AND (H1.rating IS NOT NULL OR H1.rating <> 0)
-AND H1.hire_status = 'completed';
-UPDATE care_taker
-SET rating =
-  CASE 
-    WHEN total_trxn = 0 THEN 0
-    ELSE total_rating/total_trxn
-  END
-WHERE email = NEW.ct_email;
-
-UPDATE can_take_care_of C
-SET daily_price = 
-  CASE 
-    WHEN total_trxn = 0 THEN P.base_daily_price 
-    ELSE P.base_daily_price * (1 + (total_rating/total_trxn)/5)
-  END
-FROM pet_type P
-WHERE P.name = C.pet_type
-AND C.email = NEW.ct_email;
-
-SELECT INTO job_ct, avg_rating job, rating
-FROM care_taker
-WHERE care_taker.email = NEW.ct_email;
-
-IF job_ct = 'part_timer' AND avg_rating > 2 THEN
-  UPDATE care_taker
-  SET max_concurrent_pet_limit = FLOOR(avg_rating)
-  WHERE email = NEW.ct_email;
-END IF;
-
-RETURN NEW;
-END;
-$$
-LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS increase_rating_and_price ON pet_care.hire;
-
-CREATE TRIGGER increase_rating_and_price AFTER UPDATE ON hire FOR EACH ROW EXECUTE PROCEDURE increase_rating_and_price();
-
--- to update price to match rating
-UPDATE can_take_care_of C
-SET daily_price = 
-  CASE 
-    WHEN (SELECT COALESCE(COUNT(*), 0) FROM hire WHERE rating IS NOT NULL AND rating <> 0 AND ct_email = C.email) = 0 THEN P.base_daily_price 
-    ELSE P.base_daily_price * (1 + (SELECT rating FROM care_taker WHERE email = C.email)/5)
-  END
-FROM pet_type P
-WHERE P.name = C.pet_type;
-
---Trigger to update monthly salary and pet days upon completion of hire/bid.
 CREATE OR REPLACE FUNCTION update_monthly_stats() RETURNS TRIGGER AS
 $$
 DECLARE old_monthly_pet_days NUMERIC;
 DECLARE old_salary NUMERIC;
-DECLARE job job_type;
+DECLARE jobT job_type;
 BEGIN
-SELECT INTO old_monthly_pet_days, old_salary, job monthly_pet_days, monthly_salary, job FROM care_taker WHERE email = NEW.ct_email;
+SELECT INTO old_monthly_pet_days, old_salary, jobT monthly_pet_days, monthly_salary, job FROM care_taker WHERE email = NEW.ct_email;
 IF (OLD.hire_status = 'inProgress' AND NEW.hire_status = 'completed') THEN
   --Add pet day to monthly pet days
   UPDATE care_taker SET monthly_pet_days = old_monthly_pet_days + NEW.num_pet_days
@@ -7243,7 +7308,7 @@ IF (OLD.hire_status = 'inProgress' AND NEW.hire_status = 'completed') THEN
 
   --Update salary
   --If part timer
-  IF (job = 'part_timer') THEN
+  IF (jobT = 'part_timer') THEN
     UPDATE care_taker SET monthly_salary = old_salary + 0.75 * NEW.total_cost
     WHERE email = NEW.ct_email;
   ELSE

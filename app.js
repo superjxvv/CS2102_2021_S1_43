@@ -2141,8 +2141,8 @@ app.post('/apply_leave', async (req, res) => {
   if (req.user) {
     const valuess = [req.user.email];
     const ct_email = req.body.ct_email;
-    const start_date = moment(convertDate(req.body.start_date), 'DD/MM/YYYY').toDate();
-    const end_date = moment(convertDate(req.body.end_date), 'DD/MM/YYYY').toDate();
+    const start_date = new Date(req.body.start_date);
+    const end_date = new Date(req.body.end_date);
 
     var datesToDelete = new Set();
     const leave = await pool.query(sql_query.query.full_timer_leave, valuess);
@@ -2218,9 +2218,10 @@ app.post('/apply_leave', async (req, res) => {
 
 app.post('/add_availability', async (req, res) => {
   if (req.user) {
+    console.log(req.body);
     const ct_email = req.body.ct_email;
-    const start_date = moment(convertDate(req.body.start_date), 'DD/MM/YYYY').toDate();
-    const end_date = moment(convertDate(req.body.end_date), 'DD/MM/YYYY').toDate();
+    const start_date = new Date(req.body.start_date);
+    const end_date = new Date(req.body.end_date);
     const values = [ct_email, start_date, end_date];
     await pool.query(sql_query.query.add_availability, values, (err) => {
       if (err) {

@@ -251,6 +251,7 @@ LANGUAGE plpgsql;
 
 --Add dates into date_range if not exists to prevent foreign key error.
 --Auto accepts if caretaker is fulltimer
+-- for initial inserts
 CREATE OR REPLACE FUNCTION add_hire() RETURNS TRIGGER AS 
 $$ 
 BEGIN 
@@ -270,9 +271,6 @@ BEGIN
 
   IF ((NEW.start_date, NEW.end_date) NOT IN (SELECT * FROM date_range)) THEN 
     INSERT INTO date_range(start_date, end_date) VALUES(NEW.start_date, NEW.end_date); 
-  END IF;
-  IF (NEW.ct_email IN (SELECT email FROM full_timer)) THEN
-    NEW.hire_status := 'pendingPayment';
   END IF;
   RETURN NEW; 
 END; 
@@ -7340,3 +7338,39 @@ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS update_monthly_stats ON pet_care.hire;
 
 CREATE TRIGGER update_monthly_stats AFTER UPDATE ON hire FOR EACH ROW EXECUTE PROCEDURE update_monthly_stats();
+
+-- for subsequent creation of hires
+CREATE OR REPLACE FUNCTION add_hire() RETURNS TRIGGER AS 
+$$ 
+BEGIN 
+  --Check if exceed concurrent pet limit
+  IF (EXISTS(
+  SELECT 1
+  FROM (select one_date::date from generate_series(NEW.start_date, 
+  NEW.end_date, '1 day'::interval) one_date) all_dates, hire
+  WHERE hire.ct_email = NEW.ct_email AND hire.hire_status <> 'rejected' AND hire.hire_status <> 'completed' AND hire.hire_status <> 'pendingAccept'
+    AND hire.hire_status <> 'cancelled' AND hire.start_date <= all_dates.one_date AND hire.end_date >= all_dates.one_date
+  GROUP BY all_dates.one_date
+  HAVING COUNT(*) > (SELECT max_concurrent_pet_limit FROM care_taker WHERE email = NEW.ct_email)
+  )) THEN
+    RAISE NOTICE 'Exceed max concurrent';
+    RETURN NULL;
+  END IF;
+
+  IF ((NEW.start_date, NEW.end_date) NOT IN (SELECT * FROM date_range)) THEN 
+    INSERT INTO date_range(start_date, end_date) VALUES(NEW.start_date, NEW.end_date); 
+  END IF;
+  IF (NEW.ct_email IN (SELECT email FROM full_timer)) THEN
+    NEW.hire_status := 'pendingPayment';
+  END IF;
+  RETURN NEW; 
+END; 
+$$ 
+LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS hire_add_hire ON pet_care.hire;
+
+CREATE TRIGGER hire_add_hire BEFORE INSERT ON hire FOR EACH ROW EXECUTE PROCEDURE add_hire();
+
+UPDATE own_pet 
+SET deleted = false;

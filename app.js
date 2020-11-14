@@ -7,7 +7,7 @@ const { Pool } = require('pg');
 const moment = require('moment');
 //Authentication stuff -------------------
 const bcrypt = require('bcrypt');
-const session = require('express-session');
+const session = require('cookie-session');
 const flash = require('express-flash');
 const passport = require('passport');
 const initializePassport = require('./passportConfig');
@@ -1476,8 +1476,34 @@ app.post('/add_pet/:action', async (req, res) => {
         req.flash('error', err);
         res.redirect('/add_pet');
       } else {
-        req.flash('success_msg', 'Pet ' + pet_name + ' is ' + action + 'ed!');
-        res.redirect('/my_pets');
+        if (data.rows[0] && data.rows[0] != 0 && action != 'restore') {
+          const query = await pool.query(sql_query.query.all_my_pets, [req.user.email]);
+          var split_arr = data.rows[0].add_pet.split(",");
+          var last_word = split_arr[3];
+          values[3] = last_word.substring(0, last_word.length - 1);
+          res.render('./my_pets', {
+            title: 'My Pets',
+            all_pets: query.rows,
+            data: values,
+            loggedIn: req.user,
+            accountType: req.user.type,
+            restore: true
+          });
+        } else if (data.rows[0] && data.rows[0] != 0 && action == 'restore') {
+          await pool.query(sql_query.query.restore_pet, [pet_name, req.user.email], async (err, data) => {
+            if (err) {
+              console.log(err);
+              req.flash('error', err);
+              res.redirect('/add_pet');
+            } else {
+              req.flash('success_msg', 'Pet ' + pet_name + ' is restored!');
+              res.redirect('/my_pets');
+            }
+          })
+        } else {
+          req.flash('success_msg', 'Pet ' + pet_name + ' is ' + action + 'ed!');
+          res.redirect('/my_pets');
+        }
       }
     });
   }
@@ -1731,6 +1757,7 @@ app.post('/my_leave/:ct_email/:start_date', async (req, res) => {
     const values = [req.params.ct_email, convertDate(req.params.start_date)];
     await pool.query(sql_query.query.delete_leave, values, (err) => {
       if (err) {
+        console.error(err);
         req.flash('error', 'Delete failed.');
         res.redirect('/my_leave');
       } else {

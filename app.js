@@ -1757,6 +1757,7 @@ app.post('/my_leave/:ct_email/:start_date', async (req, res) => {
     const values = [req.params.ct_email, convertDate(req.params.start_date)];
     await pool.query(sql_query.query.delete_leave, values, (err) => {
       if (err) {
+        console.error(err);
         req.flash('error', 'Delete failed.');
         res.redirect('/my_leave');
       } else {

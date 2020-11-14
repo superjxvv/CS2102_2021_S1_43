@@ -253,7 +253,7 @@ app.post('/pre-bid', async (req, res) => {
       ct_email
     ]);
     allMyPets = await pool.query(sql_query.query.my_pets_that_can_take_care_of, [
-      req.user.email, //change to req.user.email when ready
+      req.user.email,
       ct_email
     ]);
     //Dates that this ct is already booked.

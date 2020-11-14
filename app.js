@@ -7,7 +7,7 @@ const { Pool } = require('pg');
 const moment = require('moment');
 //Authentication stuff -------------------
 const bcrypt = require('bcrypt');
-const session = require('express-session');
+const session = require('cookie-session');
 const flash = require('express-flash');
 const passport = require('passport');
 const initializePassport = require('./passportConfig');

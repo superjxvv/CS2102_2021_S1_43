@@ -54,6 +54,14 @@ app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
 
+//Handles deserialization errors
+app.use(function(err, req, res, next) {
+  if (err) {
+      req.logout(); // So deserialization won't continue to fail
+  }
+  next();
+});
+
 //DB connection
 //Use pool.query to run a query on the first available idle client
 const pool = new Pool({
@@ -2090,14 +2098,13 @@ const diffDays = (firstDate, secondDate) =>
   );
 
 app.post('/bid', async (req, res) => {
-  if (req.user) {
+  if (req.user && req.user.type === 1) {
     const ct_email = req.body.ct_email;
     const owner_email = req.user.email;
     const start_date = req.body.start_date;
     const end_date = req.body.end_date;
     const pet_name = req.body.pet_name;
     const num_days = diffDays(new Date(start_date), new Date(end_date)) + 1;
-
     const ctQuery = await pool.query(
       'SELECT * FROM care_taker WHERE email = $1',
       [ct_email]
@@ -2123,6 +2130,8 @@ app.post('/bid', async (req, res) => {
       ct_has_address: ct_has_address,
       start_date: convertDate(start_date),
       end_date: convertDate(end_date),
+      start_date_raw: start_date,
+      end_date_raw: end_date,
       pet_name: pet_name,
       pet_type: pet_type,
       daily_price: daily_price,
@@ -2132,8 +2141,13 @@ app.post('/bid', async (req, res) => {
       accountType: req.user.type
     });
   } else {
-    req.flash('error', 'Please login to submit a bid for a care.');
-    res.redirect('/login');
+    if (!req.user) {
+      req.flash('error', 'Please login to submit a bid for a care.');
+      res.redirect('/login');
+    } else {
+      req.flash("error", "Only pet owners are allowed to make bids");
+      res.redirect("/login_redirect");
+    }
   }
 });
 
@@ -2242,12 +2256,14 @@ app.post('/add_availability', async (req, res) => {
 const testAddress = (address) => /[a-zA-Z]/g.test(address);
 
 app.post('/submit_bid', async (req, res) => {
-  if (req.user) {
+  if (req.user && req.user.type === 1) {
     const owner_email = req.user.email;
+    const start_date = new Date(req.body.start_date_raw);
+    const end_date = new Date(req.body.end_date_raw);
     //Convert DD/MM/YYYY to js Date then get difference between dates as numdays
     const num_days = diffDays(
-      moment(req.body.start_date, 'DD/MM/YYYY').toDate(),
-      moment(req.body.end_date, 'DD/MM/YYYY').toDate()
+      start_date,
+      end_date
     ) + 1;
     //Confirm daily price
     const dailyPriceQuery = await pool.query(
@@ -2260,7 +2276,8 @@ app.post('/submit_bid', async (req, res) => {
       : req.body.transferMethod === 'oDeliver'
         ? pool.query(`SELECT address FROM care_taker WHERE email = $1`, [req.body.ct_email]).rows[0].address
         : null;
-
+        
+    console.log(start_date, end_date);
     queryValues = [
       owner_email,
       req.body.pet_name,
@@ -2268,8 +2285,8 @@ app.post('/submit_bid', async (req, res) => {
       num_days,
       num_days * dailyPriceQuery.rows[0].daily_price,
       req.body.transferMethod,
-      moment(req.body.start_date, 'DD/MM/YYYY').toDate(),
-      moment(req.body.end_date, 'DD/MM/YYYY').toDate(),
+      start_date,
+      end_date,
       new Date(),
       address
     ];
@@ -2286,8 +2303,13 @@ app.post('/submit_bid', async (req, res) => {
     req.flash('success_msg', 'Bid was successful');
     res.redirect('/dashboard');
   } else {
-    req.flash('error', 'Error: User is not authenticated');
-    res.redirect('/login');
+    if (!req.user) {
+      req.flash('error', 'Please login to submit a bid for a care.');
+      res.redirect('/login');
+    } else {
+      req.flash("error", "Only pet owners are allowed to make bids");
+      res.redirect("/login_redirect");
+    }
   }
 });
 

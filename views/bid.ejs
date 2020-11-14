@@ -72,8 +72,8 @@
       <form action="/submit_bid" class="needs-validation" novalidate method="POST" onsubmit="clearAddr()">
           <!--Pass rest of details back-->
         <input type="hidden" name="ct_email" value="<%=ct_email%>">
-        <input type="hidden" name="start_date" value="<%=start_date%>">
-        <input type="hidden" name="end_date" value="<%=end_date%>">
+        <input type="hidden" name="start_date_raw" value="<%= start_date_raw %>">
+        <input type="hidden" name="end_date_raw" value="<%= end_date_raw %>">
         <input type="hidden" name="pet_type" value="<%=pet_type%>">
         
         <div class="row">

@@ -12,36 +12,27 @@ pool.on('connect', (client) => {
 });
 
 function initialize(passport) {
-  const authenticatedUser = (email, password, done) => {
-    pool
-      .query(`SELECT * FROM accounts WHERE email = $1`, [email])
-      .then((result) => {
-        if (result.rows.length == 1) {
-          const user = result.rows[0];
-
-          bcyrpt.compare(password, user.password, (err, isMatch) => {
-            if (err) {
-              return done(err);
-            }
-            if (isMatch) {
-              //First parameter is error, second parameter is the return.
-              if (result.rows[0].deleted) {
-                return done(null, false, { message: 'Account has been deleted. If you want to restore your account, please email us!' });
-              } else {
-                return done(null, user);
-              }
-            } else {
-              return done(null, false, { message: 'Incorrect password' });
-            }
-          });
+  const authenticatedUser = async (email, password, done) => {
+    const accountQuery = await pool.query(`SELECT * FROM accounts WHERE email = $1`, [email]);
+    if (accountQuery.rows.length === 1) {
+      const user = accountQuery.rows[0];
+      const isMatch = await bcyrpt.compare(password, user.password);
+      console.log(user);
+      if (isMatch) {
+        if (user.deleted) {
+          return done(null, false, { message: 'Account has been deleted. If you want to restore your account, please email us!' });
         } else {
-          return done(null, false, { message: 'Incorrect email' });
+          return done(null, user);
         }
-      })
-      .catch((err) => {
-        throw err;
-      });
-  };
+      } else {
+        return done(null, false, { message: 'Incorrect password' });
+      }
+    } else {
+      return done(null, false, { message: 'Incorrect email' });
+    }
+  }
+
+
 
   passport.use(
     new LocalStrategy(
@@ -49,7 +40,9 @@ function initialize(passport) {
         usernameField: 'email',
         passwordField: 'password'
       },
-      authenticatedUser
+      async (email, password, done) => {
+        return await authenticatedUser(email, password, done);
+      }
     )
   );
 
@@ -57,18 +50,18 @@ function initialize(passport) {
   passport.serializeUser((user, done) => done(null, user.email));
 
   //Uses email in cookie to load user
-  passport.deserializeUser((email, done) => {
-    pool.query(
-      `SELECT * FROM accounts WHERE email = $1`,
-      [email],
-      (err, results) => {
-        if (err) {
-          throw err;
-        }
-        return done(null, results.rows[0]);
+  passport.deserializeUser(async (email, done) => {
+    try {
+      const result = await pool.query(`SELECT * FROM accounts WHERE email = $1`,[email]);
+      if (result.rows.length === 1) {
+        return done(null, result.rows[0]);
+      } else {
+        return done("Deserialize failed: user not found", null);
       }
-    );
+    } catch (err) {
+      return done(err, null);
+    }
   });
-}
+};
 
 module.exports = initialize;

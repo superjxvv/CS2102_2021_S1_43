@@ -1754,7 +1754,7 @@ app.post('/my_leave/:ct_email/:start_date', async (req, res) => {
   if (!req.user) {
     res.redirect('/login');
   } else {
-    const values = [req.params.ct_email, convertDate(req.params.start_date)];
+    const values = [req.params.ct_email, new Date(req.params.start_date)];
     await pool.query(sql_query.query.delete_leave, values, (err) => {
       if (err) {
         console.error(err);
@@ -1772,7 +1772,7 @@ app.post('/my_availability/:ct_email/:start_date', async (req, res) => {
   if (!req.user) {
     res.redirect('/login');
   } else {
-    const values = [req.params.ct_email, convertDate(req.params.start_date)];
+    const values = [req.params.ct_email, new Date(req.params.start_date)];
     await pool.query(sql_query.query.delete_availability, values, (err) => {
       if (err) {
         req.flash('error', 'Delete failed.');

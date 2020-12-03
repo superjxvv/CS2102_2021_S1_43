@@ -142,11 +142,12 @@ CREATE TABLE has_leave (
 CREATE OR REPLACE FUNCTION 
 add_pet(p_name VARCHAR, special_req VARCHAR, po_email VARCHAR, type VARCHAR) 
     RETURNS TABLE (existing_pet_name VARCHAR, existing_special_requirement VARCHAR, existing_email VARCHAR, p_type VARCHAR) AS
-'
+$$
 DECLARE exists NUMERIC;
 BEGIN 
 SELECT INTO exists CASE 
-    WHEN (SELECT COUNT(*) FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.pet_name = p_name AND O.email = po_email) >= 1 THEN 1
+    WHEN (SELECT COUNT(*) FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.pet_name = p_name AND O.email = po_email AND deleted = true) >= 1 THEN 1
+    WHEN (SELECT COUNT(*) FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.pet_name = p_name AND O.email = po_email AND deleted = false) >= 1 THEN 2
     ELSE 0
   END;
 
@@ -156,8 +157,11 @@ INSERT INTO is_of (pet_type, pet_name, owner_email) VALUES (type, p_name, po_ema
 IF exists = 1 
   THEN RETURN QUERY (SELECT O.pet_name, O.special_requirement, O.email, I.pet_type FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.pet_name = p_name AND O.email = po_email);
 END IF;
+IF exists = 2
+    THEN RETURN QUERY (SELECT '2'::VARCHAR, O.special_requirement, O.email, I.pet_type FROM own_pet O INNER JOIN is_of I ON O.pet_name = I.pet_name AND O.email = I.owner_email WHERE O.pet_name = p_name AND O.email = po_email);
+END IF;
 END;
-'
+$$
 LANGUAGE plpgsql;
 
 CREATE OR REPLACE PROCEDURE 

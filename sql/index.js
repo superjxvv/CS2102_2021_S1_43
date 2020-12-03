@@ -151,6 +151,7 @@ sql.query = {
     'SELECT pet_type FROM is_of WHERE owner_email = $1 AND pet_name = $2',
   payForBid: 'CALL pay_for_bid($1, $2, $3, $4, $5, $6)',
   add_pet: 'SELECT "add_pet"($1, $2, $3, $4)',
+  edit_pet: 'UPDATE own_pet SET special_requirement = $1 WHERE pet_name = $2 AND email = $3;',
   add_pet_type_ct: 'CALL "add_pet_type_ct"($1, $2, $3)',
   add_leave: 'CALL "add_leave"($1, $2, $3)',
   add_availability: 'CALL "add_availability"($1, $2, $3)',

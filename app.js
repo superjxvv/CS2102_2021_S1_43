@@ -1539,14 +1539,34 @@ app.post('/add_pet/:action', async (req, res) => {
           var split_arr = data.rows[0].add_pet.split(",");
           var last_word = split_arr[3];
           values[3] = last_word.substring(0, last_word.length - 1);
-          res.render('./my_pets', {
-            title: 'My Pets',
-            all_pets: query.rows,
-            data: values,
-            loggedIn: req.user,
-            accountType: req.user.type,
-            restore: true
-          });
+          console.log(split_arr[0].substring(1, last_word.length));
+          if (action == 'add') {
+            if (split_arr[0].substring(1, split_arr[0].length) == "2") {
+              req.flash('error', 'Pet ' + pet_name + ' already exists!');
+              res.redirect('/my_pets');
+            } else {
+              res.render('./my_pets', {
+                title: 'My Pets',
+                all_pets: query.rows,
+                data: values,
+                loggedIn: req.user,
+                accountType: req.user.type,
+                restore: true
+              });
+            }
+          } else {
+              await pool.query(sql_query.query.edit_pet, [values[1], pet_name, req.user.email],
+                  async (err, data) => {
+                    if (err) {
+                      console.log(err);
+                      req.flash('error', err);
+                      res.redirect('/add_pet');
+                    } else {
+                      req.flash('success_msg', 'Pet ' + pet_name + ' is edited!');
+                      res.redirect('/my_pets');
+                    }
+                  });
+          }
         } else if (data.rows[0] && data.rows[0] != 0 && action == 'restore') {
           await pool.query(sql_query.query.restore_pet, [pet_name, req.user.email], async (err, data) => {
             if (err) {

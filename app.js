@@ -2270,11 +2270,11 @@ app.post('/submit_bid', async (req, res) => {
       sql_query.query.dailyPriceGivenTypeAndCT,
       [req.body.ct_email, req.body.pet_type]
     );
-
-    const address = req.body.transferMethod === 'cPickup'
+    const addressQuery = await pool.query(`SELECT address FROM care_taker WHERE email = $1`, [req.body.ct_email]);
+    const address = await req.body.transferMethod === 'cPickup'
       ? req.body.address
       : req.body.transferMethod === 'oDeliver'
-        ? pool.query(`SELECT address FROM care_taker WHERE email = $1`, [req.body.ct_email]).rows[0].address
+        ? addressQuery.rows[0].address
         : null;
         
     console.log(start_date, end_date);
@@ -2489,10 +2489,11 @@ app.post('/submit_edit', async (req, res) => {
           ? new Date(req.body.ori_end_date)
           : new Date(req.body.end_date);
       const numDays = diffDays(startDate, endDate) + 1;
+      const addressQuery = await pool.query(`SELECT address FROM care_taker WHERE email = $1`, [req.body.ct_email]);
       const address = req.body.transferMethod === 'cPickup'
         ? req.body.address
         : req.body.transferMethod === 'oDeliver'
-          ? pool.query(`SELECT address FROM care_taker WHERE email = $1`, [req.body.ct_email]).rows[0].address
+          ? addressQuery.rows[0].address
           : null;
       //Use pet type to server query cost per day to be sure
       const petTypeQuery = await pool.query(

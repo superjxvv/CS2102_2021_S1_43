@@ -122,11 +122,12 @@
 </div>
 
 <script>
+    console.log("hi");
     if ("<%= restore %>" != "false") {
         var restore_modal = $("#modal-default-restore");
         var pet_name = "<%= data[0] %>";
         var pet_type = "<%= data[3] %>";
-        restore_modal.find('.restore-text').text('Previous pet ' + pet_name + ' found! Do you want to restore ' + pet_name + ' of pet type ' + pet_type + '?');
+        restore_modal.find('.restore-text').text('Previous pet ' + pet_name + ' found! Do you want to restore ' + pet_name + ' of pet type ' + pet_type.replace("&#34;", "").replace("&#34;", "") + '?');
         restore_modal.find('.modal-content form').attr("action", "/add_pet/restore");
         $(document).ready(function(){
             $("#modal-default-restore").modal('show');

@@ -65,7 +65,10 @@ app.use(function(err, req, res, next) {
 //DB connection
 //Use pool.query to run a query on the first available idle client
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
 pool.on('connect', (client) => {
